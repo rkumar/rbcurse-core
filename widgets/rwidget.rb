@@ -30,10 +30,10 @@ require 'rbcurse/rinputdataevent' # for FIELD 2010-09-11 12:31
 require 'rbcurse/io'
 require 'rbcurse/common/keydefs'
 
-BOLD = FFI::NCurses::A_BOLD
-REVERSE = FFI::NCurses::A_REVERSE
-UNDERLINE = FFI::NCurses::A_UNDERLINE
-NORMAL = FFI::NCurses::A_NORMAL
+BOLD ||= FFI::NCurses::A_BOLD
+REVERSE ||= FFI::NCurses::A_REVERSE
+UNDERLINE ||= FFI::NCurses::A_UNDERLINE
+NORMAL ||= FFI::NCurses::A_NORMAL
 
 class Object
 # thanks to terminal-table for this method
@@ -579,7 +579,7 @@ module RubyCurses
     #
     # prints a status line at bottom where mode's statuses et can be reflected
     def status_line config={}, &block
-      require 'rbcurse/extras/statusline'
+      require 'rbcurse/core/widgets/statusline'
       sl = RubyCurses::StatusLine.new @form, config, &block
     end
 
@@ -588,13 +588,13 @@ module RubyCurses
     #    header = app_header "rbcurse ", :text_center => "Browser Demo", :text_right =>"New Improved!", 
     #         :color => :black, :bgcolor => :white, :attr => :bold 
     def app_header title, config={}, &block
-      require 'rbcurse/applicationheader'
+      require 'rbcurse/core/widgets/applicationheader'
       header = ApplicationHeader.new @form, title, config, &block
     end
     
     # prints pine-like key labels
     def dock labels, config={}, &block
-      require 'rbcurse/keylabelprinter'
+      require 'rbcurse/core/widgets/keylabelprinter'
       klp = RubyCurses::KeyLabelPrinter.new @form, labels, config, &block
     end
 

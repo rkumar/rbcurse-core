@@ -30,7 +30,7 @@ TODO
 =end
 require 'rbcurse'
 require 'rbcurse/listscrollable'
-require 'rbcurse/extras/tabular'
+require 'rbcurse/core/widgets/tabular'
 require 'rbcurse/extras/listselectable'
 
 #include RubyCurses
@@ -1141,7 +1141,7 @@ if __FILE__ == $PROGRAM_NAME
       b.numbering = true ## FIXME BROKEN
     end
     s.create_default_sorter
-    require 'rbcurse/extras/scrollbar'
+    require 'rbcurse/core/widgets/scrollbar'
     sb = Scrollbar.new @form, :parent => s
     #t.column_align 1, :right
     #puts t.to_s

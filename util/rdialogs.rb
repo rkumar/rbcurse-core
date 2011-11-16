@@ -18,7 +18,7 @@ TODO:
     Add select_one (message, values, default)
 =end
 require 'logger'
-require 'rbcurse/rwidget'
+require 'rbcurse/core/widgets/rwidget'
 require 'rbcurse/rmessagebox'
 
 ##
@@ -348,7 +348,7 @@ end
 #  You may also pass bgcolor and color
 #  @since 1.4.1  2011-11-1 
 def popuplist list, config={}, &block
-  require 'rbcurse/rbasiclistbox'
+  require 'rbcurse/core/widgets/rbasiclistbox'
 
   max_visible_items = config[:max_visible_items]
   row = config[:row] || 5

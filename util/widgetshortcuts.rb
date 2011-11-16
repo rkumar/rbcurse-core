@@ -106,7 +106,7 @@ module RubyCurses
     end
     # editable text area
     def textarea config={}, &block
-      require 'rbcurse/rtextarea'
+      require 'rbcurse/core/widgets/rtextarea'
       # TODO confirm events many more
       events = [ :CHANGE,  :LEAVE, :ENTER ]
       block_event = events[0]
@@ -127,7 +127,7 @@ module RubyCurses
       return w
     end
     def textview config={}, &block
-      require 'rbcurse/rtextview'
+      require 'rbcurse/core/widgets/rtextview'
       events = [ :LEAVE, :ENTER ]
       block_event = events[0]
       #_process_args args, config, block_event, events
@@ -239,7 +239,7 @@ module RubyCurses
     end
     # flow and stack could have a border option
     def box config={}, &block
-      require 'rbcurse/extras/box'
+      require 'rbcurse/core/widgets/box'
       # take current stacks row and col
       # advance row by one and col by one
       # at end note row and advance by one

@@ -605,7 +605,7 @@ module RubyCurses
     end
     # editable text area
     def textarea *args, &block
-      require 'rbcurse/rtextarea'
+      require 'rbcurse/core/widgets/rtextarea'
       config = {}
       # TODO confirm events many more
       events = [ :CHANGE,  :LEAVE, :ENTER ]
@@ -627,9 +627,9 @@ module RubyCurses
     # NOTE This is not allowing me to send blocks,
     # so do not use for containers
     {
-      'rbcurse/rtextview' => 'TextView',
+      'rbcurse/core/widgets/rtextview' => 'TextView',
       'rbcurse/experimental/resultsettextview' => 'ResultsetTextView',
-      'rbcurse/rcontainer' => 'Container',
+      'rbcurse/core/widgets/rcontainer' => 'Container',
       'rbcurse/extras/rcontainer2' => 'Container2',
     }.each_pair {|k,p|
       eval(
@@ -657,7 +657,7 @@ module RubyCurses
     }
     # progress bar
     def progress *args, &block
-      require 'rbcurse/rprogress'
+      require 'rbcurse/core/widgets/rprogress'
       config = {}
       # TODO confirm events many more
       events = [ :CHANGE,  :LEAVE, :ENTER ]
@@ -680,7 +680,7 @@ module RubyCurses
     #    other options are :column_widths => [12,4,12]
     #    :size_to_fit => true
     def table *args, &block
-      require 'rbcurse/rtable'
+      require 'rbcurse/extras/widgets/rtable'
       config = {}
       # TODO confirm events many more
       events = [ :ENTER_ROW,  :LEAVE, :ENTER ]
@@ -725,7 +725,7 @@ module RubyCurses
     end
     # menu bar
     def menubar &block
-      require 'rbcurse/rmenu'
+      require 'rbcurse/core/widgets/rmenu'
       RubyCurses::MenuBar.new &block
     end
 
@@ -753,18 +753,18 @@ module RubyCurses
       @app_row += 1
     end
     def app_header title, config={}, &block
-      require 'rbcurse/applicationheader'
+      require 'rbcurse/core/widgets/applicationheader'
       header = ApplicationHeader.new @form, title, config, &block
     end
     
     # prints pine-like key labels
     def dock labels, config={}, &block
-      require 'rbcurse/keylabelprinter'
+      require 'rbcurse/core/widgets/keylabelprinter'
       klp = RubyCurses::KeyLabelPrinter.new @form, labels, config, &block
     end
 
     def link *args, &block
-      require 'rbcurse/extras/rlink'
+      require 'rbcurse/extras/widgets/rlink'
       config = {}
       events = [ :PRESS,  :LEAVE, :ENTER ]
       block_event = :PRESS
@@ -780,7 +780,7 @@ module RubyCurses
       return toggle
     end
     def menulink *args, &block
-      require 'rbcurse/extras/rmenulink'
+      require 'rbcurse/extras/widgets/rmenulink'
       config = {}
       events = [ :PRESS,  :LEAVE, :ENTER ]
       block_event = :PRESS
@@ -821,7 +821,7 @@ module RubyCurses
       return w
     end
     def multisplit *args, &block
-      require 'rbcurse/rmultisplit'
+      require 'rbcurse/extras/widgets/rmultisplit'
       config = {}
       events = [ :PROPERTY_CHANGE,  :LEAVE, :ENTER ]
       block_event = events[0]
@@ -846,7 +846,7 @@ module RubyCurses
       return w
     end
     def tree *args, &block
-      require 'rbcurse/rtree'
+      require 'rbcurse/core/widgets/rtree'
       config = {}
       events = [:TREE_WILL_EXPAND_EVENT, :TREE_EXPANDED_EVENT, :TREE_SELECTION_EVENT, :PROPERTY_CHANGE, :LEAVE, :ENTER ]
       block_event = nil
@@ -863,7 +863,7 @@ module RubyCurses
       return w
     end
     def vimsplit *args, &block
-      require 'rbcurse/rvimsplit'
+      require 'rbcurse/extras/widgets/rvimsplit'
       config = {}
       #TODO check these
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER ]
@@ -888,7 +888,7 @@ module RubyCurses
     end
     # create a readonly list
     def basiclist *args, &block
-      require 'rbcurse/rbasiclistbox'
+      require 'rbcurse/core/widgets/rbasiclistbox'
       config = {}
       #TODO check these
       events = [ :LEAVE, :ENTER, :ENTER_ROW, :LEAVE_ROW, :LIST_DATA_EVENT ]
@@ -919,7 +919,7 @@ module RubyCurses
       return w
     end
     def master_detail *args, &block
-      require 'rbcurse/extras/masterdetail'
+      require 'rbcurse/experimental/widgets/masterdetail'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER ]
       block_event = nil
@@ -943,7 +943,7 @@ module RubyCurses
     # creates a simple readonly table, that allows users to click on rows
     # and also on the header. Header clicking is for column-sorting.
     def tabular_widget *args, &block
-      require 'rbcurse/extras/tabularwidget'
+      require 'rbcurse/core/widgets/tabularwidget'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER, :CHANGE, :ENTER_ROW, :PRESS ]
       block_event = nil
@@ -966,7 +966,7 @@ module RubyCurses
     end
     # scrollbar attached to the right of a parent object
     def scrollbar *args, &block
-      require 'rbcurse/extras/scrollbar'
+      require 'rbcurse/core/widgets/scrollbar'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER  ] # # none really at present
       block_event = nil
@@ -978,7 +978,7 @@ module RubyCurses
     end
     # divider used to resize neighbouring components TOTEST XXX
     def divider *args, &block
-      require 'rbcurse/extras/divider'
+      require 'rbcurse/core/widgets/divider'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER, :DRAG_EVENT  ] # # none really at present
       block_event = nil
@@ -990,7 +990,7 @@ module RubyCurses
     # creates a simple readonly table, that allows users to click on rows
     # and also on the header. Header clicking is for column-sorting.
     def combo *args, &block
-      require 'rbcurse/rcombo'
+      require 'rbcurse/core/widgets/rcombo'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER, :CHANGE, :ENTER_ROW, :PRESS ] # XXX
       block_event = nil

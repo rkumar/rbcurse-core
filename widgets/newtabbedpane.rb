@@ -571,7 +571,7 @@ module RubyCurses
 end # module
 if __FILE__ == $PROGRAM_NAME
   require 'rbcurse/app'
-  require 'rbcurse/rcontainer'
+  require 'rbcurse/core/widgets/rcontainer'
   App.new do
     #r = Container.new nil, :row => 1, :col => 2, :width => 40, :height => 10, :title => "A container"
     r = Container.new nil, :suppress_borders => true

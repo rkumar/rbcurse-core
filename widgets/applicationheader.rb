@@ -15,7 +15,7 @@
 #              padding. These terminals remove the padding color.
 # ----------------------------------------------------------------------------- #
 #
-require 'rbcurse/rwidget'
+require 'rbcurse/core/widgets/rwidget'
 include RubyCurses
 module RubyCurses
   class ApplicationHeader < Widget

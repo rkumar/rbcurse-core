@@ -630,7 +630,7 @@ module RubyCurses
     # How can application add to this, or override
     # TODO: use another window at bottom, statuswindow
     def disp_menu  #:nodoc:
-      require 'rbcurse/extras/menutree'
+      require 'rbcurse/extras/widgets/menutree'
       # we need to put this into data-structure so that i can be manipulated by calling apps
       # This should not be at the widget level, too many types of menus. It should be at the app
       # level only if the user wants his app to use this kind of menu.

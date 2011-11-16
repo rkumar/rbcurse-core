@@ -1,4 +1,4 @@
-require 'rbcurse/rwidget'
+require 'rbcurse/core/widgets/rwidget'
 module RubyCurses
 
   ## 

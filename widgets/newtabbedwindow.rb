@@ -16,7 +16,7 @@
 =end
 require 'rbcurse'
 require 'rbcurse/extras/newtabbedpane'
-require 'rbcurse/rcontainer'
+require 'rbcurse/core/widgets/rcontainer'
 
 include RubyCurses
 class NewTabbedWindow

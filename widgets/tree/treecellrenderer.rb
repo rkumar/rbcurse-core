@@ -1,6 +1,6 @@
 # 2010-09-18 15:35 
 require 'rbcurse'
-require 'rbcurse/rwidget'
+require 'rbcurse/core/widgets/rwidget'
 module RubyCurses
 
   ## 

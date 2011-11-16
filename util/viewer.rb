@@ -1,4 +1,4 @@
-require 'rbcurse/rtextview'
+require 'rbcurse/core/widgets/rtextview'
 require 'fileutils'
 
 # NOTE: experimental, not yet firmed up

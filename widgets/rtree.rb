@@ -14,8 +14,8 @@ TODO:
    ++ +- and +?
 =end
 require 'rbcurse'
-require 'rbcurse/tree/treemodel'
-require 'rbcurse/tree/treecellrenderer'
+require 'rbcurse/core/widgets/tree/treemodel'
+require 'rbcurse/core/widgets/tree/treecellrenderer'
 
 TreeSelectionEvent = Struct.new(:node, :tree, :state, :previous_node, :row_first)
 

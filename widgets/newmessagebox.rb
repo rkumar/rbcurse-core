@@ -174,7 +174,7 @@ class NewMessagebox
     brow = @button_row || @suggested_h-4
     available_ht = brow - r + 1
     message_height = [message_height, available_ht].min
-    require 'rbcurse/rtextview'
+    require 'rbcurse/core/widgets/rtextview'
     message_label = RubyCurses::TextView.new @form, {:name=>"message_label", :text => message,
       :row => r, :col => message_col, :width => display_length, :suppress_borders => true,
       :height => message_height, :bgcolor => bgclr , :color => clr}
