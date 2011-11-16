@@ -8,7 +8,7 @@
 #**************************************************************
 
 
-require 'rbcurse/listeditable'
+require 'rbcurse/core/include/listeditable'
 module ViEditable
   include ListEditable
 

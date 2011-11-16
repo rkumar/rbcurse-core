@@ -13,7 +13,7 @@ TODO
 =end
 require 'logger'
 require 'rbcurse'
-require 'rbcurse/listscrollable'
+require 'rbcurse/core/include/listscrollable'
 
 include RubyCurses
 module RubyCurses
@@ -125,7 +125,7 @@ module RubyCurses
     # for consistency with other objects that respect text
     alias :text :set_content
     def formatted_text text, fmt
-      require 'rbcurse/common/chunk'
+      require 'rbcurse/core/include/chunk'
       @formatted_text = text
       @color_parser = fmt
       remove_all
@@ -688,7 +688,7 @@ module RubyCurses
     #++
     def fire_action_event
       return if @list.nil? || @list.size == 0
-      require 'rbcurse/ractionevent'
+      require 'rbcurse/core/include/ractionevent'
       aev = TextActionEvent.new self, :PRESS, current_value(), @current_index, @curpos
       fire_handler :PRESS, aev
     end

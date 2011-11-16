@@ -14,9 +14,9 @@
 #    the prv_printstring nonsense.
 # ----------------------------------------------------------------------------- #
 #
-require 'ver/ncurses'
-require 'ver/panel'
-require 'rbcurse/common/chunk'
+require 'rbcurse/core/system/ncurses'
+require 'rbcurse/core/system/panel'
+require 'rbcurse/core/include/chunk'
 # this is since often windows are declared with 0 height or width and this causes
 # crashes in the most unlikely places. This prevceents me from having to write ternary
 # e.g.
@@ -655,7 +655,7 @@ module VER
 
     private
     def get_default_color_parser
-      require 'rbcurse/common/colorparser'
+      require 'rbcurse/core/util/colorparser'
       @color_parser || DefaultColorParser.new
     end
     # supply with a color parser, if you supplied formatted text
@@ -871,7 +871,7 @@ module VER
     def init_bottomline
       unless @bottomline
         require 'forwardable'
-        require 'rbcurse/extras/bottomline'
+        require 'rbcurse/core/util/bottomline'
         @bottomline = RubyCurses::Bottomline.new self, $error_message_row
         @bottomline.name = "window.rb"
         extend Forwardable

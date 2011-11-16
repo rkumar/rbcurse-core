@@ -88,7 +88,7 @@ module Chunks
     # @since 1.4.1   2011-11-3 experimental, can change
     public
     def convert_to_chunk s, colorp=$datacolor, att=FFI::NCurses::A_NORMAL
-      #require 'rbcurse/common/chunk'
+      #require 'rbcurse/core/include/chunk'
 
       @color_parser ||= get_default_color_parser()
       ## defaults
@@ -157,7 +157,7 @@ module Chunks
       return res unless block_given?
     end
     def get_default_color_parser
-      require 'rbcurse/common/colorparser'
+      require 'rbcurse/core/util/colorparser'
       @color_parser || DefaultColorParser.new
     end
     # supply with a color parser, if you supplied formatted text
@@ -167,7 +167,7 @@ module Chunks
       if f == :tmux
         @color_parser = get_default_color_parser()
       elsif f == :ansi
-        require 'rbcurse/common/ansiparser'
+        require 'rbcurse/core/util/ansiparser'
         @color_parser = AnsiParser.new
       else
         @color_parser = f

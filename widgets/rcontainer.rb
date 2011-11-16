@@ -394,7 +394,7 @@ module RubyCurses
 end # module
 
 if __FILE__ == $PROGRAM_NAME
-  require 'rbcurse/app'
+  require 'rbcurse/core/util/app'
   App.new do
     f1 = field "name", :maxlen => 20, :display_length => 20, :bgcolor => :white, 
       :color => :black, :text => "abc", :label => " Name: ", :label_color_pair => @datacolor

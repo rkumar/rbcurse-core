@@ -64,7 +64,7 @@ module RubyCurses
       end
       w = arr.max_by(&:length).length
 
-      require 'rbcurse/extras/viewer'
+      require 'rbcurse/core/util/viewer'
       RubyCurses::Viewer.view(arr, :layout => [2, 10, [4+arr.size, 24].min, w+2],:close_key => KEY_RETURN, :title => "<Enter> to close", :print_footer => true) do |t|
       # you may configure textview further here.
       #t.suppress_borders true
@@ -89,7 +89,7 @@ module RubyCurses
     # @param [String] unix command, e.g., git -st
     def run_command cmd
       # http://whynotwiki.com/Ruby_/_Process_management#What_happens_to_standard_error_.28stderr.29.3F
-      require 'rbcurse/extras/viewer'
+      require 'rbcurse/core/util/viewer'
       begin
         res = `#{cmd} 2>&1`
       rescue => ex

@@ -177,7 +177,7 @@ class PadReader
   end
 end
 if __FILE__ == $PROGRAM_NAME
-  require 'rbcurse/app'
+  require 'rbcurse/core/util/app'
   App.new do
     #status_line :row => FFI::NCurses.LINES-1
     @form.repaint

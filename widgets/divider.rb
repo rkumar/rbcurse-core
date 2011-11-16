@@ -1,4 +1,4 @@
-require 'rbcurse/app'
+require 'rbcurse/core/util/app'
 #include Ncurses # FFI 2011-09-8 
 include RubyCurses
 

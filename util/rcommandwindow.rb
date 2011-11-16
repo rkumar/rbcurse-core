@@ -38,7 +38,7 @@ module RubyCurses
       @start = 0 # row for display of text with paging
       @list = []
       require 'forwardable'
-      require 'rbcurse/extras/bottomline'
+      require 'rbcurse/core/util/bottomline'
       @bottomline = Bottomline.new @window, 0
       @bottomline.name = "rcommandwindow's bl"
       extend Forwardable

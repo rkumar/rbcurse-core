@@ -1527,7 +1527,7 @@ module RubyCurses
         return nil
       end
       prompt = config[:prompt] || "Select one: "
-      require 'rbcurse/rcommandwindow'
+      require 'rbcurse/core/util/rcommandwindow'
       layout = { :height => 5, :width => Ncurses.COLS-1, :top => Ncurses.LINES-6, :left => 0 }
       rc = CommandWindow.new nil, :layout => layout, :box => true, :title => config[:title]
       w = rc.window
@@ -1584,7 +1584,7 @@ module RubyCurses
         #list1 = Dir.glob("*")
         list1 = Dir.glob("*").collect { |f| File.directory?(f) ? f+"/" : f  }
       end
-      require 'rbcurse/rcommandwindow'
+      require 'rbcurse/core/util/rcommandwindow'
       prompt = config[:prompt] || "Choose: "
       layout = { :height => 5, :width => Ncurses.COLS-1, :top => Ncurses.LINES-6, :left => 0 }
       rc = CommandWindow.new nil, :layout => layout, :box => true, :title => config[:title]
@@ -1635,7 +1635,7 @@ module RubyCurses
       return str
     end
     def display_text_interactive text, config={}
-      require 'rbcurse/rcommandwindow'
+      require 'rbcurse/core/util/rcommandwindow'
       ht = config[:height] || 15
       layout = { :height => ht, :width => Ncurses.COLS-1, :top => Ncurses.LINES-ht+1, :left => 0 }
       rc = CommandWindow.new nil, :layout => layout, :box => true, :title => config[:title]
@@ -1651,7 +1651,7 @@ module RubyCurses
     # returns a ListObject since you may not know what the list itself contained
     # You can do ret.list[ret.current_index] to get value
     def display_list text, config={}
-      require 'rbcurse/rcommandwindow'
+      require 'rbcurse/core/util/rcommandwindow'
       ht = config[:height] || 15
       layout = { :height => ht, :width => Ncurses.COLS-1, :top => Ncurses.LINES-ht+1, :left => 0 }
       rc = CommandWindow.new nil, :layout => layout, :box => true, :title => config[:title]
@@ -1779,7 +1779,7 @@ end # module
 if __FILE__ == $PROGRAM_NAME
 
   #tabc = Proc.new {|str| Dir.glob(str +"*") }
-  require 'rbcurse/app'
+  require 'rbcurse/core/util/app'
   require 'forwardable'
   #include Bottomline
 

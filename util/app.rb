@@ -12,7 +12,7 @@ Todo:
 require 'logger'
 require 'rbcurse'
 
-require 'rbcurse/extras/bottomline'
+require 'rbcurse/core/util/bottomline'
 $tt ||= RubyCurses::Bottomline.new 
 $tt.name = "$tt"
 require 'forwardable'
@@ -314,7 +314,7 @@ module RubyCurses
       end
       w = arr.max_by(&:length).length
 
-      require 'rbcurse/extras/viewer'
+      require 'rbcurse/core/util/viewer'
       RubyCurses::Viewer.view(arr, :layout => [2, 10, [4+arr.size, 24].min, w+2],:close_key => KEY_RETURN, :title => "<Enter> to close", :print_footer => true) do |t|
       # you may configure textview further here.
       #t.suppress_borders true
@@ -699,7 +699,7 @@ module RubyCurses
       config[:width] ||= @stack.last.width if @stack.last
       w = Table.new @form, config
       if ext
-        require 'rbcurse/extras/tableextended' 
+        require 'rbcurse/extras/include/tableextended' 
           # so we can increase and decrease column width using keys
         w.extend TableExtended
         w.bind_key(?w){ w.next_column }

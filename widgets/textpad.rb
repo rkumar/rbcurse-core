@@ -24,7 +24,7 @@
 # ----------------------------------------------------------------------------- #
 #
 require 'rbcurse'
-require 'rbcurse/common/bordertitle'
+require 'rbcurse/core/include/bordertitle'
 
 include RubyCurses
 module RubyCurses
@@ -187,7 +187,7 @@ module RubyCurses
     end
 
     def formatted_text text, fmt
-      require 'rbcurse/common/chunk'
+      require 'rbcurse/core/include/chunk'
       @formatted_text = text
       @color_parser = fmt
       #remove_all
@@ -501,7 +501,7 @@ module RubyCurses
   end
 end
 if __FILE__ == $PROGRAM_NAME
-  require 'rbcurse/app'
+  require 'rbcurse/core/util/app'
   App.new do
     w = 50
     w2 = FFI::NCurses.COLS-w-1

@@ -3,7 +3,7 @@
 # Currently will be called by TextArea and the editable version
 # of TextView (vieditable).
 #
-require 'rbcurse/rinputdataevent'
+require 'rbcurse/core/include/rinputdataevent'
 module ListEditable
 
     def remove_all

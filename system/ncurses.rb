@@ -108,7 +108,7 @@ module VER
     $stderr.puts @last_error_message if @last_error_message
     $stderr.puts @last_error, *@last_error.backtrace
   end
-require 'rbcurse/colormap'
+require 'rbcurse/core/system/colormap'
 include ColorMap
 end
 module Ncurses

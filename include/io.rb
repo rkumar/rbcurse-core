@@ -12,7 +12,7 @@
 # added RK 2010-11-02 18:11 so can be used in widgets too
 # maybe can be removed from app, if accessible there too.
 require 'forwardable'
-require 'rbcurse/extras/bottomline'
+require 'rbcurse/core/util/bottomline'
 #$terminal = RubyCurses::Bottomline.new
 #$terminal.name = "$terminal io.rb"
 #module Kernel
@@ -697,7 +697,7 @@ module Io
     #
     def display_columns config={}
       prompt = config[:prompt] || "Choose: "
-      require 'rbcurse/rcommandwindow'
+      require 'rbcurse/core/util/rcommandwindow'
       layout = { :height => 5, :width => Ncurses.COLS-1, :top => Ncurses.LINES-6, :left => 0 }
       rc = CommandWindow.new nil, :layout => layout, :box => true, :title => config[:title] || "Menu"
       w = rc.window

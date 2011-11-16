@@ -29,9 +29,9 @@ TODO
 
 =end
 require 'rbcurse'
-require 'rbcurse/listscrollable'
+require 'rbcurse/core/include/listscrollable'
 require 'rbcurse/core/widgets/tabular'
-require 'rbcurse/extras/listselectable'
+require 'rbcurse/core/include/listselectable'
 
 #include RubyCurses
 module RubyCurses
@@ -896,7 +896,7 @@ module RubyCurses
     def fire_action_event
       return unless @list
       return unless @table_row_sorter
-      require 'rbcurse/ractionevent'
+      require 'rbcurse/core/include/ractionevent'
       # the header event must only be used if columns passed
       if header_row?
         # TODO we need to fire correct even for header row, including
@@ -1105,7 +1105,7 @@ module RubyCurses
 end # modul
 if __FILE__ == $PROGRAM_NAME
 
-  require 'rbcurse/app'
+  require 'rbcurse/core/util/app'
   App.new do
     t = TabularWidget.new @form, :row => 2, :col => 2, :height => 20, :width => 30
     t.columns = ["Name ", "Age ", " Email        "]

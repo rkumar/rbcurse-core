@@ -11,8 +11,8 @@ TODO
   use case remains cleaner.
 =end
 require 'rbcurse'
-require 'rbcurse/listcellrenderer'
-#require 'rbcurse/listkeys'
+require 'rbcurse/core/include/listcellrenderer'
+#require 'rbcurse/extras/include/listkeys'
 require 'forwardable'
 
 
@@ -32,8 +32,8 @@ module RubyCurses
   #
   class BasicListbox < Widget
 
-    require 'rbcurse/listscrollable'
-    require 'rbcurse/extras/listselectable'             # added 2011-10-8 
+    require 'rbcurse/core/include/listscrollable'
+    require 'rbcurse/core/include/listselectable'             # added 2011-10-8 
     include ListScrollable
     include NewListSelectable                           # added 2011-10-8 
     extend Forwardable
@@ -341,7 +341,7 @@ module RubyCurses
       $multiplier = 0
     end
     def fire_action_event
-      require 'rbcurse/ractionevent'
+      require 'rbcurse/core/include/ractionevent'
       # should have been callled :ACTION_EVENT !!!
       fire_handler :PRESS, ActionEvent.new(self, :PRESS, text)
     end

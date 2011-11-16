@@ -24,11 +24,11 @@
 
 =end
 require 'logger'
-require 'rbcurse/colormap'
-require 'rbcurse/orderedhash'
-require 'rbcurse/rinputdataevent' # for FIELD 2010-09-11 12:31 
-require 'rbcurse/io'
-require 'rbcurse/common/keydefs'
+require 'rbcurse/core/system/colormap'
+require 'rbcurse/core/include/orderedhash'
+require 'rbcurse/core/include/rinputdataevent' # for FIELD 2010-09-11 12:31 
+require 'rbcurse/core/include/io'
+require 'rbcurse/core/system/keydefs'
 
 BOLD ||= FFI::NCurses::A_BOLD
 REVERSE ||= FFI::NCurses::A_REVERSE
@@ -181,7 +181,7 @@ module RubyCurses
       #       relate to default parsers provided.
       # @param [String] string containing formatted text
       def parse_formatted_text(color_parser, formatted_text)
-        require 'rbcurse/common/chunk'
+        require 'rbcurse/core/include/chunk'
         cp = Chunks::ColorParser.new color_parser
         l = []
         formatted_text.each { |e| l << cp.convert_to_chunk(e) }
@@ -445,7 +445,7 @@ module RubyCurses
       end
       # view a file or array of strings
       def view what, config={} # :yields: textview for further configuration
-        require 'rbcurse/extras/viewer'
+        require 'rbcurse/core/util/viewer'
         RubyCurses::Viewer.view what, config
       end
     end # module
@@ -2476,7 +2476,7 @@ module RubyCurses
     dsl_accessor :surround_chars   # characters to use to surround the button, def is square brackets
     dsl_accessor :mnemonic
     def initialize form, config={}, &block
-      require 'rbcurse/ractionevent'
+      require 'rbcurse/core/include/ractionevent'
       @focusable = true
       @editable = false
       @handler={} # event handler

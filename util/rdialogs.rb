@@ -19,7 +19,7 @@ TODO:
 =end
 require 'logger'
 require 'rbcurse/core/widgets/rwidget'
-require 'rbcurse/rmessagebox'
+require 'rbcurse/deprecated/widgets/rmessagebox'
 
 ##
 # pops up a modal box with a message and an OK button.

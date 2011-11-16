@@ -117,7 +117,7 @@ module RubyCurses
   end  # class
 end # module
 if __FILE__ == $PROGRAM_NAME
-require 'rbcurse/app'
+require 'rbcurse/core/util/app'
 
 App.new do 
   header = app_header "rbcurse 1.2.0", :text_center => "Viewer Demo", :text_right =>"New Improved!", :color => :black, :bgcolor => :white, :attr => :bold 

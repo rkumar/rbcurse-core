@@ -27,7 +27,7 @@ module RubyCurses
   # @events Events: SELECT, DESELECT, TREE_WILL_EXPAND_EVENT, TREE_COLLAPSED_EVENT
   #
   class Tree < Widget
-    require 'rbcurse/listscrollable'
+    require 'rbcurse/core/include/listscrollable'
     # currently just use single selection
     include ListScrollable
     #extend Forwardable

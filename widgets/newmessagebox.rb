@@ -21,7 +21,7 @@
 # --------------------------------------------------------------------------------- #
 
 require 'rbcurse'
-require 'rbcurse/common/bordertitle'
+require 'rbcurse/core/include/bordertitle'
 
 include RubyCurses
 class NewMessagebox

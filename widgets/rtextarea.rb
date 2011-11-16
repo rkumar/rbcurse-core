@@ -17,9 +17,9 @@ Todo:
 =end
 require 'logger'
 require 'rbcurse'
-require 'rbcurse/listscrollable'
-require 'rbcurse/rinputdataevent'
-require 'rbcurse/listeditable'
+require 'rbcurse/core/include/listscrollable'
+require 'rbcurse/core/include/rinputdataevent'
+require 'rbcurse/core/include/listeditable'
 
 #include Ncurses # FFI 2011-09-8 
 include RubyCurses
