@@ -54,6 +54,14 @@ Color formatting needs to be standardized and a proper API firmed up for that, s
 
    `gem install rbcurse`             # the core, extra and experimental stuff
 
+## See also
+
+* rbcurse - <http://github.com/rkumar/rbcurse/>
+
+* rbcurse-core - <http://github.com/rkumar/rbcurse-core/>
+
+* rbcurse-experimental - <http://github.com/rkumar/rbcurse-experimental/>
+
 ## License
 
   Same as ruby license.
