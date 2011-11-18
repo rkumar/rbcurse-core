@@ -4,7 +4,7 @@
 # this is a new, simpler version of listselectable
 # the original gets into models and has complicated operation as well
 # as difficult to remember method names. This attempts to be a simple plugin.
-# Currently being used by rbasiclistbox and now tabularwidget.
+# Currently being used by rbasiclistbox (rlist) and now tabularwidget.
 # NOTE: pls define @_header_adjustment to 0 if you don't use it or know what it means.
 # TODO: of course we need to fire events so user can do something.
 module RubyCurses

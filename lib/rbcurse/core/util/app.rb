@@ -4,6 +4,11 @@
   * Author: rkumar (arunachalesha)
   * file created 2010-09-04 22:10 
 Todo: 
+
+  * 1.5.0 : redo the constructors of these widgets
+    as per stack flow improved, and make the constructor
+    simpler, no need for jugglery of row col etc. let user
+    specify in config.
   --------
   * License:
     Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
@@ -497,7 +502,7 @@ module RubyCurses
     # create a list
     # Since we are mouseless, one can traverse without selection. So we have a different
     # way of selecting row/s and traversal. XXX this aspect of LB's has always troubled me hugely.
-    def list_box *args, &block
+    def edit_list *args, &block  # earlier list_box
       config = {}
       # TODO confirm events
       # listdataevent has interval added and interval removed, due to multiple
@@ -539,7 +544,7 @@ module RubyCurses
       end
       useform = nil
       useform = @form if @current_object.empty?
-      field = Listbox.new useform, config
+      field = EditList.new useform, config # earlier ListBox
       # shooz uses CHANGED, which is equivalent to our CHANGE. Our CHANGED means modified and exited
       if block
         # this way you can't pass params to the block
@@ -679,7 +684,7 @@ module RubyCurses
     #  t = table :width => 40, :height => 10, :columns => colnames, :data => data, :estimate_widths => true
     #    other options are :column_widths => [12,4,12]
     #    :size_to_fit => true
-    def table *args, &block
+    def edit_table *args, &block # earlier table
       require 'rbcurse/extras/widgets/rtable'
       config = {}
       # TODO confirm events many more
@@ -887,8 +892,10 @@ module RubyCurses
       return w
     end
     # create a readonly list
-    def basiclist *args, &block
-      require 'rbcurse/core/widgets/rbasiclistbox'
+    # I don't want to rename this to list, as that could lead to
+    # confusion, maybe rlist
+    def listbox *args, &block # earlier basic_list
+      require 'rbcurse/core/widgets/rlist'
       config = {}
       #TODO check these
       events = [ :LEAVE, :ENTER, :ENTER_ROW, :LEAVE_ROW, :LIST_DATA_EVENT ]
@@ -912,12 +919,13 @@ module RubyCurses
       useform = nil
       useform = @form if @current_object.empty?
 
-      w = BasicListbox.new useform, config # NO BLOCK GIVEN
+      w = List.new useform, config # NO BLOCK GIVEN
       if block_given?
         field.bind(block_event, &block)
       end
       return w
     end
+    alias :basiclist :listbox # this alias will be removed
     def master_detail *args, &block
       require 'rbcurse/experimental/widgets/masterdetail'
       config = {}
@@ -964,6 +972,7 @@ module RubyCurses
       end
       return w
     end
+    alias :table :tabular_widget
     # scrollbar attached to the right of a parent object
     def scrollbar *args, &block
       require 'rbcurse/core/widgets/scrollbar'
@@ -1335,8 +1344,8 @@ if $0 == __FILE__
     stack :margin_top => 2, :margin => 70 do
       l = label "Column 2"
       f1 = field "afield", :bgcolor => 'white', :color => 'black'
-      list_box "A list", :list => ["Square", "Oval", "Rectangle", "Somethinglarge"], :choose => ["Square"]
-      lb = list_box "Another", :list => ["Square", "Oval", "Rectangle", "Somethinglarge"] do |list|
+      listbox "A list", :list => ["Square", "Oval", "Rectangle", "Somethinglarge"], :choose => ["Square"]
+      lb = listbox "Another", :list => ["Square", "Oval", "Rectangle", "Somethinglarge"] do |list|
         #f1.set_buffer list.text
         #f1.text list.text
         f1.text = list.text

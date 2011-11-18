@@ -348,7 +348,7 @@ end
 #  You may also pass bgcolor and color
 #  @since 1.4.1  2011-11-1 
 def popuplist list, config={}, &block
-  require 'rbcurse/core/widgets/rbasiclistbox'
+  require 'rbcurse/core/widgets/rlist'
 
   max_visible_items = config[:max_visible_items]
   row = config[:row] || 5
@@ -377,7 +377,7 @@ def popuplist list, config={}, &block
   listconfig.delete(:row); 
   listconfig.delete(:col); 
   # trying to pass populists block to listbox
-  lb = RubyCurses::BasicListbox.new form, listconfig, &block
+  lb = RubyCurses::List.new form, listconfig, &block
   #
   # added next line so caller can configure listbox with 
   # events such as ENTER_ROW, LEAVE_ROW or LIST_SELECTION_EVENT or PRESS
