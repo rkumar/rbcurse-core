@@ -15,11 +15,11 @@
   == TODO 
 =end
 require 'rbcurse'
-require 'rbcurse/extras/newtabbedpane'
+require 'rbcurse/core/widgets/rtabbedpane'
 require 'rbcurse/core/widgets/rcontainer'
 
 include RubyCurses
-class NewTabbedWindow
+class TabbedWindow
   attr_reader :tabbed_pane
   # The given block is passed to the TabbedPane
   # The given dimensions are used to create the window.
@@ -33,7 +33,7 @@ class NewTabbedWindow
     @window = VER::Window.new :height => h, :width => w, :top => t, :left => l
     @form = Form.new @window
     config[:row] = config[:col] = 0
-    @tabbed_pane = NewTabbedPane.new @form, config , &block
+    @tabbed_pane = TabbedPane.new @form, config , &block
   end
   # returns button index
   # Call this after instantiating the window

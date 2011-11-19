@@ -9,6 +9,9 @@
   * Last update:  Sat Oct 22 18:40:49 IST 2011
 
   == CHANGES
+     As of 1.5.0, this replaces the earlier TabbedPane which
+     now lies in lib/rbcurse/deprecated/widgets
+     in the rbcurse repo.
   == TODO 
      on start first buttons bottom should not be lined.
      Alt-1-9 to goto tabs
@@ -18,7 +21,7 @@
 require 'rbcurse'
 ##
 module RubyCurses
-  class NewTabbedPane < Widget
+  class TabbedPane < Widget
     dsl_property :title, :title_attrib
     # what kind of buttons, if this is a window, :ok :ok_camcel :ok_apply_cancel
     dsl_accessor :button_type
@@ -585,7 +588,7 @@ if __FILE__ == $PROGRAM_NAME
     r.add(f1)
     r.add(f2)
     r.add(f3,f4,f5)
-    NewTabbedPane.new @form, :row => 3, :col => 5, :width => 60, :height => 20 do
+    TabbedPane.new @form, :row => 3, :col => 5, :width => 60, :height => 20 do
       title "User Setup"
       button_type :ok_apply_cancel
       tab "&Profile" do
