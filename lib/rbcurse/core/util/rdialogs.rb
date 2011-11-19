@@ -13,14 +13,81 @@
   * License:
     Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
 
+# CHANGES:
+# -- moving to the new Messagebox 2011-11-19 v 1.5.0
 TODO:
-    Add one get_string(message, len, regex ...)
     Add select_one (message, values, default)
 =end
-require 'logger'
 require 'rbcurse/core/widgets/rwidget'
-require 'rbcurse/deprecated/widgets/rmessagebox'
+#require 'rbcurse/deprecated/widgets/rmessagebox'
+require 'rbcurse/core/widgets/rmessagebox'
 
+# -- moving to the new Messagebox 2011-11-19 v 1.5.0
+# Alert user with a one line message
+#
+def alert text, config={}
+
+  if text.is_a? RubyCurses::Variable 
+    text = text.get_value
+  end
+  _title = config[:title] || "Alert"
+    tp = Messagebox.new config do
+      title _title
+      button_type :ok
+      message text
+      #text mess
+    end
+    tp.run
+end
+
+# Alert user with a block of text. This will popup a textview in which the user can scroll
+# Use this if you are not sure of the size of the text, such as printing a stack trace,
+# exception
+def textdialog mess, config={}
+  config[:title] ||= "Alert"
+  tp = Messagebox.new config do
+    button_type :ok
+    text mess
+  end
+  tp.run
+end
+# 
+# This uses the new messagebox 2011-11-19 v 1.5.0
+# NOTE: The earlier get_string had only an OK button, this seems to have a CANCEL
+# Are we doing anyhting to let caller know, cancel was pressed. FIXME
+# @param [String] a label such as "Enter name:"
+# @return [String] value entered by user
+def get_string label, config={}
+  config[:title] ||= "Entry"
+  label_config = config[:label_config] || {}
+  label_config[:row] ||= 2
+  label_config[:col] ||= 2
+  label_config[:text] = label
+
+  field_config = config[:field_config] || {}
+  field_config[:row] ||= 3
+  field_config[:col] ||= 2
+  field_config[:attr] = :reverse
+  field_config[:maxlen] ||= config[:maxlen]
+  field_config[:default] ||= config[:default]
+  field_config[:name] = :name
+  #field_config[:display_length] ||= 50  # i want it to extend since i don't know the actual width
+  field_config[:width] ||= 50  # i want it to extend since i don't know the actual width
+
+  tp = Messagebox.new config do
+    button_type :ok_cancel
+    item Label.new nil, label_config
+    item Field.new nil, field_config
+  end
+  index = tp.run
+  if index == 0 # OK
+    return tp.form.by_name[:name].text
+  else # CANCEL
+    # Should i use nil or blank. I am currently opting for nil, as this may imply to caller
+    # that user does not wish to override whatever value is being prompted for.
+    return nil
+  end
+end
 ##
 # pops up a modal box with a message and an OK button.
 # No return value.
@@ -30,7 +97,7 @@ require 'rbcurse/deprecated/widgets/rmessagebox'
 # alert("You did not enter anything!", {"title"=>"Wake Up", "bgcolor"=>"blue", "color"=>"white"})
 # block currently ignored. don't know what to do, can't pass it to MB since alread sending in a block
 #
-def alert text, config={}, &block
+def DEPalert text, config={}, &block
   title = config['title'] || "Alert"
   #instance_eval &block if block_given?
   if text.is_a? RubyCurses::Variable # added 2011-09-20 incase variable passed
@@ -44,7 +111,7 @@ def alert text, config={}, &block
 end
 # confirms from user returning :YES or :NO
 # Darn, should have returned boolean, now have to live with it.
-def confirm text, config={}, &block
+def OLDconfirm text, config={}, &block
   title = config['title'] || "Confirm"
   #instance_eval &block if block_given?
   mb = RubyCurses::MessageBox.new nil, config  do
@@ -58,7 +125,7 @@ end
 ##
 # allows user entry of a string.
 # In config you may pass Field related properties such as chars_allowed, valid_regex, values, etc.
-def get_string(message, len=50, default="", config={})
+def DEPget_string(message, len=50, default="", config={})
 
   config["input_config"] = {}
   config["input_config"]["maxlen"] = len
