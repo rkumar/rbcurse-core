@@ -71,7 +71,7 @@ module RubyCurses
     # index of selected row
     attr_accessor :selected_index
     # index of selected rows, if multiple selection asked for
-    attr_reader :selected_indices
+    dsl_accessor :selected_indices
 
     dsl_accessor :should_show_focus
 
@@ -507,7 +507,7 @@ module RubyCurses
       unless c
         _r, c = rowcol
       end
-      acolor ||= get_color $datacolor, @selected_color, @selected_bgcolor
+      acolor ||= get_color $promptcolor, @selected_color, @selected_bgcolor
       att = FFI::NCurses::A_REVERSE
       att = get_attrib(@selected_attrib) if @selected_attrib
       @graphic.mvchgat(y=r, x=c, @width-@internal_width-@left_margin, att , acolor , nil)
