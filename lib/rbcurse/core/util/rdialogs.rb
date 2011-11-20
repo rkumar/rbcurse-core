@@ -31,7 +31,7 @@ def alert text, config={}
     text = text.get_value
   end
   _title = config[:title] || "Alert"
-    tp = Messagebox.new config do
+    tp = MessageBox.new config do
       title _title
       button_type :ok
       message text
@@ -45,7 +45,7 @@ end
 # exception
 def textdialog mess, config={}
   config[:title] ||= "Alert"
-  tp = Messagebox.new config do
+  tp = MessageBox.new config do
     button_type :ok
     text mess
   end
@@ -74,7 +74,7 @@ def get_string label, config={}
   #field_config[:display_length] ||= 50  # i want it to extend since i don't know the actual width
   field_config[:width] ||= 50  # i want it to extend since i don't know the actual width
 
-  tp = Messagebox.new config do
+  tp = MessageBox.new config do
     button_type :ok_cancel
     item Label.new nil, label_config
     item Field.new nil, field_config
@@ -87,6 +87,20 @@ def get_string label, config={}
     # that user does not wish to override whatever value is being prompted for.
     return nil
   end
+end
+# new version using new messagebox
+# @param [String] question
+# @return [Boolean] true or false
+def confirm text, config={}, &block
+  title = config['title'] || "Confirm"
+  #instance_eval &block if block_given?
+  mb = RubyCurses::MessageBox.new config  do
+    title title
+    message text
+    button_type :yes_no
+  end
+  index = tp.run
+  return index == 0
 end
 ##
 # pops up a modal box with a message and an OK button.
@@ -159,6 +173,7 @@ end
 # @return: string value entered
 # @return: hash of strings and booleans for checkboxes and values
 #
+# @deprecated - user should be able to do this quite easily now.
 def get_string_with_options(message, len=20, default="", config={})
   title = config["title"] || "Input required"
   input_config = config["input_config"] || {}
