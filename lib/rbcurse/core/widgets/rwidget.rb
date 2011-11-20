@@ -546,6 +546,9 @@ module RubyCurses
       def variable_set var, val
         #nvar = "@#{var}"
         send("#{var}", val) #rescue send("#{var}=", val)    # 2009-01-08 01:30 BIG CHANGE calling methods too here.
+        # 2011-11-20 NOTE i don;t know why i commented off rescue, but i am wondering
+        # we should respect attr_accessor, to make it easy. if respond_to? :var=
+        #  then set it, else call send. I'd ilke to phase out dsl_accessor.
         #instance_variable_set(nvar, val)   # we should not call this !!! bypassing 
       end
       def configure(*val , &block)
@@ -659,8 +662,17 @@ module RubyCurses
     # NOTE state takes care of this and is set by form
     attr_accessor :focussed  # is this widget in focus, so they may paint differently
 
-    def initialize form, aconfig={}, &block
-      @form = form
+    def initialize aform, aconfig={}, &block
+      # I am trying to avoid passing the nil when you don't want to give a form.
+      # I hope this does not create new issues 2011-11-20 
+      if aform.is_a? Hash
+        # presumable there's nothing coming in in hash, or else we will have to merge
+        aconfig = aform
+        @form = nil
+      else
+        #raise "got a #{aform.class} "
+        @form = aform
+      end
       @row_offset ||= 0
       @col_offset ||= 0
       #@ext_row_offset = @ext_col_offset = 0 # 2010-02-07 20:18  # removed on 2011-09-29 
@@ -688,7 +700,7 @@ module RubyCurses
       # own default
       #@bgcolor ||=  "black" # 0
       #@color ||= "white" # $datacolor
-      set_form(form) unless form.nil? 
+      set_form(@form) if @form
     end
     def init_vars
       # just in case anyone does a super. Not putting anything here
@@ -790,7 +802,7 @@ module RubyCurses
       # added 2009-12-27 20:05 BUFFERED in case child object needs a form.
       # We don;t wish to overwrite the graphic object
       if @graphic.nil?
-        $log.debug " setting graphic to form window for #{self.class}, #{form} "
+        #$log.debug " setting graphic to form window for #{self.class}, #{form} "
         @graphic = form.window unless form.nil? # use screen for writing, not buffer
       end
     end
@@ -1160,12 +1172,12 @@ module RubyCurses
     def add_widget widget
       # this help to access widget by a name
       if widget.respond_to? :name and !widget.name.nil?
-        $log.debug "NAME #{self} adding a widget #{@widgets.length} .. #{widget.name} "
+        ##$log.debug "NAME #{self} adding a widget #{@widgets.length} .. #{widget.name} "
         @by_name[widget.name] = widget
       end
 
 
-      $log.debug " #{self} adding a widget #{@widgets.length} .. #{widget} "
+      #$log.debug " #{self} adding a widget #{@widgets.length} .. #{widget} "
       @widgets << widget
       return @widgets.length-1
     end
@@ -1363,7 +1375,7 @@ module RubyCurses
     # in which case returns :NO_NEXT_FIELD.
     # FIXME: in the beginning it comes in as -1 and does an on_leave of last field
     def select_next_field
-      return :UNHANDLED if @widgets.nil? or @widgets.empty?
+      return :UNHANDLED if @widgets.nil? || @widgets.empty?
       #$log.debug "insdie sele nxt field :  #{@active_index} WL:#{@widgets.length}" 
       if @active_index.nil?  || @active_index == -1 # needs to be tested out A LOT
         @active_index = -1 
@@ -2183,8 +2195,8 @@ module RubyCurses
       val = getvalue
       #$log.debug " FIELD ON LEAVE:#{val}. #{@values.inspect}"
       valid = true
-      if val.to_s.empty? and @null_allowed
-        $log.debug " empty and null allowed"
+      if val.to_s.empty? && @null_allowed
+        #$log.debug " empty and null allowed"
       else
         if !@values.nil?
           valid = @values.include? val
