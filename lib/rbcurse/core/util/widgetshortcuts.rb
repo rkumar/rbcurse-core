@@ -39,7 +39,8 @@ module RubyCurses
     class WsFlow < Ws; end
     def widget_shortcuts_init
       @_ws_app_row = @_ws_app_col = 0
-      @_ws_active = []
+      #@_ws_active = []
+      @_ws_active = nil # so we can use shortcuts if no stack used
       @_ws_components = []
       @variables = {}
     end
@@ -147,22 +148,28 @@ module RubyCurses
       return w
     end
     def _position w
-      cur = @_ws_active.last
-      # this is outside any stack or flow, so we do the minimal
-      # user should specify row and col
-      unless cur
+      if @_ws_active.nil? || @_ws_active.empty?
+        # no stack or flow, this is independent usage, or else we are outside stacks and flows
+        #
+        # this is outside any stack or flow, so we do the minimal
+        # user should specify row and col
         w.row ||= 0
         w.col ||= 0
         $log.debug "XXX:  LABEL #{w.row} , #{w.col} "
         w.set_form @form if @form # temporary,, only set if not inside an object FIXME
-        if w.width == :expand
-          w.width = FFI::NCurses.COLS-0 # or take windows width since this could be in a message box
+        if w.width == :expand  # calculate from current col, not 0 FIXME
+          w.width = FFI::NCurses.COLS-w.col # or take windows width since this could be in a message box
         end
         if w.height == :expand
           # take from current row, and not zero  FIXME
-          w.height = FFI::NCurses.LINES-0 # or take windows width since this could be in a message box
+          w.height = FFI::NCurses.LINES-w.row # or take windows width since this could be in a message box
         end
         return
+
+      end
+      cur = @_ws_active.last
+      unless cur
+        raise "This should have been handled previously.Somethings wrong, check/untested"
       end
       r = cur[:row] || 0
       c = cur[:col] || 0
@@ -193,6 +200,7 @@ module RubyCurses
     def stack config={}, &block
       s = WsStack.new config
       _configure s
+      @_ws_active ||= []
       @_ws_active << s
       yield_or_eval &block if block_given?
       @_ws_active.pop 
@@ -219,6 +227,7 @@ module RubyCurses
     def flow config={}, &block
       s = WsFlow.new config
       _configure s
+      @_ws_active ||= []
       @_ws_active << s
       yield_or_eval &block if block_given?
       @_ws_active.pop 
@@ -245,6 +254,7 @@ module RubyCurses
       # at end note row and advance by one
       # draw a box around using these coordinates. width should be
       # provided unless we have item width or something.
+      @_ws_active ||= []
       last = @_ws_active.last
       if last
         r = last[:row]
