@@ -96,7 +96,7 @@ class SetupMessagebox
       flow do
         #box do
           button :text => "  Ok  " do  alert "Pressed okay"  end
-          button :text => "Cancel" do  confirm "Quit?" ; throw :close;  end
+          button :text => "Cancel" do  confirm "Do you wish to Quit?" ; throw :close;  end
           button :text => "Apply "
         #end
       end
