@@ -16,6 +16,7 @@ Todo:
 =end
 require 'logger'
 require 'rbcurse'
+require 'rbcurse/core/util/widgetshortcuts'
 
 require 'rbcurse/core/util/bottomline'
 $tt ||= RubyCurses::Bottomline.new 
@@ -29,8 +30,7 @@ include RubyCurses
 include RubyCurses::Utils
 include Io
 module RubyCurses
-  extend self
-
+   extend self
   ##
   #
   # @since 1.2.0
@@ -77,6 +77,7 @@ module RubyCurses
   # This is the Application class which does the job of setting up the 
   # environment, and closing it at the end.
   class App
+  include RubyCurses::WidgetShortcuts
     attr_reader :config
     attr_reader :form
     attr_reader :window
@@ -92,9 +93,12 @@ module RubyCurses
     def initialize config={}, &block
       #$log.debug " inside constructor of APP #{config}  "
       @config = config
-      @app_row = @app_col = 0
-      @stack = [] # stack's coordinates
-      @flowstack = []
+
+
+      widget_shortcuts_init
+      #@app_row = @app_col = 0
+      #@stack = [] # stack's coordinates
+      #@flowstack = []
       @variables = {}
       # if we are creating child objects then we will not use outer form. this object will manage
       @current_object = [] 
@@ -445,7 +449,7 @@ module RubyCurses
     # of some components easier for caller avoiding too much boiler plate code
     # 
     # create a field
-    def field *args, &block
+    def OLDfield *args, &block
       config = {}
       events = [ :CHANGED,  :LEAVE, :ENTER, :CHANGE ]
       block_event = :CHANGED # LEAVE, ENTER, CHANGE
@@ -468,7 +472,7 @@ module RubyCurses
       #colorlabel = Label.new @form, {'text' => "Select a color:", "row" => row, "col" => col, "color"=>"cyan", "mnemonic" => 'S'}
       #var = RubyCurses::Label.new @form, {'text_variable' => $results, "row" => r, "col" => fc}
 
-    def label *args
+    def OLDlabel *args
       events = block_event = nil
       config = {}
       _process_args args, config, block_event, events
@@ -481,7 +485,7 @@ module RubyCurses
       return label
     end
     alias :text :label
-    def button *args, &block
+    def OLDbutton *args, &block
       config = {}
       events = [ :PRESS,  :LEAVE, :ENTER ]
       block_event = :PRESS
@@ -502,7 +506,7 @@ module RubyCurses
     # create a list
     # Since we are mouseless, one can traverse without selection. So we have a different
     # way of selecting row/s and traversal. XXX this aspect of LB's has always troubled me hugely.
-    def edit_list *args, &block  # earlier list_box
+    def OLDedit_list *args, &block  # earlier list_box
       config = {}
       # TODO confirm events
       # listdataevent has interval added and interval removed, due to multiple
@@ -554,7 +558,7 @@ module RubyCurses
     end
     
     # toggle button
-    def toggle *args, &block
+    def OLDtoggle *args, &block
       config = {}
       # TODO confirm events
       events = [ :PRESS,  :LEAVE, :ENTER ]
@@ -570,7 +574,7 @@ module RubyCurses
       return toggle
     end
     # check button
-    def check *args, &block
+    def OLDcheck *args, &block
       config = {}
       # TODO confirm events
       events = [ :PRESS,  :LEAVE, :ENTER ]
@@ -584,7 +588,7 @@ module RubyCurses
       return toggle
     end
     # radio button
-    def radio *args, &block
+    def OLDradio *args, &block
       config = {}
       # TODO confirm events
       events = [ :PRESS,  :LEAVE, :ENTER ]
@@ -609,7 +613,7 @@ module RubyCurses
       return radio
     end
     # editable text area
-    def textarea *args, &block
+    def OLDtextarea *args, &block
       require 'rbcurse/core/widgets/rtextarea'
       config = {}
       # TODO confirm events many more
@@ -638,7 +642,7 @@ module RubyCurses
       'rbcurse/extras/rcontainer2' => 'Container2',
     }.each_pair {|k,p|
       eval(
-           "def #{p.downcase} *args, &block
+           "def OLD#{p.downcase} *args, &block
               require \"#{k}\"
       config = {}
       # TODO confirm events many more
@@ -661,7 +665,7 @@ module RubyCurses
            )
     }
     # progress bar
-    def progress *args, &block
+    def OLDprogress *args, &block
       require 'rbcurse/core/widgets/rprogress'
       config = {}
       # TODO confirm events many more
@@ -800,7 +804,7 @@ module RubyCurses
       end
       return toggle
     end
-    def splitpane *args, &block
+    def OLDsplitpane *args, &block
       require 'rbcurse/rsplitpane2'
       config = {}
       events = [ :PROPERTY_CHANGE,  :LEAVE, :ENTER ]
@@ -825,7 +829,7 @@ module RubyCurses
       end
       return w
     end
-    def multisplit *args, &block
+    def OLDmultisplit *args, &block
       require 'rbcurse/extras/widgets/rmultisplit'
       config = {}
       events = [ :PROPERTY_CHANGE,  :LEAVE, :ENTER ]
@@ -850,7 +854,7 @@ module RubyCurses
       end
       return w
     end
-    def tree *args, &block
+    def OLDtree *args, &block
       require 'rbcurse/core/widgets/rtree'
       config = {}
       events = [:TREE_WILL_EXPAND_EVENT, :TREE_EXPANDED_EVENT, :TREE_SELECTION_EVENT, :PROPERTY_CHANGE, :LEAVE, :ENTER ]
@@ -867,7 +871,7 @@ module RubyCurses
       w = Tree.new useform, config, &block
       return w
     end
-    def vimsplit *args, &block
+    def OLDvimsplit *args, &block
       require 'rbcurse/extras/widgets/rvimsplit'
       config = {}
       #TODO check these
@@ -894,7 +898,7 @@ module RubyCurses
     # create a readonly list
     # I don't want to rename this to list, as that could lead to
     # confusion, maybe rlist
-    def listbox *args, &block # earlier basic_list
+    def OLDlistbox *args, &block # earlier basic_list
       require 'rbcurse/core/widgets/rlist'
       config = {}
       #TODO check these
@@ -926,7 +930,7 @@ module RubyCurses
       return w
     end
     alias :basiclist :listbox # this alias will be removed
-    def master_detail *args, &block
+    def OLDmaster_detail *args, &block
       require 'rbcurse/experimental/widgets/masterdetail'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER ]
@@ -950,7 +954,7 @@ module RubyCurses
     end
     # creates a simple readonly table, that allows users to click on rows
     # and also on the header. Header clicking is for column-sorting.
-    def tabular_widget *args, &block
+    def OLDtabular_widget *args, &block
       require 'rbcurse/core/widgets/tabularwidget'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER, :CHANGE, :ENTER_ROW, :PRESS ]
@@ -972,9 +976,9 @@ module RubyCurses
       end
       return w
     end
-    alias :table :tabular_widget
+    #alias :table :tabular_widget
     # scrollbar attached to the right of a parent object
-    def scrollbar *args, &block
+    def OLDscrollbar *args, &block
       require 'rbcurse/core/widgets/scrollbar'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER  ] # # none really at present
@@ -986,7 +990,7 @@ module RubyCurses
       sb = Scrollbar.new useform, config
     end
     # divider used to resize neighbouring components TOTEST XXX
-    def divider *args, &block
+    def OLDdivider *args, &block
       require 'rbcurse/core/widgets/divider'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER, :DRAG_EVENT  ] # # none really at present
@@ -998,7 +1002,7 @@ module RubyCurses
     end
     # creates a simple readonly table, that allows users to click on rows
     # and also on the header. Header clicking is for column-sorting.
-    def combo *args, &block
+    def OLDcombo *args, &block
       require 'rbcurse/core/widgets/rcombo'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER, :CHANGE, :ENTER_ROW, :PRESS ] # XXX
@@ -1031,8 +1035,8 @@ module RubyCurses
     # margin to add to margin of existing stack, or window (0)
     # NOTE: since these coordins are calculated at start
     # therefore if window resized i can't recalculate.
-    Stack = Struct.new(:margin_top, :margin, :width)
-    def stack config={}, &block
+    #Stack = Struct.new(:margin_top, :margin, :width)
+    def OLDstack config={}, &block
       @instack = true
       mt =  config[:margin_top] || 1
       mr =  config[:margin] || 0
@@ -1055,7 +1059,7 @@ module RubyCurses
     # to get another row.
     # TODO: move down when row filled
     # TODO: align right, center
-    def flow config={}, &block
+    def OLDflow config={}, &block
       @inflow = true
       mt =  config[:margin_top] || 0
       @app_row += mt
@@ -1211,6 +1215,7 @@ module RubyCurses
       args.each do |arg| 
         case arg
         when Array
+          # please don't use this, keep it simple and use hash NOTE
           # we can use r,c, w, h
           row, col, display_length, height = arg
           config[:row] = row
@@ -1234,7 +1239,7 @@ module RubyCurses
     end # _process
     # position object based on whether in a flow or stack.
     # @app_row is prepared for next object based on this objects ht
-    def _position config  #:nodoc:
+    def OLD_position config  #:nodoc:
       unless @current_object.empty?
         $log.debug " WWWW returning from position #{@current_object.last} "
         return
