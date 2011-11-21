@@ -21,6 +21,8 @@
 # what is the real purpose of the shortcuts, is it to avoid putting nil
 # for form there if not required.
 # Or is it positioning, such as in a stack. or just a method ?
+require 'rbcurse/core/widgets/rlist'
+require 'rbcurse/core/widgets/rtextview'
 module RubyCurses
   module WidgetShortcuts
     class Ws
@@ -55,6 +57,7 @@ module RubyCurses
     def label config={}, &block 
       w = Label.new nil, config, &block
       _position w
+      return w
     end
     def blank
       label :text => ""
@@ -119,8 +122,8 @@ module RubyCurses
       #useform = @form if @current_object.empty?
       w = TextArea.new useform, config
       w.width = :expand unless w.width
-      w.height ||= 8 # TODO
       _position(w)
+      w.height ||= 8 # TODO
       # need to expand to stack's width or flows itemwidth if given
       if block
         w.bind(block_event, &block)
@@ -128,7 +131,6 @@ module RubyCurses
       return w
     end
     def textview config={}, &block
-      require 'rbcurse/core/widgets/rtextview'
       events = [ :LEAVE, :ENTER ]
       block_event = events[0]
       #_process_args args, config, block_event, events
@@ -139,8 +141,27 @@ module RubyCurses
       #useform = @form if @current_object.empty?
       w = TextView.new useform, config
       w.width = :expand unless w.width
-      w.height ||= 8 # TODO
       _position(w)
+      w.height ||= 8 # TODO
+      # need to expand to stack's width or flows itemwidth if given
+      if block
+        w.bind(block_event, &block)
+      end
+      return w
+    end
+    def listbox config={}, &block
+      events = [ :PRESS, :ENTER_ROW, :LEAVE, :ENTER ]
+      block_event = events[0]
+      #_process_args args, config, block_event, events
+      #config[:width] = config[:display_length] unless config.has_key? :width
+      # if no width given, expand to flows width
+      #config[:width] ||= @stack.last.width if @stack.last
+      useform = nil
+      #useform = @form if @current_object.empty?
+      w = List.new useform, config
+      w.width = :expand unless w.width
+      _position(w)
+      w.height ||= 8 # TODO
       # need to expand to stack's width or flows itemwidth if given
       if block
         w.bind(block_event, &block)
@@ -184,7 +205,16 @@ module RubyCurses
         cur[:col] = c
       end
       if w.width == :expand
-        w.width = cur[:width] or raise "Width not known for stack"
+        if cur.is_a? WsFlow
+          w.width = cur[:item_width] or raise "item_Width not known for stack #{cur.class}, #{cur[:item_width]} "
+        else
+          w.width = cur[:width] or raise "Width not known for stack #{cur.class}, #{cur[:width]} "
+        end
+      end
+      if cur.is_a? WsFlow
+        unless w.height
+          w.height = cur[:height] or raise "height not known for flow"
+        end
       end
       if w.height == :expand
         w.height = cur[:height] or raise "height not known for flow"
@@ -199,8 +229,8 @@ module RubyCurses
     # clever, put as much on the user 
     def stack config={}, &block
       s = WsStack.new config
-      _configure s
       @_ws_active ||= []
+      _configure s
       @_ws_active << s
       yield_or_eval &block if block_given?
       @_ws_active.pop 
@@ -226,8 +256,8 @@ module RubyCurses
     #   but the item width may apply to stacks inside not to items
     def flow config={}, &block
       s = WsFlow.new config
-      _configure s
       @_ws_active ||= []
+      _configure s
       @_ws_active << s
       yield_or_eval &block if block_given?
       @_ws_active.pop 
@@ -247,6 +277,7 @@ module RubyCurses
       end
     end
     # flow and stack could have a border option
+    # NOTE: box takes one row below too, so :expand overwrites that line
     def box config={}, &block
       require 'rbcurse/core/widgets/box'
       # take current stacks row and col
@@ -286,12 +317,14 @@ module RubyCurses
         last[:col] += 1 # ??? XXX if flow we need to increment properly or not ?
       end
     end
+
+    # This configures a stack or flow not the objects inside
     def _configure s
       s[:row] ||= 0
       s[:col] ||= 0
       s[:row] += (s[:margin_top] || 0)
       s[:col] += (s[:margin_left] || 0)
-      s[:width] = FFI::NCurses.COLS if s[:width] == :expand
+      s[:width] = FFI::NCurses.COLS-s[:col] if s[:width] == :expand
       last = @_ws_active.last
       if last
         if last.is_a? WsStack
@@ -305,8 +338,5 @@ module RubyCurses
       end
       s[:components] = []
     end
-
-
-
   end
 end
