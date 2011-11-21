@@ -664,22 +664,6 @@ module RubyCurses
            end"
            )
     }
-    # progress bar
-    def OLDprogress *args, &block
-      require 'rbcurse/core/widgets/rprogress'
-      config = {}
-      # TODO confirm events many more
-      events = [ :CHANGE,  :LEAVE, :ENTER ]
-      block_event = nil
-      _process_args args, config, block_event, events
-      config[:width] = config[:display_length] || 10 unless config.has_key? :width
-      _position(config)
-      w = Progress.new @form, config
-      #if block
-        #w.bind(block_event, &block)
-      #end
-      return w
-    end
     
     # table widget
     # @example
@@ -733,13 +717,9 @@ module RubyCurses
       @window.printstring 2, 30, string, $datacolor, 'normal'
     end
     # menu bar
-    def menubar &block
-      require 'rbcurse/core/widgets/rmenu'
-      RubyCurses::MenuBar.new &block
-    end
 
     # creates a blank row
-    def blank rows=1, config={}
+    def OLDblank rows=1, config={}
       @app_row += rows
     end
     # displays a horizontal line
@@ -761,75 +741,8 @@ module RubyCurses
       @window.attron(Ncurses.COLOR_PAIR(@color_pair) | @attrib)
       @app_row += 1
     end
-    def app_header title, config={}, &block
-      require 'rbcurse/core/widgets/applicationheader'
-      header = ApplicationHeader.new @form, title, config, &block
-    end
     
-    # prints pine-like key labels
-    def dock labels, config={}, &block
-      require 'rbcurse/core/widgets/keylabelprinter'
-      klp = RubyCurses::KeyLabelPrinter.new @form, labels, config, &block
-    end
-
-    def link *args, &block
-      require 'rbcurse/extras/widgets/rlink'
-      config = {}
-      events = [ :PRESS,  :LEAVE, :ENTER ]
-      block_event = :PRESS
-      _process_args args, config, block_event, events
-      _position(config)
-      config[:text] ||= config.delete :title
-      config[:highlight_foreground] = "yellow"
-      config[:highlight_background] = "red"
-      toggle = Link.new @form, config
-      if block
-        toggle.bind(block_event, toggle, &block)
-      end
-      return toggle
-    end
-    def menulink *args, &block
-      require 'rbcurse/extras/widgets/rmenulink'
-      config = {}
-      events = [ :PRESS,  :LEAVE, :ENTER ]
-      block_event = :PRESS
-      _process_args args, config, block_event, events
-      _position(config)
-      config[:text] ||= config.delete :title
-      config[:highlight_foreground] = "yellow"
-      config[:highlight_background] = "red"
-      toggle = MenuLink.new @form, config
-      if block
-        toggle.bind(block_event, toggle, &block)
-      end
-      return toggle
-    end
-    def OLDsplitpane *args, &block
-      require 'rbcurse/rsplitpane2'
-      config = {}
-      events = [ :PROPERTY_CHANGE,  :LEAVE, :ENTER ]
-      block_event = events[0]
-      _process_args args, config, block_event, events
-      _position(config)
-      # if no width given, expand to flows width
-      config[:width] ||= @stack.last.width if @stack.last
-      config.delete :title
-      useform = nil
-      useform = @form if @current_object.empty?
-
-      w = SplitPane.new useform, config
-      #if block
-        #w.bind(block_event, w, &block)
-      #end
-      if block_given?
-        @current_object << w
-        #instance_eval &block if block_given?
-        yield w
-        @current_object.pop
-      end
-      return w
-    end
-    def OLDmultisplit *args, &block
+    def TODOmultisplit *args, &block
       require 'rbcurse/extras/widgets/rmultisplit'
       config = {}
       events = [ :PROPERTY_CHANGE,  :LEAVE, :ENTER ]
@@ -846,47 +759,6 @@ module RubyCurses
       #if block
         #w.bind(block_event, w, &block)
       #end
-      if block_given?
-        @current_object << w
-        #instance_eval &block if block_given?
-        yield w
-        @current_object.pop
-      end
-      return w
-    end
-    def OLDtree *args, &block
-      require 'rbcurse/core/widgets/rtree'
-      config = {}
-      events = [:TREE_WILL_EXPAND_EVENT, :TREE_EXPANDED_EVENT, :TREE_SELECTION_EVENT, :PROPERTY_CHANGE, :LEAVE, :ENTER ]
-      block_event = nil
-      _process_args args, config, block_event, events
-      config[:height] ||= 10
-      _position(config)
-      # if no width given, expand to flows width
-      config[:width] ||= @stack.last.width if @stack.last
-      #config.delete :title
-      useform = nil
-      useform = @form if @current_object.empty?
-
-      w = Tree.new useform, config, &block
-      return w
-    end
-    def OLDvimsplit *args, &block
-      require 'rbcurse/extras/widgets/rvimsplit'
-      config = {}
-      #TODO check these
-      events = [:PROPERTY_CHANGE, :LEAVE, :ENTER ]
-      block_event = nil
-      _process_args args, config, block_event, events
-      config[:height] ||= 10
-      _position(config)
-      # if no width given, expand to flows width
-      config[:width] ||= @stack.last.width if @stack.last
-      #config.delete :title
-      useform = nil
-      useform = @form if @current_object.empty?
-
-      w = VimSplit.new useform, config # NO BLOCK GIVEN
       if block_given?
         @current_object << w
         #instance_eval &block if block_given?
@@ -930,7 +802,7 @@ module RubyCurses
       return w
     end
     alias :basiclist :listbox # this alias will be removed
-    def OLDmaster_detail *args, &block
+    def TODOmaster_detail *args, &block
       require 'rbcurse/experimental/widgets/masterdetail'
       config = {}
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER ]
@@ -952,31 +824,6 @@ module RubyCurses
       end
       return w
     end
-    # creates a simple readonly table, that allows users to click on rows
-    # and also on the header. Header clicking is for column-sorting.
-    def OLDtabular_widget *args, &block
-      require 'rbcurse/core/widgets/tabularwidget'
-      config = {}
-      events = [:PROPERTY_CHANGE, :LEAVE, :ENTER, :CHANGE, :ENTER_ROW, :PRESS ]
-      block_event = nil
-      _process_args args, config, block_event, events
-      config[:height] ||= 10 # not sure if this should be here
-      _position(config)
-      # if no width given, expand to stack width
-      config[:width] ||= @stack.last.width if @stack.last
-      #config.delete :title
-      useform = nil
-      useform = @form if @current_object.empty?
-
-      w = TabularWidget.new useform, config # NO BLOCK GIVEN
-      if block_given?
-        @current_object << w
-        yield_or_eval &block
-        @current_object.pop
-      end
-      return w
-    end
-    #alias :table :tabular_widget
     # scrollbar attached to the right of a parent object
     def OLDscrollbar *args, &block
       require 'rbcurse/core/widgets/scrollbar'
