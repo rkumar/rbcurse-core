@@ -99,7 +99,7 @@ def confirm text, config={}, &block
     message text
     button_type :yes_no
   end
-  index = tp.run
+  index = mb.run
   return index == 0
 end
 ##
