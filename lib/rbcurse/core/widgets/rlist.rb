@@ -77,7 +77,7 @@ module RubyCurses
 
     # basic listbox constructor
     #
-    def initialize form, config={}, &block
+    def initialize form=nil, config={}, &block
       @focusable = true
       @editable = false
       @sanitization_required = true # cleanup control and non print chars
