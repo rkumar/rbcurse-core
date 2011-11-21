@@ -174,7 +174,7 @@ end
 # @return: hash of strings and booleans for checkboxes and values
 #
 # @deprecated - user should be able to do this quite easily now.
-def get_string_with_options(message, len=20, default="", config={})
+def TODOget_string_with_options(message, len=20, default="", config={})
   title = config["title"] || "Input required"
   input_config = config["input_config"] || {}
   checks = config["checkboxes"] 
