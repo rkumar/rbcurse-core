@@ -52,9 +52,6 @@ class Module
   #  2011-10-2 V1.3.1 Now returning self, so i can chain calls
   def dsl_accessor(*symbols)
     symbols.each { |sym|
-      #open('myfile.out', 'a') { |f|
-          #f.puts "dsl_access #{sym} "
-       #}
       class_eval %{
         def #{sym}(*val)
           if val.empty?
@@ -1053,6 +1050,16 @@ module RubyCurses
          repaint_all true
        end
        self
+     end
+     # a general method for all widgets to override with their favorite or most meaninful event
+     # Ideally this is where the block in the constructor should land up.
+     # @since 1.5.0    2011-11-21 
+     def command *args, &block
+       if @_events.include? :PRESS
+         bind :PRESS, *args, &block
+       else
+         bind :CHANGED, *args, &block
+       end
      end
      ##
     ## ADD HERE WIDGET
