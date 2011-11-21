@@ -4,7 +4,13 @@
 #               Also, stacks and flows objects
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 05.11.11 - 15:13 
-#  Last update: 06.11.11 - 10:57
+#  Last update: 2011-11-21 - 19:28
+#
+#  I hope this slowly does not become an unmaintainable maze like vimsplit
+#
+#      "Simplicity hinges as much on cutting nonessential features as on adding helpful ones."
+#      - Walter Bender
+#
 #  == TODO
 #     add multirow comps like textview and textarea, list
 #     add blocks that make sense like in app
@@ -46,19 +52,6 @@ module RubyCurses
       @_ws_components = []
       @variables = {}
     end
-    def field config={}, &block 
-      w = Field.new nil, config #, &block
-      _position w
-      if block
-        w.bind(:CHANGED, &block)
-      end
-      return w
-    end
-    def label config={}, &block 
-      w = Label.new nil, config, &block
-      _position w
-      return w
-    end
     def blank
       label :text => ""
     end
@@ -73,22 +66,6 @@ module RubyCurses
       #@window.attron(Ncurses.COLOR_PAIR(@color_pair) | @attrib)
       #@window.mvwhline( row, col, FFI::NCurses::ACS_HLINE, width)
       #@window.attron(Ncurses.COLOR_PAIR(@color_pair) | @attrib)
-    end
-    def check config={}, &block
-      w = CheckBox.new nil, config #, &block
-      _position w
-      if block
-        w.bind(:PRESS, &block)
-      end
-      return w
-    end
-    def button config={}, &block
-      w = Button.new nil, config #, &block
-      _position w
-      if block
-        w.bind(:PRESS, &block)
-      end
-      return w
     end
     def radio config={}, &block
       a = config[:group]
@@ -108,6 +85,40 @@ module RubyCurses
       end
       return w
     end
+    # create a shortcut for a class
+    # path is path of file to use in require starting with rbcurse
+    # klass is name of class to instantiate
+  def self.def_widget(path, klass, short=nil)
+    p=""
+     if path
+      p="require \"#{path}\""
+    end
+     short ||= klass.downcase
+      eval %{
+        def #{short}(config={}, &block)
+          #{p}
+          w = #{klass}.new nil, config
+          _position w
+          w.command &block if block_given?
+          return w
+        end
+      }
+  end
+  def_widget "rbcurse/core/widgets/rprogress", "Progress"
+  def_widget "rbcurse/core/widgets/scrollbar", "Scrollbar"
+  def_widget nil, "Label"
+  def_widget nil, "Field"
+  def_widget nil, :CheckBox, 'check'
+  def_widget nil, :Button
+  def_widget nil, :ToggleButton, 'toggle'
+    def menubar &block
+      require 'rbcurse/core/widgets/rmenu'
+      RubyCurses::MenuBar.new &block
+    end
+    def app_header title, config={}, &block
+      require 'rbcurse/core/widgets/applicationheader'
+      header = ApplicationHeader.new @form, title, config, &block
+    end
     # editable text area
     def textarea config={}, &block
       require 'rbcurse/core/widgets/rtextarea'
@@ -122,6 +133,7 @@ module RubyCurses
       #useform = @form if @current_object.empty?
       w = TextArea.new useform, config
       w.width = :expand unless w.width
+      w.height ||= :expand # TODO This has to come before other in stack next one will overwrite.
       _position(w)
       w.height ||= 8 # TODO
       # need to expand to stack's width or flows itemwidth if given
@@ -141,8 +153,8 @@ module RubyCurses
       #useform = @form if @current_object.empty?
       w = TextView.new useform, config
       w.width = :expand unless w.width
+      w.height ||= :expand # TODO This has to come before other in stack next one will overwrite.
       _position(w)
-      w.height ||= 8 # TODO
       # need to expand to stack's width or flows itemwidth if given
       if block
         w.bind(block_event, &block)
@@ -160,11 +172,96 @@ module RubyCurses
       #useform = @form if @current_object.empty?
       w = List.new useform, config
       w.width = :expand unless w.width
+      w.height ||= :expand # TODO We may need to push this before _position so it can be accounted for in stack
       _position(w)
-      w.height ||= 8 # TODO
       # need to expand to stack's width or flows itemwidth if given
       if block
         w.bind(block_event, &block)
+      end
+      return w
+    end
+    # prints pine-like key labels
+    def dock labels, config={}, &block
+      require 'rbcurse/core/widgets/keylabelprinter'
+      klp = RubyCurses::KeyLabelPrinter.new @form, labels, config, &block
+    end
+
+    def link config={}, &block
+      require 'rbcurse/extras/widgets/rlink'
+      events = [ :PRESS,  :LEAVE, :ENTER ]
+      block_event = :PRESS
+      _position(w)
+      config[:highlight_foreground] = "yellow"
+      config[:highlight_background] = "red"
+      toggle = Link.new @form, config
+      if block
+        toggle.bind(block_event, toggle, &block)
+      end
+      return toggle
+    end
+    def menulink config={}, &block
+      require 'rbcurse/extras/widgets/rmenulink'
+      events = [ :PRESS,  :LEAVE, :ENTER ]
+      block_event = :PRESS
+      _position(w)
+      config[:highlight_foreground] = "yellow"
+      config[:highlight_background] = "red"
+      toggle = MenuLink.new @form, config
+      if block
+        toggle.bind(block_event, toggle, &block)
+      end
+      return toggle
+    end
+    def tree config={}, &block
+      require 'rbcurse/core/widgets/rtree'
+      events = [:TREE_WILL_EXPAND_EVENT, :TREE_EXPANDED_EVENT, :TREE_SELECTION_EVENT, :PROPERTY_CHANGE, :LEAVE, :ENTER ]
+      block_event = nil
+      config[:height] ||= 10
+      _position w
+      # if no width given, expand to flows width
+      useform = nil
+      #useform = @form if @current_object.empty?
+      w = Tree.new useform, config, &block
+      return w
+    end
+    # creates a simple readonly table, that allows users to click on rows
+    # and also on the header. Header clicking is for column-sorting.
+    def tabular_widget config={}, &block
+      require 'rbcurse/core/widgets/tabularwidget'
+      events = [:PROPERTY_CHANGE, :LEAVE, :ENTER, :CHANGE, :ENTER_ROW, :PRESS ]
+      block_event = nil
+      config[:height] ||= 10 # not sure if this should be here
+      _position(w)
+      # if no width given, expand to stack width
+      #config.delete :title
+      useform = nil
+
+      w = TabularWidget.new useform, config # NO BLOCK GIVEN
+      if block_given?
+        #@current_object << w
+        yield_or_eval &block
+        #@current_object.pop
+      end
+      return w
+    end
+    alias :table :tabular_widget
+    def vimsplit config={}, &block
+      require 'rbcurse/extras/widgets/rvimsplit'
+      #TODO check these
+      events = [:PROPERTY_CHANGE, :LEAVE, :ENTER ]
+      block_event = nil
+      config[:height] ||= 10
+      _position(w)
+      # if no width given, expand to flows width
+      #config.delete :title
+      useform = nil
+
+      w = VimSplit.new useform, config # NO BLOCK GIVEN
+      if block_given?
+        #@current_object << w
+        #instance_eval &block if block_given?
+        yield w
+        #@current_object.pop
       end
       return w
     end
@@ -176,7 +273,7 @@ module RubyCurses
         # user should specify row and col
         w.row ||= 0
         w.col ||= 0
-        $log.debug "XXX:  LABEL #{w.row} , #{w.col} "
+        #$log.debug "XXX:  LABEL #{w.row} , #{w.col} "
         w.set_form @form if @form # temporary,, only set if not inside an object FIXME
         if w.width == :expand  # calculate from current col, not 0 FIXME
           w.width = FFI::NCurses.COLS-w.col # or take windows width since this could be in a message box
@@ -196,8 +293,12 @@ module RubyCurses
       c = cur[:col] || 0
       w.row = r
       w.col = c
+      # if flow then take flows height, else use dummy value
+      if w.height == :expand
+        w.height = cur[:height] || 8 #or raise "height not known for flow"
+      end
       if cur.is_a? WsStack
-        r += w.height || 1
+        r += w.height || 1   # NOTE, we need to have height for this purpose defined BEFORE calling for list/text
         cur[:row] = r
       else
         wid = cur[:item_width] || w.width || 10
@@ -213,11 +314,8 @@ module RubyCurses
       end
       if cur.is_a? WsFlow
         unless w.height
-          w.height = cur[:height] or raise "height not known for flow"
+          w.height = cur[:height] #or raise "Height not known for flow"
         end
-      end
-      if w.height == :expand
-        w.height = cur[:height] or raise "height not known for flow"
       end
       w.color   ||= cur[:color]
       w.bgcolor ||= cur[:bgcolor]
@@ -296,6 +394,7 @@ module RubyCurses
         last[:col] += config[:margin_left] || 1
         _box = Box.new @form, config # needs to be created first or will overwrite area after others painted
         yield_or_eval &block if block_given?
+        # FIXME last[height] needs to account for row
         h = config[:height] || last[:height] || (last[:row] - r)
         h = 2 if h < 2
         w = config[:width] || last[:width] || 15 # tmp
