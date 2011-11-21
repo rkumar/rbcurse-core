@@ -35,7 +35,7 @@ class SetupMessagebox
       radio :text => "OSX", :value => "OSX", :group => :os
       radio :text => "Window", :value => "Win", :group => :os
       flow :margin_top => 2, :margin_left => 4, :item_width => 15  do
-        button :text => "Ok"
+        button :text => "Ok" do throw :close; end
         button :text => "Cancel"
         button :text => "Apply"
       end
@@ -50,9 +50,11 @@ if $0 == __FILE__
     VER::start_ncurses  # this is initializing colors via ColorMap.setup
     $log = Logger.new((File.join(ENV["LOGDIR"] || "./" ,"rbc13.log")))
     $log.level = Logger::DEBUG
+    catch(:close) do
     tp = SetupMessagebox.new()
     buttonindex = tp.run
     $log.debug "XXX:  MESSAGEBOX retirned #{buttonindex} "
+    end
   rescue => ex
   ensure
     VER::stop_ncurses
