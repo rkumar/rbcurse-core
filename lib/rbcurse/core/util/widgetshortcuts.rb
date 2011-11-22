@@ -217,11 +217,13 @@ module RubyCurses
       events = [:TREE_WILL_EXPAND_EVENT, :TREE_EXPANDED_EVENT, :TREE_SELECTION_EVENT, :PROPERTY_CHANGE, :LEAVE, :ENTER ]
       block_event = nil
       config[:height] ||= 10
-      _position w
       # if no width given, expand to flows width
       useform = nil
       #useform = @form if @current_object.empty?
       w = Tree.new useform, config, &block
+      w.width ||= :expand 
+      w.height ||= :expand # TODO This has to come before other in stack next one will overwrite.
+      _position w
       return w
     end
     # creates a simple readonly table, that allows users to click on rows
@@ -285,6 +287,8 @@ module RubyCurses
         return
 
       end
+      # -------------------------- there is a stack or flow -------------------- #
+      #
       cur = @_ws_active.last
       unless cur
         raise "This should have been handled previously.Somethings wrong, check/untested"
@@ -296,6 +300,7 @@ module RubyCurses
       # if flow then take flows height, else use dummy value
       if w.height == :expand
         w.height = cur[:height] || 8 #or raise "height not known for flow"
+        #alert "setting ht to #{w.height}, #{cur[:height]} , for #{cur} "
       end
       if cur.is_a? WsStack
         r += w.height || 1   # NOTE, we need to have height for this purpose defined BEFORE calling for list/text
@@ -312,6 +317,7 @@ module RubyCurses
           w.width = cur[:width] or raise "Width not known for stack #{cur.class}, #{cur[:width]} "
         end
       end
+      #alert "set width to #{w.width} ,cur: #{cur[:width]} ,iw: #{cur[:item_width]} "
       if cur.is_a? WsFlow
         unless w.height
           w.height = cur[:height] #or raise "Height not known for flow"
@@ -426,6 +432,17 @@ module RubyCurses
       s[:width] = FFI::NCurses.COLS-s[:col] if s[:width] == :expand
       last = @_ws_active.last
       if last
+        if s[:width_pc]
+          if last.is_a? WsStack
+            s[:width] =   (last[:width] * (s[:width_pc].to_i * 0.01)).floor
+          else
+            last[:item_width] =   (last[:width] * (s[:width_pc].to_i* 0.01)).floor
+          end
+        end
+        if s[:height_pc]
+          s[:height] =  ( (last[:height] * s[:height_pc].to_i)/100).floor
+            #alert "item height set as #{s[:height]} for #{s} "
+        end
         if last.is_a? WsStack
           s[:row] += (last[:row] || 0)
           s[:col] += (last[:col] || 0)  
