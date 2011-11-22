@@ -2296,6 +2296,7 @@ module RubyCurses
       @update_command << block
       @args << args
     end
+    alias :command :update_command
     ##
     # value of the variable
     def get_value val=nil
