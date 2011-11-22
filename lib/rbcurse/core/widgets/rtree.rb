@@ -87,6 +87,7 @@ module RubyCurses
 
       
       bind(:PROPERTY_CHANGE){|e| @cell_renderer = nil } # will be recreated if anything changes 2011-09-28 V1.3.1  
+      # FIXME the above is dangerous if user set his own renderer with some values XXX
       init_vars
 
       #if !@list.selected_index.nil? 
@@ -104,8 +105,6 @@ module RubyCurses
       end
       @left_margin ||= 0
       @one_key_selection = true if @one_key_selection.nil?
-      @height ||= 10
-      @width  ||= 30
       @row_offset = @col_offset = 0 if @suppress_borders
       @internal_width = 2 # taking into account borders accounting for 2 cols
       @internal_width = 0 if @suppress_borders # should it be 0 ???
@@ -443,6 +442,8 @@ module RubyCurses
     # FIXME: tree may not be clearing till end see appdirtree after divider movement
     def repaint
       return unless @repaint_required
+      @height ||= 10
+      @width  ||= 30
     
       my_win = @form ? @form.window : @target_window
       @graphic = my_win unless @graphic
@@ -762,6 +763,11 @@ module RubyCurses
 
       }
       return found
+    end
+    # default block
+    # @since 1.5.0 2011-11-22 
+    def command *args, &block
+      bind :TREE_WILL_EXPAND_EVENT, *args, &block
     end
     private
     # please do not rely on this yet, name could change
