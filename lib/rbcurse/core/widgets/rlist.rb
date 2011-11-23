@@ -220,6 +220,21 @@ module RubyCurses
       @list = []
       init_vars
     end
+    # def_delegators :@list, :insert, :remove_all, :delete_at, :include?, :each, :values, :size
+    %w[ insert clear delete_at []= << ].each { |e| 
+      eval %{
+      def #{e}(*args)
+         @list.send(:#{e}, *args)
+         @widget_scrolled = true
+         @repaint_required = true
+      end
+      }
+    }
+    def append text
+      @list.push text
+      @widget_scrolled = true
+      @repaint_required = true
+    end
     # avoid using "row", i'd rather stick with "index" and "value".
     alias :current_row :current_value
     alias :text :current_value  # thanks to shoes, not sure how this will impact since widget has text.
