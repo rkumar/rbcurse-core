@@ -659,6 +659,8 @@ module RubyCurses
     # NOTE state takes care of this and is set by form
     attr_accessor :focussed  # is this widget in focus, so they may paint differently
 
+    dsl_accessor :height_pc, :width_pc # tryin out in stacks and flows 2011-11-23 
+
     def initialize aform, aconfig={}, &block
       # I am trying to avoid passing the nil when you don't want to give a form.
       # I hope this does not create new issues 2011-11-20 
