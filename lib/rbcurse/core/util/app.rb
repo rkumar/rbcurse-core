@@ -150,8 +150,12 @@ module RubyCurses
       @window.wrefresh
       Ncurses::Panel.update_panels
       @break_key = ?\C-q.getbyte(0)
-      while((ch = @window.getchar()) != @quit_key )
-        break if ch == @break_key
+      while((ch = @window.getchar()) != 999 )
+        #break if ch == @break_key
+        if ch == @break_key || ch == @quit_key
+          stopping = @window.fire_close_handler
+          break if stopping.nil? || stopping
+        end
 
         if @keyblock
           str = keycode_tos ch
@@ -159,7 +163,17 @@ module RubyCurses
         end
 
         yield ch if block # <<<----
-        @form.handle_key ch
+        # this is what the user should have control ove. earlier we would put this in
+        # a try catch block so user could do what he wanted with the error. Now we
+        # need to get it to him somehow, perhaps through a block or on_error event
+        begin
+          @form.handle_key ch
+        rescue => err
+          alert err.to_s
+          $log.debug( "handle_key rescue reached ")
+          $log.debug( err) 
+          $log.debug(err.backtrace.join("\n")) 
+        end
         #@form.repaint # was this duplicate ?? handle calls repaint not needed
         @window.wrefresh
       end
@@ -1030,9 +1044,8 @@ module RubyCurses
           #$error_message.update_command { @message.set_value($error_message.value) }
           if block
             begin
-              #yield(self, @window, @form)
-              #instance_eval &block if block_given?
               yield_or_eval &block if block_given? # modified 2010-11-17 20:36 
+              # how the hell does a user trap exception if the loop is hidden from him ? FIXME
               loop
             rescue => ex
               $log.debug( "APP.rb rescue reached ")
