@@ -1,0 +1,88 @@
+1|clo|bug|X3|messagebox label print overlaps left border
+2|clo|enh|P4|Field: methods not chainable
+3|clo|bug|P3|button crash if mnemo not in text
+4|clo|enh|P3|link mnemo should not have Alt
+8|ope|bug|P5|container keep repainting all
+9|clo|enh|P3|menu bar keys
+10|ope|enh|P4|combo keys
+11|clo|bug|X3|hand written DSL defs dont fire prop handler
+12|clo|bug|X4|textview on_enter
+13|clo|enh|P3|traversal of listboxes
+14|clo|enh|P3|check keys Alt-Sh-O, Alt-[. Add some missing
+15|clo|bug|P3|2 keys simulaneously with Alt-O or Alt-[
+16|clo|enh|P3|put key combins in arrays and match
+17|ope|bug|P4|selected_item of list broken
+18|clo|enh|P3|valid_range for Field
+19|clo|bug|X2|tree can print beyond right margin
+20|ope|bug|P4|cannot bind_key using Alt key and another. 
+21|sta|enh|P2|make code from App common so reusable in other examples
+22|ope|bug|P3|widget hide (visible false) does not hide
+23|clo|bug|P3|listbox color changes not reflecting in cell_renderer
+24|clo|bug|P3|Table: delete row should reflect focussed_index.
+25|clo|enh|X3|#cleanup add_cols rows_panned #urgent
+26|ope|fea|P5|App to have a layout abject 
+27|ope|bug|P4|#fix testvimsplit not sizing STACK correctly
+28|clo|enh|P1|FieldValidationException should rollback change,
+29|clo|enh|X1|return self from dsl_prop and dsl_accessor,
+30|can|bug|P3|on_leave has validations that should be separated,
+31|clo|enh|X1|#listbox data more accessible from LB class,
+32|ope|enh|P4| #tree many empty methods in #treemodel
+33|clo|enh|X3|display_menu shd furhter glob on tab
+34|clo|enh|X3|display_menu large list need scrolling
+35|clo|bug|X3|alert message getting truncated after 2 lines
+36|clo|fea|X3|use j k h l for navigation if unused by a button of widget
+37|ope|enh|P4|simplify #vimsplit calculation
+38|clo|bug|X3|#tabbedpane when fire, state of old tab discrep
+39|ope|bug|P5|tabularwidget truncate needed left_margin
+40|clo|bug|X3|%textarea C-e goes to last char, not one after that
+41|clo|bug|X3|M-2 did not work in textarea 
+42|ope|bug|P5|append_to_kill, yank not working in %listbox
+43|clo|bug|X1|rt arrow and backspace issue ask(), dbdemo save #urgent
+44|clo|bug|P1|need to hide window after ask(), dbdemo save
+45|clo|bug|X3|directory list, after pressing Enter on ../ focus on header
+46|clo|enh|X3|textview repaints all even when no scrolling
+47|ope|enh|P4|vieditable and io.rb need to create statuswindow and take input
+48|clo|bug|X3|say not working after ask hides window
+49|ope|enh|P5|resultsetview needs way to specify key fields
+50|ope|bug|P5|sort on tabularwidget with resultset error sometimes
+51|clo|bug|X2|TabbedPane's TabbedButtons rely on window being 0,0
+52|ope|bug|P4|%label set_label may have to calculate at repaint esp in app
+53|clo|bug|X3|%App. if shortcut used outside stack or flow, dont attach form or set
+54|clo|bug|X3|inside newtabbedpane button mnemonic and underline not happening #fix
+55|ope|enh|P4|Have a module Expandable for those that are multiline
+56|ope|enh|P4|DRY up titles and borders
+57|clo|enh|X2|dont put default for color and bg in init of Wid or field
+58|clo|enh|X2|Fields display_length should be width or made alias
+60|ope|enh|P4|fields width, display_len is for input area, not label plus input
+61|ope|bug|P4|test2.rb color change not affecting text objects
+62|clo|bug|X2|when using chunks, movement crashes C-e etc
+63|clo|bug|X2|chunks in textview, when scrolling earlier lines shown
+64|clo|enh|X2|abstract chunk and parse into Format class
+65|ope|enh|P3|clean up window.rb prv_printstring etc
+66|clo|bug|X2|colorparser needs to carryover, and :reset
+67|clo|enh|X3|several places doing attrib conversion in window, use get_attrib
+68|clo|bug|X4|move chunk parsing from window.rb to chunk as in textview
+69|ope|bug|P2|C-u not available for textpad and view. how to
+70|ope|enh|P4|confusion between renderer and color_parser
+71|clo|enh|X1|redo combo with basiclist or new popup
+72|clo|enh|X2|redo label simplify, one line only
+73|clo|bug|X2|rbasiclist needs to reduce selected symbol 
+74|ope|enh|P3|list and others should just calculate longest in list
+75|ope|enh|P4|textpad to allow append << at some stage
+76|clo|enh|X3|appmethods.rb may need to go into lib/common or somewhere else
+77|clo|enh|X2|switch messagebox old and new and change rdialog
+78|clo|enh|X1|switch tabbedpane classes and update examples
+79|ope|enh|P3|cleanup button getpaint etc
+80|ope|enh|P3|use @focusable in form to simplify
+81|clo|bug|X2|field label mnemonic not being set
+82|ope|bug|P2|new messagebox need default_button option
+83|clo|enh|X2|check statusline usage, should use formatted only
+84|clo|bug|X2|dbdemo M-z not doing anything
+85|ope|bug|P2|combo symbol when label, see newmessagebox
+86|ope|bug|P2|combo let caller suggest width and use if longer than longest item
+87|ope|enh|P3|praps global setting lists etc use SPC for scroll or selection
+88|ope|enh|P2|keep working on wsshortcuts as in testws..2.rb
+89|ope|bug|P2|messagebox, see about background for zterm-256 as in header
+90|clo|bug|X2|messagebox: message sets width, even if user has specified
+91|clo|enh|X2|messagebox: default row col cannot be 0,0
+92|ope|enh|P3|messagebox: if text longer than display then can we split
