@@ -298,8 +298,15 @@ module RubyCurses
       w.row = r
       w.col = c
       # if flow then take flows height, else use dummy value
+      if w.height_pc
+        w.height =       ( (cur[:height] * w.height_pc.to_i)/100).floor
+      end
       if w.height == :expand
-        w.height = cur[:height] || 8 #or raise "height not known for flow"
+        if cur.is_a? WsFlow
+          w.height = cur[:height] || 8 #or raise "height not known for flow"
+        else
+          w.height = cur[:item_height] || 8 #or raise "height not known for flow"
+        end
         #alert "setting ht to #{w.height}, #{cur[:height]} , for #{cur} "
       end
       if cur.is_a? WsStack
@@ -434,13 +441,20 @@ module RubyCurses
       if last
         if s[:width_pc]
           if last.is_a? WsStack
-            s[:width] =   (last[:width] * (s[:width_pc].to_i * 0.01)).floor
+            s[:width] =           (last[:width] * (s[:width_pc].to_i * 0.01)).floor
           else
+            # i think this width is picked up by next stack in this flow
             last[:item_width] =   (last[:width] * (s[:width_pc].to_i* 0.01)).floor
           end
         end
         if s[:height_pc]
-          s[:height] =  ( (last[:height] * s[:height_pc].to_i)/100).floor
+          if last.is_a? WsFlow
+            s[:height] =       ( (last[:height] * s[:height_pc].to_i)/100).floor
+          else
+            # this works only for flows within stacks not for an object unless
+            # you put a single object in a flow
+            s[:item_height] =  ( (last[:height] * s[:height_pc].to_i)/100).floor
+          end
             #alert "item height set as #{s[:height]} for #{s} "
         end
         if last.is_a? WsStack
