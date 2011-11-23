@@ -878,5 +878,36 @@ module VER
         def_delegators :@bottomline, :ask, :say, :agree, :choose
       end
     end
+    def close_command *args, &block
+      @close_command ||= []
+      @close_args ||= []
+      @close_command << block
+      @close_args << args
+    end
+    alias :command :close_command
+
+    # set a single command to confirm whether window shoud close or not
+    # Block should return true or false for closing or not
+    def confirm_close_command *args, &block
+      @confirm_close_command = block
+      @confirm_close_args    = args
+    end
+
+    # need a way of lettign user decide whether he wishes to close 
+    # in which case we return false. However, there could be several commands
+    # mapped. how do we know which is the one that has this authority
+    def fire_close_handler
+      if @confirm_close_command
+        comm = @confirm_close_command
+        ret = comm.call(self, *@confirm_close_args) 
+        return ret unless ret # only return if false returned
+      end
+      if @close_command
+        @close_command.each_with_index do |comm, ix|
+          comm.call(self, *@close_args[ix]) if comm
+        end
+      end
+      return true
+    end
 end
 end
