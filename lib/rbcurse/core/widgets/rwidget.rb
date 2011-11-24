@@ -1834,8 +1834,6 @@ module RubyCurses
       @form = form
       @buffer = String.new
       #@type=config.fetch("type", :varchar)
-      @display_length = 20
-      @maxlen = @display_length
       @row = 0
       @col = 0
       #@bgcolor = $def_bg_color
@@ -1848,6 +1846,8 @@ module RubyCurses
       @_events ||= []
       @_events.push(:CHANGE)
       super
+      @display_length ||= 20
+      @maxlen ||= @display_length
     end
     def init_vars
       @pcol = 0                    # needed for horiz scrolling
@@ -1893,6 +1893,8 @@ module RubyCurses
     # @return [Fixnum] 0 if okay, -1 if not editable or exceeding length
     def putch char
       return -1 if !@editable 
+      raise " buffer is nil " unless @buffer
+      raise " maxlen is nil " unless @maxlen
       return -1 if !@overwrite_mode and @buffer.length >= @maxlen
       if @chars_allowed != nil
         return if char.match(@chars_allowed).nil?
@@ -2544,7 +2546,9 @@ module RubyCurses
     # NOTE: Some buttons like checkbox directly call mnemonic, so if they have no form
     # then this processing does not happen
 
-    def mnemonic char
+    def mnemonic char=nil
+      return @mnemonic unless char  # added 2011-11-24 so caller can get mne
+
       $log.error "ERROR WARN #{self} COULD NOT SET MNEMONIC since form NIL" if @form.nil?
       unless @form
         @when_form ||= []
