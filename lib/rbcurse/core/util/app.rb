@@ -150,33 +150,45 @@ module RubyCurses
       @window.wrefresh
       Ncurses::Panel.update_panels
       @break_key = ?\C-q.getbyte(0)
-      while((ch = @window.getchar()) != 999 )
-        #break if ch == @break_key
-        if ch == @break_key || ch == @quit_key
-          stopping = @window.fire_close_handler
-          break if stopping.nil? || stopping
-        end
+      # added this extra loop since from some places we exit using throw :close
+      # amd that was in a much higher place, and was getting us right out, with
+      # no chance of user canceling quit. This extra loop allows us to remain
+      # added on 2011-11-24 
+      while true
+        catch :close do
+          while((ch = @window.getchar()) != 999 )
+            #break if ch == @break_key
+            if ch == @break_key || ch == @quit_key
+              #stopping = @window.fire_close_handler
+              #break if stopping.nil? || stopping
+              break
+            end
 
-        if @keyblock
-          str = keycode_tos ch
-          @keyblock.call(str.gsub(/-/, "_").to_sym) # not used ever
-        end
+            if @keyblock
+              str = keycode_tos ch
+              @keyblock.call(str.gsub(/-/, "_").to_sym) # not used ever
+            end
 
-        yield ch if block # <<<----
-        # this is what the user should have control ove. earlier we would put this in
-        # a try catch block so user could do what he wanted with the error. Now we
-        # need to get it to him somehow, perhaps through a block or on_error event
-        begin
-          @form.handle_key ch
-        rescue => err
-          alert err.to_s
-          $log.debug( "handle_key rescue reached ")
-          $log.debug( err) 
-          $log.debug(err.backtrace.join("\n")) 
-        end
-        #@form.repaint # was this duplicate ?? handle calls repaint not needed
+            yield ch if block # <<<----
+            # this is what the user should have control ove. earlier we would put this in
+            # a try catch block so user could do what he wanted with the error. Now we
+            # need to get it to him somehow, perhaps through a block or on_error event
+            begin
+              @form.handle_key ch
+            rescue => err
+              alert err.to_s
+              $log.debug( "handle_key rescue reached ")
+              $log.debug( err) 
+              $log.debug(err.backtrace.join("\n")) 
+            end
+            #@form.repaint # was this duplicate ?? handle calls repaint not needed
+            @window.wrefresh
+          end
+        end # catch
+        stopping = @window.fire_close_handler
         @window.wrefresh
-      end
+        break if stopping.nil? || stopping
+      end # while
     end
     # if calling loop separately better to call this, since it will shut off ncurses
     # and print error on screen.
@@ -1066,7 +1078,7 @@ module RubyCurses
             #@close_on_terminate = true
             self
           end #if block
-        end
+        end # :close
       end
     end
     # TODO
