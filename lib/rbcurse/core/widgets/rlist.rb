@@ -220,7 +220,7 @@ module RubyCurses
       @list = []
       init_vars
     end
-    # def_delegators :@list, :insert, :remove_all, :delete_at, :include?, :each, :values, :size
+    def_delegators :@list, :include?, :each, :values, :size
     %w[ insert clear delete_at []= << ].each { |e| 
       eval %{
       def #{e}(*args)
