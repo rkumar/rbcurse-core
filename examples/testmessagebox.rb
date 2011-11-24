@@ -31,7 +31,7 @@ if $0 == __FILE__
         l = List.new  nil, :row => 2, :col => 5, :list => %w[john tim lee wong rahul edward why chad andy], 
           :selection_mode => :multiple, :height => 10, :width => 20 , :selected_color => :green, :selected_bgcolor => :white, :selected_indices => [2,6], :name => nn
        #default_values %w[ lee why ]
-      @mb = MessageBox.new :width => 20, :height => 18 do
+      @mb = MessageBox.new :width => 30, :height => 18 do
         title "Select a name"
         button_type :ok_cancel
         item Label.new :row => 1, :col => 1, :text => "Enter your name:"
