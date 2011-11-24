@@ -907,6 +907,8 @@ module VER
           comm.call(self, *@close_args[ix]) if comm
         end
       end
+      @close_command = nil
+      @close_args = nil
       return true
     end
 end
