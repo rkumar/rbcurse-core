@@ -70,10 +70,16 @@ def get_string label, config={}
   field_config[:attr] = :reverse
   field_config[:maxlen] ||= config[:maxlen]
   field_config[:default] ||= config[:default]
+  field_config[:default] = field_config[:default].chomp if field_config[:default]
   field_config[:name] = :name
   #field_config[:display_length] ||= 50  # i want it to extend since i don't know the actual width
   field_config[:width] ||= 50  # i want it to extend since i don't know the actual width
 
+  defwid = config[:default].nil? ? 30 : config[:default].size + 13
+  w = [label.size, defwid, field_config[:width]+13 ].max
+  config[:width] ||= w
+  $log.debug "XXX:  FIELD SIZE #{w} "
+  $log.debug "XXX:  FIELD CONFIG #{field_config} "
   tp = MessageBox.new config do
     button_type :ok_cancel
     item Label.new nil, label_config
