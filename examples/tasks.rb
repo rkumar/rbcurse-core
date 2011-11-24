@@ -20,12 +20,26 @@ App.new do
     flow do
       button :text => "&Save" do
         w = @form.by_name["tasklist"]
-        w << "#{pri.text}. #{task.text}" 
+        w << "#{pri.text}. #{task.text}" unless task.text == ""
       end
-      button :text => "&Clear"
+      button :text => "&Clear" do
+        task.text = ""
+      end
     end
     lb = listbox :list => alist, :title => "[ todos ]", :height_pc => 80, :name => "tasklist"
-  end
+    lb.bind_key(?d){ 
+      if confirm("Delete #{lb.current_value} ?")
+        lb.delete_at lb.current_index 
+      end
+    }
+    lb.bind_key(?e){ 
+      if ((value = get_string("Edit Task:", :width => 80, :default => lb.current_value)) != nil)
+        lb[lb.current_index]=value
+      end
+    }
+  end # stack
+  s = status_line
+  #d = dock
     #label({:text => "checking overwrite from list", :row => 10, :col => 60})
     #label({:text => "checking overwrite from list 1", :row => 11, :col => 60})
   label({:text => "Press F4 and F5 to test popup, space or enter to select", :row => Ncurses.LINES-1, :col => 0})
