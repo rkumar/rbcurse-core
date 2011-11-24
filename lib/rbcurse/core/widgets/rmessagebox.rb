@@ -131,8 +131,8 @@ module RubyCurses
     # @param [String] text to display
     def message message # yield label or field being used for display for further customization
       @suggested_h = @height || 10
-      @suggested_w = @width || 60
       message_col = 5
+      @suggested_w = @width || [message.size + 8 + message_col , FFI::NCurses.COLS-2].min
       r = 3
       len = message.length
       @suggested_w = len + 8 + message_col if len < @suggested_w - 8 - message_col
@@ -211,7 +211,8 @@ module RubyCurses
           rescue => err
             $log.debug( err) if err
             $log.debug(err.backtrace.join("\n")) if err
-            alert "Got an exception in NewMessagebox: #{err}. Check log"
+            alert "Exception in Messagebox: #{err}. Check log"
+            @window.refresh # otherwise the window keeps showing (new FFI-ncurses issue)
             $error_message.value = ""
           ensure
           end
@@ -266,14 +267,12 @@ module RubyCurses
       _bgcolor = @bgcolor
       names.each_with_index do |bname, ix|
         text = bname
-        #underline = @underlines[ix] if !@underlines.nil?
 
         button = Button.new @form do
           text text
           name bname
           row brow
           col bcol
-          #underline underline
           highlight_background $reversecolor 
           color _color
           bgcolor _bgcolor
@@ -293,6 +292,10 @@ module RubyCurses
             throw(:close, @selected_index)
           end
         }
+        # we map the key of the button to the alphabet so user can press just the mnemonic, and not
+        # just the Alt combination.
+        mn = button.mnemonic
+        @form.bind_key(mn.downcase) { button.fire} if mn
         button_ct += 1
         bcol += text.length+6
       end
