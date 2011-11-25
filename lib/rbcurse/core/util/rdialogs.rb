@@ -69,14 +69,16 @@ def get_string label, config={}
   field_config[:col] ||= 2
   field_config[:attr] = :reverse
   field_config[:maxlen] ||= config[:maxlen]
+  field_config[:display_length] ||= config[:display_length]
   field_config[:default] ||= config[:default]
   field_config[:default] = field_config[:default].chomp if field_config[:default]
   field_config[:name] = :name
   #field_config[:display_length] ||= 50  # i want it to extend since i don't know the actual width
-  field_config[:width] ||= 50  # i want it to extend since i don't know the actual width
+  #field_config[:width] ||= 50  # i want it to extend since i don't know the actual width
+  field_config[:width] ||= (field_config[:display_length] || 50)
 
   defwid = config[:default].nil? ? 30 : config[:default].size + 13
-  w = [label.size, defwid, field_config[:width]+13 ].max
+  w = [label.size + 8, defwid, field_config[:width]+13 ].max
   config[:width] ||= w
   $log.debug "XXX:  FIELD SIZE #{w} "
   $log.debug "XXX:  FIELD CONFIG #{field_config} "
@@ -327,7 +329,7 @@ def confirm_window text, aconfig={}, &block
   ewin.printstring r+1, c, "[y/n]", color_pair
   ewin.wrefresh
   #retval = false
-  retval = :NO # consistent with confirm
+  retval = :NO # consistent with confirm  # CHANGE TO TRUE FALSE NOW FIXME
   begin
     ch =  ewin.getchar 
     retval = :YES if ch.chr == 'y' 
