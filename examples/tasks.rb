@@ -2,6 +2,7 @@ require 'rbcurse/core/util/app'
 require 'rbcurse/core/widgets/rlist'
 
 App.new do 
+  @default_prefix = "_"
   header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Task List", :text_right =>"New Improved!"
 
   message "Press F10 or qq to escape from here"
@@ -11,25 +12,17 @@ App.new do
   #flow :margin_top => 1, :item_width => 50 , :height => FFI::NCurses.LINES-2 do
   stack :margin_top => 1, :width => :expand, :height => FFI::NCurses.LINES-2 do
 
-    task = field :label => "    Task:", :display_length => 50, :maxlen => 80, :bgcolor => :cyan, :color => :black
-    pri = field :label => "Priority:", :display_length => 1, :maxlen => 1, :type => :integer, 
-      :valid_range => 1..9, :bgcolor => :cyan, :color => :black , :default => "5"
-    pri.overwrite_mode = true
+    #task = field :label => "    Task:", :display_length => 50, :maxlen => 80, :bgcolor => :cyan, :color => :black
+    #pri = field :label => "Priority:", :display_length => 1, :maxlen => 1, :type => :integer, 
+      #:valid_range => 1..9, :bgcolor => :cyan, :color => :black , :default => "5"
+    #pri.overwrite_mode = true
     # u,se voerwrite mode for this TODO and catch exception
 
-    flow do
-      button :text => "&Save" do
-        w = @form.by_name["tasklist"]
-        w << "#{pri.text}. #{task.text}" unless task.text == ""
-      end
-      button :text => "&Clear" do
-        task.text = ""
-      end
-    end
-    lb = listbox :list => alist, :title => "[ todos ]", :height_pc => 80, :name => "tasklist"
+    lb = listbox :list => alist.sort, :title => "[ todos ]", :height_pc => 80, :name => "tasklist"
     lb.bind_key(?d){ 
       if confirm("Delete #{lb.current_value} ?")
         lb.delete_at lb.current_index 
+        # TODO reposition cursor at 0. use list_data_changed ?
       end
     }
     lb.bind_key(?e){ 
@@ -37,26 +30,106 @@ App.new do
         lb[lb.current_index]=value
       end
     }
+    lb.bind_key(?A){ 
+
+      # ADD
+    task = Field.new :label => "    Task:", :display_length => 50, :maxlen => 80, :bgcolor => :cyan, :color => :black,
+    :name => 'task'
+    pri = Field.new :label => "Priority:", :display_length => 1, :maxlen => 1, :type => :integer, 
+      :valid_range => 1..9, :bgcolor => :cyan, :color => :black , :default => "5", :name => 'pri'
+    pri.overwrite_mode = true
+    config = {}
+    config[:width] = 70
+    config[:title] =  "New Task"
+    tp = MessageBox.new config do
+      item task
+      item pri
+      button_type :ok_cancel
+    end
+    index = tp.run
+    if index == 0 # OK
+      # when does this memory get released ??? XXX 
+      val =  @default_prefix + tp.form.by_name['pri'].text + ". " + tp.form.by_name['task'].text 
+      w = @form.by_name["tasklist"]
+      _l = w.list
+      _l << val
+      w.list(_l.sort)
+    else # CANCEL
+      #return nil
+    end
+    }
+    lb.bind_key(?D){ 
+      line = lb.current_value
+      p = line[1,1].to_i
+      if p < 9
+        p += 1 
+        line[l,1] = p.to_s
+        lb[lb.current_index]=line
+        lb.list(lb.list.sort)
+      end
+    }
+    lb.bind_key(?I){ 
+      line = lb.current_value
+      p = line[1,1].to_i
+      if p > 1
+        p -= 1 
+        line[1,1] = p.to_s
+        lb[lb.current_index]=line
+        lb.list(lb.list.sort)
+        # how to get the new row of that item and position it there. so one
+        # can do consecutive increases or decreases
+        # cursor on old row, but current has become zero. FIXME
+        # Maybe setform_row needs to be called
+      end
+    }
+    lb.bind_key(?x){ 
+      line = lb.current_value
+      line[0,1] = "x"
+      lb[lb.current_index]=line
+      lb.list(lb.list.sort)
+    }
+    lb.bind_key(?!){ 
+      line = lb.current_value.chomp
+      value = get_string("Flag for #{line}. Enter one character.", :maxlen => 1, :display_length => 1)
+      #if ((value = get_string("Edit Task:", :width => 80, :default => lb.current_value)) != nil)
+        #lb[lb.current_index]=value
+      #end
+      if value && value[0,1] != " "
+        line[0,1] = value[0,1]
+        lb[lb.current_index]=line
+        lb.list(lb.list.sort)
+      end
+    }
   end # stack
   s = status_line
-  #d = dock
-    #label({:text => "checking overwrite from list", :row => 10, :col => 60})
-    #label({:text => "checking overwrite from list 1", :row => 11, :col => 60})
-  label({:text => "Press F4 and F5 to test popup, space or enter to select", :row => Ncurses.LINES-1, :col => 0})
 
-  @form.bind_key(FFI::NCurses::KEY_F4) { row = lb.current_index+lb.row; col=lb.col+lb.current_value.length+1;  ret = popuplist(%w[ andy berlioz strauss tchaiko matz beethoven], :row => row, :col => col, :title => "Names", :bgcolor => :blue, :color => :white) ; alert "got #{ret} "}
-  @form.bind_key(FFI::NCurses::KEY_F5) {  list = %x[ls].split("\n");ret = popuplist(list, :title => "Files"); alert "Got #{ret} #{list[ret]} " }
+    keyarray = [
+      ["F1" , "Help"], ["F10" , "Exit"], 
+      ["F2", "Menu"], ["F4", "View"],
+      ["d", "delete item"], ["e", "edit item"],
+      ["A", "add item"], ["x", "close item"],
+      ["I", "inc priority"], ["D", "dec priority"],
+
+      ["M-x", "Command"], nil
+    ]
+
+    gw = get_color($reversecolor, 'green', 'black')
+    @adock = dock keyarray, { :row => Ncurses.LINES-2, :footer_color_pair => $datacolor, 
+      :footer_mnemonic_color_pair => gw }
 
   @window.confirm_close_command do
     confirm "Sure you wanna quit?"
   end
   @window.close_command do
     w = @form.by_name["tasklist"]
-    File.open(file, 'w') {|f| 
-      w.list.each { |e|  
-        f.puts(e) 
+    if confirm("Save tasks?")
+      system("cp #{file} #{file}.bak")
+      File.open(file, 'w') {|f| 
+        w.list.each { |e|  
+          f.puts(e) 
+        } 
       } 
-    } 
+    end
   end
   
 end # app
