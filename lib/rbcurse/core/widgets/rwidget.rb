@@ -822,7 +822,7 @@ module RubyCurses
       @curpos = col1 || 0 # 2010-01-14 21:02 
       #@form.col = @col + @col_offset + @curpos
       c = @col + @col_offset + @curpos
-      $log.warn " #{@name} empty set_form_col #{c}, #{@form} "
+      $log.warn " #{@name} empty set_form_col #{c}, curpos #{@curpos}  , #{@col} + #{@col_offset} #{@form} "
       setrowcol nil, c
     end
     def hide
@@ -1352,7 +1352,12 @@ module RubyCurses
         f.set_form_row # added 2011-10-5 so when embedded in another form it can get the cursor
         f.set_form_col # this can wreak havoc in containers, unless overridden
 
-        f.curpos = 0 # why was this, okay is it because of prev obj's cursor ?
+        # next line in field changes cursor position after setting form_col
+        # resulting in a bug.  2011-11-25 
+        # maybe it is in containers or tabbed panes and multi-containers
+        # where previous objects col is still shown. we cannot do this after 
+        # setformcol
+        #f.curpos = 0 # why was this, okay is it because of prev obj's cursor ?
         repaint
         @window.refresh
       else
@@ -1893,9 +1898,7 @@ module RubyCurses
     # @return [Fixnum] 0 if okay, -1 if not editable or exceeding length
     def putch char
       return -1 if !@editable 
-      raise " buffer is nil " unless @buffer
-      raise " maxlen is nil " unless @maxlen
-      return -1 if !@overwrite_mode and @buffer.length >= @maxlen
+      return -1 if !@overwrite_mode && @buffer.length >= @maxlen
       if @chars_allowed != nil
         return if char.match(@chars_allowed).nil?
       end
@@ -1908,6 +1911,7 @@ module RubyCurses
         @buffer.insert(@curpos, char)
       end
       oldcurpos = @curpos
+      $log.warn "XXX:  FIELD CURPOS #{@curpos} "
       @curpos += 1 if @curpos < @maxlen
       @modified = true
       #$log.debug " FIELD FIRING CHANGE: #{char} at new #{@curpos}: bl:#{@buffer.length} buff:[#{@buffer}]"
@@ -2255,6 +2259,7 @@ module RubyCurses
         return getvalue()
       else
         return unless val # added 2010-11-17 20:11, dup will fail on nil
+        return unless val[0]
         s = val[0].dup
         set_buffer(s)
       end
