@@ -33,6 +33,7 @@ module RubyCurses
     attr_reader :form
     attr_reader :window
     dsl_accessor :button_type
+    dsl_accessor :default_button
     #
     # a message to be printed, usually this will be the only thing supplied
     # with an OK button. This should be a short string, a label will be used
@@ -285,6 +286,7 @@ module RubyCurses
         @action_buttons << button 
         button.form = @form
         button.override_graphic  @graphic
+        button.default_button(true) if (@default_button && @default_button == ix)
         index = button_ct
         tpp = self
         button.command { |form| @selected_index = index; @stop = true; 
