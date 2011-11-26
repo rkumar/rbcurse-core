@@ -359,9 +359,11 @@ module RubyCurses
       end
       $multiplier = 0
     end
+    # 
+    # triggered on hitting ENTER button
+    #
     def fire_action_event
       require 'rbcurse/core/include/ractionevent'
-      # should have been callled :ACTION_EVENT !!!
       fire_handler :PRESS, ActionEvent.new(self, :PRESS, text)
     end
     # get a keystroke from user and go to first item starting with that key
