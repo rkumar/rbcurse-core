@@ -58,7 +58,9 @@ module ViEditable
     bind_key( ?\C-r ) { @undo_handler.redo if @undo_handler }
     bind_key( [?y, ?y] , :kill_ring_save ) 
     bind_key( ?p, :yank ) # paste after this line
-    bind_key( ?P ) { yank(@current_index - 1) } # should be before this line
+    #bind_key( ?P ) { yank(@current_index - 1) } # should be before this line
+    # seems -1 was pasting 2 lines before
+    bind_key( ?P ) { yank(@current_index - 0) } # should be before this line
     bind_key(?\w, :forward_word)
     bind_key(?\M-y, :yank_pop)
     bind_key(?\C-y, :yank)
@@ -91,6 +93,7 @@ module ViEditable
     fire_handler :CHANGE, InputDataEvent.new(0,oldline.length, self, :DELETE_LINE, lineno, oldline)     #  2008-12-24 18:34 
     fire_handler :CHANGE, InputDataEvent.new(0,str.length, self, :INSERT_LINE, lineno, str)
     @repaint_required = true
+    @widget_scrolled = true
   end
   ##
   # insert a line 
@@ -108,6 +111,7 @@ module ViEditable
     @list.insert lineno, str
     ## added handler on 2010-05-23 11:46 - undo works - tested in testlistbox.rb
     fire_handler :CHANGE, InputDataEvent.new(0,str.length, self, :INSERT_LINE, lineno, str)
+    @widget_scrolled = true
     @repaint_required = true
   end
   ##
