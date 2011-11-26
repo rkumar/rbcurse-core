@@ -103,6 +103,7 @@ end
 # FIXME focus hould fall on default button so ENTER does not fire first one.
 def confirm text, config={}, &block
   title = config['title'] || "Confirm"
+  config[:default_button] ||= 0
   #instance_eval &block if block_given?
   mb = RubyCurses::MessageBox.new config  do
     title title
@@ -330,11 +331,12 @@ def confirm_window text, aconfig={}, &block
   ewin.printstring r, c, text, color_pair
   ewin.printstring r+1, c, "[y/n]", color_pair
   ewin.wrefresh
-  #retval = false
-  retval = :NO # consistent with confirm  # CHANGE TO TRUE FALSE NOW FIXME
+  #retval = :NO # consistent with confirm  # CHANGE TO TRUE FALSE NOW FIXME
+  retval = false
   begin
     ch =  ewin.getchar 
-    retval = :YES if ch.chr == 'y' 
+    #retval = :YES if ch.chr == 'y' 
+    retval = (ch.chr == 'y' )
   ensure
     ewin.destroy
   end
