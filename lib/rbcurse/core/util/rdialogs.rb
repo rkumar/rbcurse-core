@@ -84,6 +84,7 @@ def get_string label, config={}
   $log.debug "XXX:  FIELD CONFIG #{field_config} "
   tp = MessageBox.new config do
     button_type :ok_cancel
+    default_button 0
     item Label.new nil, label_config
     item Field.new nil, field_config
   end
@@ -99,6 +100,7 @@ end
 # new version using new messagebox
 # @param [String] question
 # @return [Boolean] true or false
+# FIXME focus hould fall on default button so ENTER does not fire first one.
 def confirm text, config={}, &block
   title = config['title'] || "Confirm"
   #instance_eval &block if block_given?
