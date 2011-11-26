@@ -29,6 +29,9 @@ module Io
   ERROR_COLOR_PAIR = 7
                                  
 
+def __create_footer_window h = 2 , w = Ncurses.COLS, t = Ncurses.LINES-2, l = 0
+  ewin = VER::Window.new(h, w , t, l)
+end
 # complex version of get_string that allows for trappng of control character
 # such as C-c and C-h and TAB for completion
 # validints contains int codes not chars.
@@ -38,10 +41,60 @@ module Io
   # and handle all editing events on it.
   # @return status_code, string (0 if okay, 7 if help asked for, -1 for abort
   #def rbgetstr(win, r, c, prompt, maxlen, default, labels, validints=[], helptext="")
-  def rbgetstr(win, r, c, prompt, maxlen, config={})
+# 2011-11-27 I have replaced the getting of chars with a field
+# Still need to handle tab-completion, can do that with horizlist !! YEAHHH !!!
+def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
+  #win ||= @target_window
+  win = __create_footer_window
+  begin
+    form = Form.new win
+    r = 0; c = 1;
+    default = config[:default] || ""
+    displen = config[:display_length] || maxlen
+    prompt = "#{prompt} [#{default}]: " unless default
+    field = Field.new form, :row => r, :col => c, :maxlen => maxlen, :default => default, :label => prompt,
+      :display_length => displen
+    form.repaint
+    win.wrefresh
+    while ((ch = win.getchar()) != 999)
+      break if ch == 10 || ch == 13
+      return -1, nil if ch == ?\C-c.getbyte(0) || ch == ?\C-g.getbyte(0)
+      #if ch == ?\M-h.getbyte(0) #                            HELP KEY
+        #helptext = config[:helptext] || "No help provided"
+        #color = $datacolor
+        #print_help(win, r, c, color, helptext)
+        ## this will come over our text
+      #end
+      if ch == ?\M-h.getbyte(0) #                            HISTORY
+        #config[:history] = %w[ jim john jack ruby jane jill just testing ]
+        if list = config[:history]
+          ret = popuplist(list, :row => FFI::NCurses.LINES-10, :col => 1, :title  => " History ")
+          if ret
+            field.text = list[ret] 
+            field.set_form_col # shit why are we doign this, text sets curpos to 0
+          end
+          form.repaint
+          win.wrefresh
+        end
+        next
+      end
+      form.handle_key ch
+      win.wrefresh
+    end
+  rescue => err
+    Ncurses.beep
+    $log.error "EXP in rbgetsr #{err} "
+    $log.error(err.backtrace.join("\n")) 
+  ensure
+    win.destroy if win
+  end
+  return 0, field.text
+end
+  def originalrbgetstr(nolongerused, r, c, prompt, maxlen, config={})
     #win ||= @target_window
-    raise "rbgetstr got no window. io.rb" if win.nil?
+    win = __create_footer_window
     $log.debug " inside io.rb rbgetstr #{win} r:#{r} c:#{c} p:#{prompt} m:#{maxlen} #{win.name} "
+    r = 0; c = 1;
     ins_mode = false
     default = config[:default] || ""
     prompt = "#{prompt} [#{default}]: " unless default
@@ -50,7 +103,7 @@ module Io
     # clear the area of len+maxlen
     color = $datacolor
     str = default
-    clear_this win, r, c, color, len+maxlen+1
+    #clear_this win, r, c, color, len+maxlen+1
     print_this(win, prompt+str, color, r, c)
     len = prompt.length + str.length
     #x mylabels=["^G~Help  ", "^C~Cancel"]
@@ -124,6 +177,7 @@ module Io
           ins_mode = !ins_mode
           next
         when KEY_TAB # TAB
+          # this is where we can use the horizlist !!! TODO when he tabs !!!
           if config
             if prevchar == 9
               if !entries.nil? and !entries.empty?
@@ -171,6 +225,7 @@ module Io
       str = default if str == ""
     ensure
       Ncurses.noecho();
+      win.destroy # now that we created a window 2011-11-26 
       #x restore_application_key_labels # must be done after using print_key_labels
     end
     return 0, str
