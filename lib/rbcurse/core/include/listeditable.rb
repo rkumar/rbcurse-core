@@ -58,6 +58,7 @@ module ListEditable
     else
       @delete_buffer = @list.slice!(line, $multiplier)
     end
+    @curpos ||= 0 # rlist has no such var
     $multiplier = 0
     add_to_kill_ring @delete_buffer
     @buffer = @list[@current_index]
@@ -68,6 +69,8 @@ module ListEditable
     # warning: delete buffer can now be an array
     fire_handler :CHANGE, InputDataEvent.new(@curpos,@curpos+@delete_buffer.length, self, :DELETE_LINE, line, @delete_buffer)     #  2008-12-24 18:34 
     set_modified 
+    @widget_scrolled = true
+    @repaint_required = true
   end
     def delete_curr_char num=($multiplier == 0 ? 1 : $multiplier)
       return -1 unless @editable
@@ -162,7 +165,8 @@ module ListEditable
     # pastes recent (last) entry of kill_ring.
     # This can be one or more lines. Please note that for us vimmer's yank means copy
     # but for emacsers it seems to mean paste. Aargh!!
-    def yank where=@current_index
+    # earlier it was not +1, it was pasting before not after
+    def yank where=@current_index+1
       return -1 if !@editable 
       return if $kill_ring.empty?
       row = $kill_ring.last
@@ -187,6 +191,7 @@ module ListEditable
       $kill_ring_pointer = $kill_ring.size - 1
       $kill_ring_index = @current_index # pops will replace data in this row, never an insert
       @repaint_required = true
+      @widget_scrolled  = true
       # XXX not firing anything here, so i can't undo. yet, i don't know whether a yank will
       # be followed by a yank-pop, in which case it will not be undone.
       # object row can be string or array - time to use INSERT_LINE so we are clear
@@ -240,6 +245,7 @@ module ListEditable
           $kill_ring_pointer = $kill_ring.size - 1
         end
         @repaint_required = true
+        @widget_scrolled  = true
         my_win = @form || @parent_component.form # 2010-02-12 12:51 
         my_win.repaint
         ch = @graphic.getchar
