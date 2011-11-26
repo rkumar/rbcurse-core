@@ -2515,11 +2515,11 @@ module RubyCurses
       @event_args ||= {}
       @_events ||= []
       @_events.push :PRESS
+      @default_chars = ['> ', ' <'] 
       super
 
 
       @surround_chars ||= ['[ ', ' ]'] 
-      @default_chars ||= ['> ', ' <'] 
       @col_offset = @surround_chars[0].length 
       @text_offset = 0
     end
@@ -2600,7 +2600,7 @@ module RubyCurses
       @default_button = tf
       if tf
         @surround_chars = @default_chars
-        $log.debug "XXX:  BUTTON DEFAULT setting surround_chars to #{surround_chars} "
+        $log.debug "XXX:  BUTTON DEFAULT setting surround_chars to #{@surround_chars} "
         @form.bind_key(13, self) { |_form, _butt| _butt.fire }
       else
         # i have no way of reversing the above
