@@ -1898,7 +1898,7 @@ module RubyCurses
     # @return [Fixnum] 0 if okay, -1 if not editable or exceeding length
     def putch char
       return -1 if !@editable 
-      return -1 if !@overwrite_mode && @buffer.length >= @maxlen
+      return -1 if !@overwrite_mode && (@buffer.length >= @maxlen)
       if @chars_allowed != nil
         return if char.match(@chars_allowed).nil?
       end
@@ -1932,7 +1932,7 @@ module RubyCurses
         if ret == 0
           if addcol(1) == -1  # if can't go forward, try scrolling
             # scroll if exceeding display len but less than max len
-            if @curpos > @display_length and @curpos <= @maxlen
+            if @curpos > @display_length && @curpos <= @maxlen
               @pcol += 1 if @pcol < @display_length 
             end
           end
@@ -2499,11 +2499,14 @@ module RubyCurses
   # action buttons
   # NOTE: When firing event, an ActionEvent will be passed as the first parameter, followed by anything
   # you may have passed when binding, or calling the command() method. 
-  # TODO: phasing out underline, and giving mnemonic and ampersand preference
   #  - Action: may have to listen to Action property changes so enabled, name etc change can be reflected
+  # 2011-11-26 : define button as default, so it can show differently and also fire on ENTER
+  # trying out behavior change. space to fire current button, ENTER for default button which has
+  # > Name < look.
   class Button < Widget
     dsl_accessor :surround_chars   # characters to use to surround the button, def is square brackets
     dsl_accessor :mnemonic
+    # boolean for whether this is the default button. Careful, don't do this for more than 1
     def initialize form, config={}, &block
       require 'rbcurse/core/include/ractionevent'
       @focusable = true
@@ -2516,6 +2519,7 @@ module RubyCurses
 
 
       @surround_chars ||= ['[ ', ' ]'] 
+      @default_chars ||= ['> ', ' <'] 
       @col_offset = @surround_chars[0].length 
       @text_offset = 0
     end
@@ -2588,6 +2592,19 @@ module RubyCurses
       # meta key 
       mch = ?\M-a.getbyte(0) + (ch - ?a.getbyte(0))
       @form.bind_key(mch, self) { |_form, _butt| _butt.fire }
+    end
+    def default_button tf=nil
+      return @default_button unless tf
+      raise ArgumentError, "default button must be true or false" if ![false,true].include? tf
+      $log.debug "XXX:  BUTTON DEFAULT setting to true : #{tf} "
+      @default_button = tf
+      if tf
+        @surround_chars = @default_chars
+        $log.debug "XXX:  BUTTON DEFAULT setting surround_chars to #{surround_chars} "
+        @form.bind_key(13, self) { |_form, _butt| _butt.fire }
+      else
+        # i have no way of reversing the above
+      end
     end
 
     def getvalue
@@ -2684,7 +2701,9 @@ module RubyCurses
       when FFI::NCurses::KEY_RIGHT, FFI::NCurses::KEY_DOWN
         return :UNHANDLED
         #  @form.select_next_field
-      when FFI::NCurses::KEY_ENTER, 10, 13, 32  # added space bar also
+      #when FFI::NCurses::KEY_ENTER, 10, 13, 32  # added space bar also
+        # shall we keep ENTER for default button
+      when 32  # added space bar also
         if respond_to? :fire
           fire
         end
