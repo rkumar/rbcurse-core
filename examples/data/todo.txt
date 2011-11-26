@@ -1,9 +1,9 @@
-!3. Make keylabels more rubyesque
-_3. how to override +- * a and others for listbox
-_4. app to contain window close and confirm close
-_4. when sorting cursor on old row but curr changed
-_5. app needs to pass up exceptions to user app
-_5. convert testlistbox to core
-_5. messagebox default button
-_5. test out vieditable and listeditable with core
+ 3. how to override +- * a and others for listbox - need to call before super()
+ 4. app to contain window close and confirm close
+ 4. when sorting cursor on old row but curr changed
+ 5. app needs to pass up exceptions to user app
+ 5. convert testlistbox to core
+ 5. messagebox default button - done but current button should show default char
+ 5. test out vieditable and listeditable with core
+.3. Make keylabels more rubyesque - later
 x5. messagebox to catch YN keys also
