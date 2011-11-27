@@ -56,6 +56,8 @@ if $0 == __FILE__
       end
       listb.one_key_selection = false # this allows us to map keys to methods
       listb.vieditable_init_listbox
+      include Io
+      listb.bind_key(?r){ get_file("Get a file:", 70) }
       #undom = SimpleUndo.new listb
 
       #listb.list.insert 55, "hello ruby", "so long python", "farewell java", "RIP .Net"
