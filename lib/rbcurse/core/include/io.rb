@@ -56,6 +56,8 @@ def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
       :display_length => displen
     form.repaint
     win.wrefresh
+    prevchar = 0
+    entries = nil
     while ((ch = win.getchar()) != 999)
       break if ch == 10 || ch == 13
       return -1, nil if ch == ?\C-c.getbyte(0) || ch == ?\C-g.getbyte(0)
@@ -65,6 +67,9 @@ def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
         #print_help(win, r, c, color, helptext)
         ## this will come over our text
       #end
+      # TODO tab completion and help_text print on F1
+      # History needs to be integrated into Field itself, or be a module
+      # that field objects can extend, same for tab completion and gmail completion
       if ch == ?\M-h.getbyte(0) #                            HISTORY
         #config[:history] = %w[ jim john jack ruby jane jill just testing ]
         if list = config[:history]
@@ -77,7 +82,33 @@ def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
           win.wrefresh
         end
         next
+      elsif ch == KEY_TAB
+          if config
+            str = field.text
+            if prevchar == 9
+              if !entries.nil? && !entries.empty?
+                str = entries.delete_at(0)
+              end
+            else
+              tabc = config[:tab_completion] unless tabc
+              next unless tabc
+              entries = tabc.call(str)
+              $log.debug " tab got #{entries} "
+              str = entries.delete_at(0) unless entries.nil? || entries.empty?
+            end
+            if str
+              field.text = str
+              field.set_form_col # shit why are we doign this, text sets curpos to 0
+            end
+            form.repaint
+            win.wrefresh
+          end
+
+        # tab_completion
+        # if previous char was not tab, execute tab_completion_proc and push first entry
+        # else push the next entry
       end
+      prevchar = ch
       form.handle_key ch
       win.wrefresh
     end
@@ -229,6 +260,17 @@ end
       #x restore_application_key_labels # must be done after using print_key_labels
     end
     return 0, str
+  end
+
+  def get_file prompt, maxlen=10  #:nodoc:
+    tabc = Proc.new {|str| Dir.glob(str +"*") }
+    config={}; config[:tab_completion] = tabc
+    config[:default] = "test"
+    $log.debug " inside getstr before call "
+    ret, str = rbgetstr(nil,0,0, prompt, maxlen, config)
+    $log.debug " rbgetstr returned #{ret} , #{str} "
+    return "" if ret != 0
+    return str
   end
   def clear_this win, r, c, color, len
     print_this(win, "%-*s" % [len," "], color, r, c)
