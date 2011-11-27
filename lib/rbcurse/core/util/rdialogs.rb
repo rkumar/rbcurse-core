@@ -331,7 +331,7 @@ def confirm_window text, aconfig={}, &block
   ewin.printstring r, c, text, color_pair
   ewin.printstring r+1, c, "[y/n]", color_pair
   ewin.wrefresh
-  #retval = :NO # consistent with confirm  # CHANGE TO TRUE FALSE NOW FIXME
+  #retval = :NO # consistent with confirm  # CHANGE TO TRUE FALSE NOW 
   retval = false
   begin
     ch =  ewin.getchar 
