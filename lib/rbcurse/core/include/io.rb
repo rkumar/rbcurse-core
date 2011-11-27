@@ -44,9 +44,8 @@ end
 # 2011-11-27 I have replaced the getting of chars with a field
 # Still need to handle tab-completion, can do that with horizlist !! YEAHHH !!!
 def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
-  #win ||= @target_window
-  win = __create_footer_window
   begin
+    win = __create_footer_window
     form = Form.new win
     r = 0; c = 1;
     default = config[:default] || ""
@@ -54,6 +53,10 @@ def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
     prompt = "#{prompt} [#{default}]: " unless default
     field = Field.new form, :row => r, :col => c, :maxlen => maxlen, :default => default, :label => prompt,
       :display_length => displen
+    require 'rbcurse/core/include/rhistory'
+    field.extend(FieldHistory)
+    field.history_config :row => FFI::NCurses.LINES-12
+    field.history %w[ jim john jack ruby jane jill just testing ]
     form.repaint
     win.wrefresh
     prevchar = 0
@@ -68,21 +71,8 @@ def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
         ## this will come over our text
       #end
       # TODO tab completion and help_text print on F1
-      # History needs to be integrated into Field itself, or be a module
       # that field objects can extend, same for tab completion and gmail completion
-      if ch == ?\M-h.getbyte(0) #                            HISTORY
-        #config[:history] = %w[ jim john jack ruby jane jill just testing ]
-        if list = config[:history]
-          ret = popuplist(list, :row => FFI::NCurses.LINES-10, :col => 1, :title  => " History ")
-          if ret
-            field.text = list[ret] 
-            field.set_form_col # shit why are we doign this, text sets curpos to 0
-          end
-          form.repaint
-          win.wrefresh
-        end
-        next
-      elsif ch == KEY_TAB
+      if ch == KEY_TAB
           if config
             str = field.text
             if prevchar == 9
@@ -107,6 +97,9 @@ def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
         # tab_completion
         # if previous char was not tab, execute tab_completion_proc and push first entry
         # else push the next entry
+      elsif ch == KEY_F1
+        helptext = config[:helptext] || "No help provided. C-c/C-g aborts. <TAB> completion. Alt-h history. C-a/e"
+        print_status_message helptext
       end
       prevchar = ch
       form.handle_key ch
@@ -262,13 +255,17 @@ end
     return 0, str
   end
 
-  def get_file prompt, maxlen=10  #:nodoc:
+  # This is just experimental, trying out tab_completion
+  # Prompt user for a file name, allowing him to tab to complete filenames
+  # @param [String] label to print before field
+  # @param [Fixnum] max length of field
+  # @return [String] filename or blank if user cancelled
+  def get_file prompt, maxlen=70  #:nodoc:
     tabc = Proc.new {|str| Dir.glob(str +"*") }
     config={}; config[:tab_completion] = tabc
     config[:default] = "test"
-    $log.debug " inside getstr before call "
     ret, str = rbgetstr(nil,0,0, prompt, maxlen, config)
-    $log.debug " rbgetstr returned #{ret} , #{str} "
+    #$log.debug " get_file returned #{ret} , #{str} "
     return "" if ret != 0
     return str
   end
