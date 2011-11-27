@@ -53,10 +53,10 @@ def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
     prompt = "#{prompt} [#{default}]: " unless default
     field = Field.new form, :row => r, :col => c, :maxlen => maxlen, :default => default, :label => prompt,
       :display_length => displen
-    require 'rbcurse/core/include/rhistory'
-    field.extend(FieldHistory)
-    field.history_config :row => FFI::NCurses.LINES-12
-    field.history %w[ jim john jack ruby jane jill just testing ]
+    #require 'rbcurse/core/include/rhistory'
+    #field.extend(FieldHistory)
+    #field.history_config :row => FFI::NCurses.LINES-12
+    #field.history %w[ jim john jack ruby jane jill just testing ]
     form.repaint
     win.wrefresh
     prevchar = 0
