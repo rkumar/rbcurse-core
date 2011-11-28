@@ -555,6 +555,7 @@ module ListScrollable
       unless c
         _r, c = rowcol
       end
+      # this optimization now overrides any coloring that listbox may have done per row XXX
       acolor ||= get_color $datacolor
       att = get_attrib(attrib) #if @focussed_attrib
       @graphic.mvchgat(y=r, x=c, @width-@internal_width, att , acolor , nil)
