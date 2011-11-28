@@ -97,6 +97,8 @@ module RubyCurses
       @should_show_focus = true # Here's its on since the cellrenderer will show it on repaint
       super
       @_events.push(*[:ENTER_ROW, :LEAVE_ROW, :LIST_SELECTION_EVENT, :PRESS])
+      # I have moved this here so user can override keys.
+      map_keys unless @keys_mapped
       @selection_mode ||= :multiple # default is multiple, anything else given becomes single
       @win = @graphic    # 2010-01-04 12:36 BUFFERED  replace form.window with graphic
       @win_left = 0
@@ -272,7 +274,7 @@ module RubyCurses
     end
     # Listbox
     def handle_key(ch) #:nodoc:
-      map_keys unless @keys_mapped
+      #map_keys unless @keys_mapped
       @current_index ||= 0
       @toprow ||= 0
       h = scrollatrow()
@@ -421,6 +423,9 @@ module RubyCurses
       fire_handler :LEAVE_ROW, self
     end
     # getter and setter for cell_renderer
+    # NOTE: due to our optimization of not repainting unless data has changed
+    # or scrolling has happened, highlighting focus will repaint the row if you've
+    # colored it. In that case, set <tt>show_show_focus</tt> to false
     def cell_renderer(*val)
       if val.empty?
         @cell_renderer ||= create_default_cell_renderer
