@@ -1,6 +1,27 @@
 require 'rbcurse/core/util/app'
 require 'rbcurse/core/widgets/rlist'
 
+# a simple example of how to get colored row rendering.
+# also see rfe.rb for a more complete example
+class CellRenderer
+  attr_accessor :display_length
+  def repaint g, r, c, crow, content, focus_type, selected
+    color = $datacolor
+    att = NORMAL
+    att = REVERSE if selected
+    color = get_color($datacolor, :yellow, :red) if content =~ /^.1/
+    color = get_color($datacolor, :white, 17) if content =~ /^.2/
+    color = get_color($datacolor, :white, 18) if content =~ /^.3/
+    color = get_color($datacolor, :white, 19) if content =~ /^.4/
+    color = get_color($datacolor, :red, :black) if content =~ /^.5/
+    color = get_color($datacolor, :cyan, :black) if content =~ /^.6/
+    color = get_color($datacolor, :magenta, :black) if content =~ /^.[7-9]/
+    color = get_color($datacolor, :blue, :black) if content =~ /^x/
+    g.wattron(Ncurses.COLOR_PAIR(color) | att)
+    g.mvwprintw(r, c, "%s", :string, content);
+    g.wattroff(Ncurses.COLOR_PAIR(color) | att)
+  end
+end
 App.new do 
   @default_prefix = " "
   header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Task List", :text_right =>"New Improved!"
@@ -19,6 +40,8 @@ App.new do
     # u,se voerwrite mode for this TODO and catch exception
 
     lb = listbox :list => alist.sort, :title => "[ todos ]", :height_pc => 100, :name => "tasklist"
+    lb.should_show_focus = false
+    lb.cell_renderer CellRenderer.new
     lb.bind_key(?d){ 
       if confirm("Delete #{lb.current_value} ?")
         lb.delete_at lb.current_index 
@@ -30,10 +53,10 @@ App.new do
         lb[lb.current_index]=value
       end
     }
-    lb.bind_key(?A){ 
+    lb.bind_key(?a){ 
 
       # ADD
-    task = Field.new :label => "    Task:", :display_length => 70, :maxlen => 80, :bgcolor => :cyan, :color => :black,
+    task = Field.new :label => "    Task:", :display_length => 60, :maxlen => 80, :bgcolor => :cyan, :color => :black,
     :name => 'task'
     pri = Field.new :label => "Priority:", :display_length => 1, :maxlen => 1, :type => :integer, 
       :valid_range => 1..9, :bgcolor => :cyan, :color => :black , :default => "5", :name => 'pri'
@@ -60,18 +83,18 @@ App.new do
     end
     }
     # decrease priority
-    lb.bind_key(?D){ 
+    lb.bind_key(?-){ 
       line = lb.current_value
       p = line[1,1].to_i
       if p < 9
         p += 1 
-        line[l,1] = p.to_s
+        line[1,1] = p.to_s
         lb[lb.current_index]=line
         lb.list(lb.list.sort)
       end
     }
     # increase priority
-    lb.bind_key(?I){ 
+    lb.bind_key(?+){ 
       line = lb.current_value
       p = line[1,1].to_i
       if p > 1
@@ -112,8 +135,8 @@ App.new do
       ["F1" , "Help"], ["F10" , "Exit"], 
       ["F2", "Menu"], ["F4", "View"],
       ["d", "delete item"], ["e", "edit item"],
-      ["A", "add item"], ["x", "close item"],
-      ["I", "inc priority"], ["D", "dec priority"],
+      ["a", "add item"], ["x", "close item"],
+      ["+", "inc priority"], ["-", "dec priority"],
 
       ["M-x", "Command"], nil
     ]
