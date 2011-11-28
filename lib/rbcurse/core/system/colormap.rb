@@ -4,6 +4,9 @@ module ColorMap
   ## private
   # returns a color constant for a human color string
   def ColorMap.get_color_const colorstring
+    # added check for fixnum if we go beyond these constants 2011-11-28 
+    # e.g. to use full 256 colors
+    return colorstring if colorstring.is_a? Fixnum 
     ret = FFI::NCurses.const_get "COLOR_#{colorstring.upcase}"
     #raise  "color const nil ColorMap 8 " if !ret
   end
@@ -50,6 +53,7 @@ module ColorMap
   # @param [Symbol] color such as :black :cyan :yellow
   # @return [Boolean] true if valid, else false
   def ColorMap.is_color? color
+    return true if color.is_a? Fixnum
     @@colors.include? color.to_sym
   end
 
@@ -69,7 +73,7 @@ module ColorMap
     # make foreground colors
     bg = ColorMap.get_color_const $def_bg_color
     @@colors[0...@@colors.size].each_with_index do |color, i|
-      next if color == $def_bg_color
+      next if color == $def_bg_color # NOTE hope this doesn't do something if you change def_bg
       ColorMap.install_color color, $def_bg_color
     end
     $reversecolor = ColorMap.get_color $def_bg_color, $def_fg_color
