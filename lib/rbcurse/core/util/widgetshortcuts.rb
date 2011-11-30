@@ -237,13 +237,14 @@ module RubyCurses
       require 'rbcurse/core/widgets/tabularwidget'
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER, :CHANGE, :ENTER_ROW, :PRESS ]
       block_event = nil
-      config[:height] ||= 10 # not sure if this should be here
-      _position(w)
       # if no width given, expand to stack width
       #config.delete :title
       useform = nil
 
       w = TabularWidget.new useform, config # NO BLOCK GIVEN
+      w.width ||= :expand 
+      w.height ||= :expand # TODO This has to come before other in stack next one will overwrite.
+      _position(w)
       if block_given?
         #@current_object << w
         yield_or_eval &block
@@ -321,8 +322,10 @@ module RubyCurses
           elsif w.width_pc
             #w.width = w.width_pc * cur[:width]
             w.width = (cur[:width] * (w.width_pc.to_i * 0.01)).floor
+          else
+            w.width = cur[:width] 
           end
-          raise "width could not be calculated. i need flow width and item width_pc" unless w.width
+          raise "width could not be calculated. i need flow width and item width_pc" if w.width == :expand
         else
           w.width = cur[:width] or raise "Width not known for stack #{cur.class}, #{cur[:width]} "
         end
