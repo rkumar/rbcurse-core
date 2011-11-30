@@ -14,6 +14,7 @@ TODO
 require 'logger'
 require 'rbcurse'
 require 'rbcurse/core/include/listscrollable'
+require 'forwardable'
 
 include RubyCurses
 module RubyCurses
@@ -27,6 +28,7 @@ module RubyCurses
   #      - goto line - DONE
   class TextView < Widget
     include ListScrollable
+    extend Forwardable
     #dsl_accessor :height  # height of viewport cmmented on 2010-01-09 19:29 since widget has method
     dsl_accessor :title   # set this on top
     dsl_accessor :title_attrib   # bold, reverse, normal
@@ -130,6 +132,18 @@ module RubyCurses
       @color_parser = fmt
       remove_all
     end
+    #def <<(line); @list << line; @widget_scrolled = true;  end
+    def_delegators :@list, :include?, :each, :values, :size
+    %w[ insert clear delete_at []= << ].each { |e| 
+      eval %{
+      def #{e}(*args)
+         @list.send(:#{e}, *args)
+         @widget_scrolled = true
+         @repaint_required = true
+      end
+      }
+    }
+    alias :append :<<
 
     def remove_all
       @list = []
