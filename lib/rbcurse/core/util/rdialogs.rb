@@ -466,7 +466,7 @@ def popuplist list, config={}, &block
   listconfig[:list] = list
   listconfig[:width] = width
   listconfig[:height] = height
-  listconfig[:selection_mode] = :single
+  listconfig[:selection_mode] ||= :single
   listconfig.merge!(config)
   listconfig.delete(:row); 
   listconfig.delete(:col); 
@@ -493,10 +493,15 @@ def popuplist list, config={}, &block
         lb.handle_key ch
         form.repaint
         if ch == 13 || ch == 10
-          return lb.current_index
+          return lb.current_index if lb.selection_mode != :multiple
+
+          x = lb.selected_indices
+          return x if x
+          x = lb.current_index unless x
+          return [x]
           # if multiple selection, then return list of selected_indices and don't catch 32
         elsif ch == 32      # if single selection
-          return lb.current_index
+          return lb.current_index if lb.selection_mode != :multiple
         end
         #yield ch if block_given?
       end
