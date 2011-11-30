@@ -216,7 +216,7 @@ module RubyCurses
       require 'rbcurse/core/widgets/rtree'
       events = [:TREE_WILL_EXPAND_EVENT, :TREE_EXPANDED_EVENT, :TREE_SELECTION_EVENT, :PROPERTY_CHANGE, :LEAVE, :ENTER ]
       block_event = nil
-      config[:height] ||= 10
+      #config[:height] ||= 10
       # if no width given, expand to flows width
       useform = nil
       #useform = @form if @current_object.empty?
@@ -309,6 +309,19 @@ module RubyCurses
         end
         #alert "setting ht to #{w.height}, #{cur[:height]} , for #{cur} "
       end
+      if w.width == :expand
+        if cur.is_a? WsFlow
+          if cur[:item_width]
+            w.width = cur[:item_width] #or raise "item_Width not known for flow #{cur.class}, #{cur[:item_width]}, #{cur[:width]} , #{w.width_pc}  "
+          elsif w.width_pc
+            #w.width = w.width_pc * cur[:width]
+            w.width = (cur[:width] * (w.width_pc.to_i * 0.01)).floor
+          end
+          raise "width could not be calculated. i need flow width and item width_pc" unless w.width
+        else
+          w.width = cur[:width] or raise "Width not known for stack #{cur.class}, #{cur[:width]} "
+        end
+      end
       if cur.is_a? WsStack
         r += w.height || 1   # NOTE, we need to have height for this purpose defined BEFORE calling for list/text
         cur[:row] = r
@@ -316,13 +329,6 @@ module RubyCurses
         wid = cur[:item_width] || w.width || 10
         c += wid + 1
         cur[:col] = c
-      end
-      if w.width == :expand
-        if cur.is_a? WsFlow
-          w.width = cur[:item_width] or raise "item_Width not known for stack #{cur.class}, #{cur[:item_width]} "
-        else
-          w.width = cur[:width] or raise "Width not known for stack #{cur.class}, #{cur[:width]} "
-        end
       end
       #alert "set width to #{w.width} ,cur: #{cur[:width]} ,iw: #{cur[:item_width]} "
       if cur.is_a? WsFlow
@@ -437,6 +443,7 @@ module RubyCurses
       s[:row] += (s[:margin_top] || 0)
       s[:col] += (s[:margin_left] || 0)
       s[:width] = FFI::NCurses.COLS-s[:col] if s[:width] == :expand
+      s[:height] = FFI::NCurses.LINES-s[:row] if s[:height] == :expand # 2011-11-30 
       last = @_ws_active.last
       if last
         if s[:width_pc]
