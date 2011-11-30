@@ -1,0 +1,37 @@
+69|C-u not available for textpad and view. how to|P2|open
+85|combo symbol when label, see newmessagebox|P2|open
+86|combo let caller suggest width and use if longer than longest item|P2|open
+88|keep working on wsshortcuts as in testws..2.rb|P2|open
+89|messagebox, see about background for zterm-256 as in header|P2|open
+97|binding to KEY_ENTER doesn't work, have to bid to 13|P2|open
+98|if list not binding ENTER then dont consume it|P2|open
+22|widget hide (visible false) does not hide|P3|open
+65|clean up window.rb prv_printstring etc|P3|open
+74|list and others should just calculate longest in list|P3|open
+79|cleanup button getpaint etc|P3|open
+80|use @focusable in form to simplify|P3|open
+87|praps global setting lists etc use SPC for scroll or selection|P3|open
+92|messagebox: if text longer than display then can we split|P3|open
+95|window.refresh required after alert of messagebox closes|P3|open
+99|button option to set mnemo for keys without alt|P3|open
+10|combo keys|P4|open
+17|selected_item of list broken|P4|open
+20|cannot bind_key using Alt key and another. |P4|open
+27|#fix testvimsplit not sizing STACK correctly|P4|open
+32| #tree many empty methods in #treemodel|P4|open
+37|simplify #vimsplit calculation|P4|open
+52|%label set_label may have to calculate at repaint esp in app|P4|open
+55|Have a module Expandable for those that are multiline|P4|open
+56|DRY up titles and borders|P4|open
+60|fields width, display_len is for input area, not label plus input|P4|open
+61|test2.rb color change not affecting text objects|P4|open
+70|confusion between renderer and color_parser|P4|open
+75|textpad to allow append << at some stage|P4|open
+93|messagebox conform and choice whith single key getch|P4|open
+8|container keep repainting all|P5|open
+26|App to have a layout abject |P5|open
+39|tabularwidget truncate needed left_margin|P5|open
+42|append_to_kill, yank not working in %listbox|P5|open
+49|resultsetview needs way to specify key fields|P5|open
+50|sort on tabularwidget with resultset error sometimes|P5|open
+96|configure confirm quit etc through a file|P5|open
