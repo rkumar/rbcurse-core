@@ -10,9 +10,9 @@ class CellRenderer
     att = NORMAL
     att = REVERSE if selected
     color = get_color($datacolor, :yellow, :red) if content =~ /^.1/
-    color = get_color($datacolor, :white, 17) if content =~ /^.2/
-    color = get_color($datacolor, :white, 18) if content =~ /^.3/
-    color = get_color($datacolor, :white, 19) if content =~ /^.4/
+    color = get_color($datacolor, :red, :blue) if content =~ /^.2/
+    color = get_color($datacolor, :white, :black) if content =~ /^.3/
+    color = get_color($datacolor, :green, :black) if content =~ /^.4/
     color = get_color($datacolor, :red, :black) if content =~ /^.5/
     color = get_color($datacolor, :cyan, :black) if content =~ /^.6/
     color = get_color($datacolor, :magenta, :black) if content =~ /^.[7-9]/
@@ -50,6 +50,7 @@ App.new do
     }
     lb.bind_key(?e){ 
       if ((value = get_string("Edit Task:", :width => 80, :default => lb.current_value, :maxlen => 80, :display_length => 70)) != nil)
+
         lb[lb.current_index]=value
       end
     }
@@ -73,11 +74,14 @@ App.new do
     index = tp.run
     if index == 0 # OK
       # when does this memory get released ??? XXX 
-      val =  @default_prefix + tp.form.by_name['pri'].text + ". " + tp.form.by_name['task'].text 
-      w = @form.by_name["tasklist"]
-      _l = w.list
-      _l << val
-      w.list(_l.sort)
+      _t = tp.form.by_name['pri'].text 
+      if _t != ""
+        val =  @default_prefix + tp.form.by_name['pri'].text + ". " + tp.form.by_name['task'].text 
+        w = @form.by_name["tasklist"]
+        _l = w.list
+        _l << val
+        w.list(_l.sort)
+      end
     else # CANCEL
       #return nil
     end
