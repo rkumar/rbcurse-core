@@ -53,7 +53,7 @@ module ColorMap
   # @param [Symbol] color such as :black :cyan :yellow
   # @return [Boolean] true if valid, else false
   def ColorMap.is_color? color
-    return true if color.is_a? Fixnum
+    return true if color.is_a? Fixnum # so we can use 256 colors
     @@colors.include? color.to_sym
   end
 
