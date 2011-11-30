@@ -55,6 +55,7 @@ if $0 == __FILE__
           bu =  Button.new :name => b, :text => b, :row => r, :col => c
           bu.command { throw(:close, i) }
           item bu
+          #bu.default_button(true) if i == 0
           #r += 1
           c += b.length + 5
         }
