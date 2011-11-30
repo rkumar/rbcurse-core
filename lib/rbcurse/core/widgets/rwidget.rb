@@ -2600,7 +2600,6 @@ module RubyCurses
       @default_button = tf
       if tf
         @surround_chars = @default_chars
-        $log.debug "XXX:  BUTTON DEFAULT setting surround_chars to #{@surround_chars} "
         @form.bind_key(13, self) { |_form, _butt| _butt.fire }
       else
         # i have no way of reversing the above
@@ -2701,9 +2700,11 @@ module RubyCurses
       when FFI::NCurses::KEY_RIGHT, FFI::NCurses::KEY_DOWN
         return :UNHANDLED
         #  @form.select_next_field
-      #when FFI::NCurses::KEY_ENTER, 10, 13, 32  # added space bar also
+      when FFI::NCurses::KEY_ENTER, 10, 13, 32  # added space bar also
+        # I am really confused about this. Default button really confuses things in some 
+        # situations, but is great if you are not on the buttons.
         # shall we keep ENTER for default button
-      when 32  # added space bar also
+      #when 32  # added space bar also
         if respond_to? :fire
           fire
         end
