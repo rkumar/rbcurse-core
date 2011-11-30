@@ -232,6 +232,7 @@ module RubyCurses
     private
     def create_action_buttons
       return unless @button_type
+      @default_button = 0 if !@default_button 
       case @button_type.to_s.downcase
       when "ok"
         make_buttons ["&OK"]
@@ -267,7 +268,7 @@ module RubyCurses
       #@window.mvwhline( brow-1, @col+1, Ncurses::ACS_HLINE, @width-2)
       #@window.wattroff(Ncurses.COLOR_PAIR(color_pair) | (@attrib || FFI::NCurses::A_NORMAL))
       $log.debug "XXX: putting buttons :on #{brow} , #{bcol} : #{@row} , #{@height} "
-      button_ct=0
+      button_ct =0
       tpp = self
       _color = @color
       _bgcolor = @bgcolor
