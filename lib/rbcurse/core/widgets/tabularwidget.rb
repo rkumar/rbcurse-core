@@ -12,7 +12,8 @@ TODO
    * hide columns - importnat since with sorting we may need to store an identifier which 
      should not be displayed
    x data truncation based on col wid TODO
-   * TODO: search -- how is it working, but curpos is wrong.
+   * TODO: search -- how is it working, but curpos is wrong. This is since list does not contain
+      header, it only has data. so curpos is off by one _header_adjustment
    * allow resize of column inside column header
    * Now that we allow header to get focus, we should allow it to handle
     keys, but its not an object like it was in rtable ! AARGH !
@@ -154,6 +155,7 @@ module RubyCurses
       bind_key(?m, :disp_menu) # enhance this or cut it out - how can app leverage this. TODO
       bind_key(?w, :next_column)
       bind_key(?b, :previous_column)
+      bind_key(?i, :expand_column)
       list_bindings
     end
 
@@ -240,7 +242,7 @@ module RubyCurses
     def column_width colindex, width
       return if width < 0
       raise ArgumentError, "wrong width value sent: #{width} " if width.nil? || !width.is_a?(Fixnum) || width < 0
-      #@cw[colindex] = width
+      @cw[colindex] = width # uncommented 2011-12-1 for expand on +
       @pw[colindex] = width # XXXXX
       get_column(colindex).width = width
       @repaint_required = true
@@ -268,6 +270,10 @@ module RubyCurses
 
     end
     def expand_column
+      x = _convert_curpos_to_column
+      w = get_column(x).width
+      # sadly it seems to be nil
+      column_width x, w+1 if w
     end
     def contract_column
     end
@@ -480,6 +486,9 @@ module RubyCurses
       col = _convert_curpos_to_column
       #width = @cw[col] 
       width = @pw[col] || @cw[col] 
+      #alert "got width #{width}, #{@cw[col]} "
+      # NOTE: we are setting pw and chash but paint picks from cw
+      # TODO check for multiplier too
       case ch
       when ?-.getbyte(0)
         column_width col, width-1
