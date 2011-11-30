@@ -248,6 +248,7 @@ module ListScrollable
   # 2009-01-17 13:25 
   def set_focus_on arow
     @oldrow = @current_index
+    arow += @_header_adjustment if @_header_adjustment # for tables 2011-11-30 
     @current_index = arow
     bounds_check if @oldrow != @current_index
   end
@@ -264,11 +265,32 @@ module ListScrollable
     end
     def ask_search
       options = ["Search backwards", "case insensitive", "Wrap around"]
-      sel,regex,hash =  get_string_with_options("Enter regex to search", 20, @last_regex||"", "checkboxes"=>options, "checkbox_defaults"=>[@search_direction_prev,@search_case,@search_wrap])
-      return if sel != 0
-      @search_direction_prev =  hash[options[0]]
-      @search_case = hash[options[1]]
-      @search_wrap = hash[options[2]]
+      defaults = [@search_direction_prev,@search_case,@search_wrap]
+      regex = @last_regex || ""
+
+      mb = MessageBox.new :title => "Search" , :width => 70 do
+        add Field.new :label => 'Enter regex to search', :name => "patt", :display_length => 30, 
+          :bgcolor => :cyan, :text => regex
+        add CheckBox.new :text => options[0], :value => defaults[0], :name => "0"
+        add CheckBox.new :text => options[1], :value => defaults[1], :name => "1"
+        add CheckBox.new :text => options[2], :value => defaults[2], :name => "2"
+
+        button_type :ok_cancel
+      end
+      index = mb.run
+      return if index != 0
+      regex = mb.widget("patt").text
+      @search_direction_prev =  mb.widget("0").value
+      @search_case = mb.widget("1").value
+      @search_wrap = mb.widget("2").value
+      #
+      #-----
+      #options = ["Search backwards", "case insensitive", "Wrap around"]
+      #sel,regex,hash =  get_string_with_options("Enter regex to search", 20, @last_regex||"", "checkboxes"=>options, "checkbox_defaults"=>[@search_direction_prev,@search_case,@search_wrap])
+      #return if sel != 0
+      #@search_direction_prev =  hash[options[0]]
+      #@search_case = hash[options[1]]
+      #@search_wrap = hash[options[2]]
       if @search_direction_prev == true
         ix = _find_prev regex, @current_index
       else
@@ -281,6 +303,7 @@ module ListScrollable
         set_form_col @find_offset1
         @cell_editor.component.curpos = (@find_offset||0) if @cell_editing_allowed
       end
+      @last_regex = regex
     end
     def find_more
       if @search_direction_prev 
@@ -297,24 +320,24 @@ module ListScrollable
       #$log.debug " _find_next #{@search_found_ix} : #{@current_index}"
       fend = @list.size-1
       if start != fend
-      start += 1 unless start == fend
-      @last_regex = regex
-      @search_start_ix = start
-      regex = Regexp.new(regex, Regexp::IGNORECASE) if @search_case
-      start.upto(fend) do |ix| 
-        row1 = @list[ix].to_s
+        start += 1 unless start == fend
+        @last_regex = regex
+        @search_start_ix = start
+        regex = Regexp.new(regex, Regexp::IGNORECASE) if @search_case
+        start.upto(fend) do |ix| 
+          row1 = @list[ix].to_s
 
-        # 2011-09-29 crashing on a character F3 in log file
-        row = row1.encode("ASCII-8BIT", :invalid => :replace, :undef => :replace, :replace => "?")
+          # 2011-09-29 crashing on a character F3 in log file
+          row = row1.encode("ASCII-8BIT", :invalid => :replace, :undef => :replace, :replace => "?")
 
-        m=row.match(regex)
-        if !m.nil?
-          @find_offset = m.offset(0)[0]
-          @find_offset1 = m.offset(0)[1]
-          @search_found_ix = ix
-          return ix 
+          m=row.match(regex)
+          if !m.nil?
+            @find_offset = m.offset(0)[0]
+            @find_offset1 = m.offset(0)[1]
+            @search_found_ix = ix
+            return ix 
+          end
         end
-      end
       end
       fend = start-1
       start = 0
