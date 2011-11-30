@@ -96,6 +96,11 @@ module RubyCurses
      short ||= klass.downcase
       eval %{
         def #{short}(config={}, &block)
+          if config.is_a? String
+             _s = config
+             config = {}
+             config[:text] = _s
+          end
           #{p}
           w = #{klass}.new nil, config
           _position w
@@ -472,6 +477,13 @@ module RubyCurses
           s[:col] += (last[:col] || 0)  # we are updating with item_width as each st finishes
           s[:width] ||= last[:item_width] # 
         end
+      else
+        # this should be outer most flow or stack, if nothing mentioned
+        # trying this out
+        s[:width] ||= :expand
+        s[:height] ||= :expand
+        s[:width] = FFI::NCurses.COLS-s[:col] if s[:width] == :expand
+        s[:height] = FFI::NCurses.LINES-s[:row] if s[:height] == :expand # 2011-11-30 
       end
       s[:components] = []
     end
