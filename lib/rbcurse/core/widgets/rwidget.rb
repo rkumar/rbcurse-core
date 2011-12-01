@@ -494,7 +494,7 @@ module RubyCurses
             aeve = @event_args[event]
             ablk.each_with_index do |blk, ix|
               #$log.debug "#{self} called EventHandler firehander #{@name}, #{event}, obj: #{object},args: #{aeve[ix]}"
-              #$log.debug "#{self} called EventHandler firehander #{@name}, #{event}"
+              $log.debug "#{self} called EventHandler firehander #{@name}, #{event}"
               begin
                 blk.call object,  *aeve[ix]
               rescue FieldValidationException => fve
@@ -516,7 +516,17 @@ module RubyCurses
                 Ncurses.beep
               end
             end
+          else
+            # there is no block for this key/event
+            # we must behave exactly as processkey
+            return :UNHANDLED
           end # if
+        else
+          # there is no handler
+          # I've done this since list traps ENTER but rarely uses it.
+          # For buttons default, we'd like to trap ENTER even when focus is elsewhere
+          # we must behave exactly as processkey
+          return :UNHANDLED
         end # if
       end
       ## added on 2009-01-08 00:33 
@@ -2511,6 +2521,9 @@ module RubyCurses
       require 'rbcurse/core/include/ractionevent'
       @focusable = true
       @editable = false
+      # hotkey denotes we should bind the key itself not alt-key (for menulinks)
+      @hotkey = config.delete(:hotkey) 
+      $log.debug "XXX:  HOTKEY #{@hotkey} "
       @handler={} # event handler
       @event_args ||= {}
       @_events ||= []
@@ -2568,9 +2581,9 @@ module RubyCurses
       @mnemonic = char
       ch = char.downcase()[0].ord ##  1.9 
       # meta key 
-      mch = ?\M-a.getbyte(0) + (ch - ?a.getbyte(0))
-      $log.debug " #{self} setting MNEMO to #{char} #{mch}"
-      @form.bind_key(mch, self) { |_form, _butt| _butt.fire }
+      ch = ?\M-a.getbyte(0) + (ch - ?a.getbyte(0)) unless @hotkey
+      $log.debug " #{self} setting MNEMO to #{char} #{ch}, #{@hotkey} "
+      @form.bind_key(ch, self) { |_form, _butt| _butt.fire }
     end
 
     ##
