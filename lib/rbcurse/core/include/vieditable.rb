@@ -77,6 +77,28 @@ module ViEditable
 
   end
 
+  # currently only adding delete_line and some yank pop functions
+  # These will all give wrong results in table due to _header_offset
+  def vieditable_init_tabular
+    $log.debug " inside vieditable_init tabular"
+    @editable = true
+    #bind_key( ?C, :edit_line)
+    #bind_key( ?o, :insert_line)
+    #bind_key( ?O) { insert_line(@current_index-1) } 
+    #bind_key( ?o) { insert_line(@current_index+1) } 
+    #bind_key( ?O) { insert_line(@current_index) } 
+    bind_key( [?d, ?d] , :delete_line ) 
+    #bind_key( ?\C-_ ) { @undo_handler.undo if @undo_handler }
+    #bind_key( ?u ) { @undo_handler.undo if @undo_handler }
+    #bind_key( ?\C-r ) { @undo_handler.redo if @undo_handler }
+    bind_key( [?y, ?y] , :kill_ring_save ) 
+    bind_key( ?p, :yank ) # paste after this line
+    bind_key( ?P ) { yank(@current_index - 1) } # should be before this line
+    bind_key(?\M-y, :yank_pop)
+    bind_key(?\M-w, :kill_ring_save)
+    @_events.push :CHANGE # thru vieditable
+  end
+
   ##
   # edit current or given line
   def edit_line lineno=@current_index
