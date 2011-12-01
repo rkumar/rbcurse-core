@@ -55,7 +55,7 @@ module RubyCurses
     dsl_accessor :list    # the array of arrays of data to be sent by user XXX RISKY bypasses set_content
     dsl_accessor :maxlen    # max len to be displayed
     attr_reader :toprow    # the toprow in the view (offsets are 0)
-    attr_reader :winrow   # the row in the viewport/window
+    ##attr_reader :winrow   # the row in the viewport/window
     # painting the footer does slow down cursor painting slightly if one is moving cursor fast
     dsl_accessor :print_footer
     dsl_accessor :suppress_borders 
@@ -85,6 +85,7 @@ module RubyCurses
     attr_reader :selected_indices
     attr_reader :_header_adjustment # we need to adjust when using current_index !!! UGH
     # @endgroup select related
+    attr_reader :columns
 
     def initialize form = nil, config={}, &block
       @focusable = true
