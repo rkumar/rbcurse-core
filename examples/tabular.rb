@@ -5,18 +5,30 @@ App.new do
 def help_text
     <<-eos
          Help for tabular widgets   
+         ------------------------
+
+         Keys that can be used on header
+
+    <ENTER>     - sort given field (press on header)
+    <->         - press <minus> to reduce column width
+    <+>         - press <plus> to increase column width
+
+         Keys that can be used on data rows
 
     <space>     -  select a row
     <Ctr-space> - range select
     <u>         - unselect all
     <a>         - select all
     <*>         - invert selection
-    <ENTER>     - sort given field (press on header)
+
+    </>         - <slash> for searching, 
+                  <n> to continue searching
 
          Motion keys 
-    Usual for lists and textview such as 
+
+    Usual for lists and textview such as :
     j, k, h, l
-    w and b for field
+    w and b for (next/prev) column
     C-d and C-b
     gg and G
 
@@ -36,6 +48,8 @@ end
     tw.columns = h
     tw.column_align 0, :right
     tw.set_content arr
+    tw.bind_key([?\d,?\d]) { tw.delete_line }
+    tw.bind_key(?\U) { tw.undo_delete }
   end # stack
   status_line :row => FFI::NCurses.LINES-1
 end # app
