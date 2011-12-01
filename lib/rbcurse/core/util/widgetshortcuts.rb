@@ -192,30 +192,41 @@ module RubyCurses
     end
 
     def link config={}, &block
-      require 'rbcurse/extras/widgets/rlink'
+          if config.is_a? String
+             _s = config
+             config = {}
+             config[:text] = _s
+          end
+      require 'rbcurse/core/widgets/rlink'
       events = [ :PRESS,  :LEAVE, :ENTER ]
       block_event = :PRESS
-      _position(w)
       config[:highlight_foreground] = "yellow"
       config[:highlight_background] = "red"
-      toggle = Link.new @form, config
+      toggle = Link.new nil, config
+      _position(toggle)
       if block
         toggle.bind(block_event, toggle, &block)
       end
       return toggle
     end
     def menulink config={}, &block
-      require 'rbcurse/extras/widgets/rmenulink'
+          if config.is_a? String
+             _s = config
+             config = {}
+             config[:text] = _s
+          end
+      require 'rbcurse/core/widgets/rmenulink'
       events = [ :PRESS,  :LEAVE, :ENTER ]
       block_event = :PRESS
-      _position(w)
       config[:highlight_foreground] = "yellow"
       config[:highlight_background] = "red"
-      toggle = MenuLink.new @form, config
+      #config[:hotkey] = true
+      w = MenuLink.new nil, config
+      _position(w)
       if block
-        toggle.bind(block_event, toggle, &block)
+        w.bind(block_event, w, &block)
       end
-      return toggle
+      return w
     end
     def tree config={}, &block
       require 'rbcurse/core/widgets/rtree'
