@@ -53,7 +53,7 @@ module ListEditable
   # now fires DELETE_LINE so no guessing by undo manager
   def delete_line line=@current_index
     return -1 unless @editable
-    if !$multiplier or $multiplier == 0 
+    if !$multiplier || $multiplier == 0 
       @delete_buffer = @list.delete_at line
     else
       @delete_buffer = @list.slice!(line, $multiplier)
@@ -266,7 +266,7 @@ module ListEditable
     # Does not at this point go beyond the line
     def delete_word
       return -1 unless @editable
-      $multiplier = 1 if !$multiplier or $multiplier == 0 
+      $multiplier = 1 if !$multiplier || $multiplier == 0 
       line = @current_index
       pos = @curpos
       @delete_buffer = ""
@@ -292,7 +292,7 @@ module ListEditable
       ch = @graphic.getchar
       return if ch < 0 || ch > 255
       char = ch.chr
-      $multiplier = 1 if !$multiplier or $multiplier == 0 
+      $multiplier = 1 if !$multiplier || $multiplier == 0 
       line = @current_index
       pos = @curpos
       tmpbuf = ""
