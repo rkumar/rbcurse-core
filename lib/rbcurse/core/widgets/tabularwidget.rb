@@ -198,7 +198,7 @@ module RubyCurses
         @toprow = 0
         @second_time = false # so that reestimation of column_widths
         @repaint_required = true
-        @recalc_required = true
+        @recalc_required = true # is this used, if not remove TODO
         self
       end
     def data=(data)
@@ -226,18 +226,66 @@ module RubyCurses
       init_vars
     end
     def delete_at off0
-      ret=@list.delete_at off0
-      return ret
+      @repaint_required = true
+      @delete_buffer=@list.delete_at off0
+      return @delete_buffer
     end
     def []=(off0, data)
+      @repaint_required = true
       @list[off0] = data
     end
     def [](off0)
       @list[off0]
     end
     def insert off0, *data
+      @repaint_required = true
       @list.insert off0, *data
     end
+
+    # delete current line or lines
+    # Should be using listeditable except for _header_adjustment
+    # NOTE: user has to map this to some key such as 'dd'
+    #  tw.bind_key([?\d,?\d]) { tw.delete_line }
+    #
+    def delete_line line=real_index()
+      #return -1 unless @editable
+      if !$multiplier || $multiplier == 0 
+        @delete_buffer = @list.delete_at line
+      else
+        @delete_buffer = @list.slice!(line, $multiplier)
+      end
+      @curpos ||= 0 # rlist has no such var
+      $multiplier = 0
+      #add_to_kill_ring @delete_buffer
+      @buffer = @list[@current_index]
+      if @buffer.nil?
+        up
+        setrowcol @row + 1, nil # @form.col
+      end
+      # warning: delete buffer can now be an array
+      #fire_handler :CHANGE, InputDataEvent.new(@curpos,@curpos+@delete_buffer.length, self, :DELETE_LINE, line, @delete_buffer)     #  2008-12-24 18:34 
+      set_modified 
+      #@widget_scrolled = true
+      @repaint_required = true
+    end
+
+    # undo deleted row/rows, this is a simple undo, unlike undo_managers more
+    # complete undo. I am not calling this <tt>undo</tt>, so there's no conflict with
+    # undomanager if used.
+    # NOTE: user has to map this to some key such as 'u'
+    #     tw.bind_key(?\U) { tw.undo }
+    #
+    def undo_delete
+      return unless @delete_buffer
+      if @delete_buffer[0].is_a? Array
+        # multiple rows deleted
+        insert real_index(), *@delete_buffer
+      else
+        # one row deleted
+        insert real_index(), @delete_buffer
+      end
+    end
+
     # TODO more methods like in listbox so interchangeable, delete_at etc
     def column_width colindex, width
       return if width < 0
@@ -271,11 +319,14 @@ module RubyCurses
     end
     def expand_column
       x = _convert_curpos_to_column
-      w = get_column(x).width
+      w = get_column(x).width || @cw[x]
       # sadly it seems to be nil
       column_width x, w+1 if w
     end
     def contract_column
+      x = _convert_curpos_to_column
+      w = get_column(x).width || @cw[x]
+      column_width x, w-1 if w
     end
     ## display this row number on top
     # programmataically indicate a row to be top row
