@@ -324,7 +324,7 @@ module RubyCurses
         end
         @current_index = @focusables.index(@current_component)
         index = @current_index -= 1
-        f = @focusables[i]
+        f = @focusables[index]
         if f
           @current_index = index
           @current_component = f
