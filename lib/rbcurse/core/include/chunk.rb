@@ -66,6 +66,11 @@ module Chunks
     # return a Chunkline containing only the text for the range requested
     def substring start, size
     end
+    def to_s
+      result = ""
+      @chunks.each { |e| result << e.text }
+      result
+    end
   end
   class ColorParser
     def initialize cp
