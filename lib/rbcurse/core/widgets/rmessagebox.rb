@@ -136,7 +136,7 @@ module RubyCurses
     # @param [String] text to display
     def message message # yield label or field being used for display for further customization
       @suggested_h = @height || 10
-      message = message.gsub(/[\n\r\t]/,' ')
+      message = message.gsub(/[\n\r\t]/,' ') rescue message
       message_col = 5
       @suggested_w = @width || [message.size + 8 + message_col , FFI::NCurses.COLS-2].min
       r = 3
