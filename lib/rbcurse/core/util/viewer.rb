@@ -42,6 +42,8 @@ module RubyCurses
       layout = { :height => wh, :width => ww, :top => wt, :left => wl } 
       v_window = VER::Window.new(layout)
       v_form = RubyCurses::Form.new v_window
+      blue_white = get_color($datacolor, :white, 235)
+      #blue_white = RubyCurses::Utils.get_color($datacolor, :white, 235)
       textview = TextView.new v_form do
         name   "Viewer" 
         row  0
@@ -52,6 +54,8 @@ module RubyCurses
         title_attrib ta
         print_footer pf
         footer_attrib fa
+        #border_attrib :reverse
+        border_color blue_white
       end
 
       t = textview
@@ -70,7 +74,8 @@ module RubyCurses
       # yielding textview so you may further configure or bind keys or events
       begin
       textview.set_content content #, :WRAP_WORD
-      yield textview if block_given? # tentative
+      # the next can also be used to use formatted_text(text, :ansi)
+      yield textview if block_given? 
       v_form.repaint
       v_window.wrefresh
       Ncurses::Panel.update_panels
