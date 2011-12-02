@@ -197,6 +197,7 @@ module ListEditable
       # object row can be string or array - time to use INSERT_LINE so we are clear
       # row.length can be array's size or string length - beware
       fire_handler :CHANGE, InputDataEvent.new(0,row.length, self, :INSERT_LINE, @current_index, row)
+      return 0 # don't want a UNHANDLED or NO_BLOCK going back
     end
 
     # paste previous entries from kill ring
