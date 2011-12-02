@@ -344,7 +344,13 @@ module RubyCurses
             else
               ret = process_key ch, self
               @multiplier = 0
-              return :UNHANDLED if ret == :UNHANDLED
+              # if no block associated with :PRESS (KEY_ENTER) lets allow the form to use ENTER
+              # This is for default buttons. Added NO_BLOCK 2011-12-2 
+              # 2011-12-2 11:54 PM this was resulting in no repaint even
+              # when symbols were being executed??
+              # Its risky since symbol can call something which returns
+              # UNHNDLED or NO_BLOCK even tho' it executed.
+              return :UNHANDLED if ret == :UNHANDLED #|| ret == :NO_BLOCK
             end
           else
             # no motion on single key, we can freak out like in vim, pref f <char> for set_selection
@@ -355,7 +361,9 @@ module RubyCurses
               return 0
             end
             ret = process_key ch, self
-            return :UNHANDLED if ret == :UNHANDLED
+            # if no block associated with :PRESS (KEY_ENTER) lets allow the form to use ENTER
+            # This is for default buttons. Added NO_BLOCK 2011-12-2 
+            return :UNHANDLED if ret == :UNHANDLED #|| ret == :NO_BLOCK1
           end
         end
       end
