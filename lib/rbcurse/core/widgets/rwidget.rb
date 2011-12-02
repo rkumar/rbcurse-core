@@ -441,9 +441,9 @@ module RubyCurses
         #0
       end
       # view a file or array of strings
-      def view what, config={} # :yields: textview for further configuration
+      def view what, config={}, &block # :yields: textview for further configuration
         require 'rbcurse/core/util/viewer'
-        RubyCurses::Viewer.view what, config
+        RubyCurses::Viewer.view what, config, &block
       end
     end # module
 
@@ -519,14 +519,21 @@ module RubyCurses
           else
             # there is no block for this key/event
             # we must behave exactly as processkey
-            return :UNHANDLED
+            # NOTE this is too risky since then buttons and radio buttons
+            # that don't have any command don;t update,so removing 2011-12-2 
+            #return :UNHANDLED
+            return :NO_BLOCK
           end # if
         else
           # there is no handler
           # I've done this since list traps ENTER but rarely uses it.
           # For buttons default, we'd like to trap ENTER even when focus is elsewhere
           # we must behave exactly as processkey
-          return :UNHANDLED
+            # NOTE this is too risky since then buttons and radio buttons
+            # that don't have any command don;t update,so removing 2011-12-2 
+          #return :UNHANDLED
+          # If caller wants, can return UNHANDLED such as list and ENTER.
+            return :NO_BLOCK
         end # if
       end
       ## added on 2009-01-08 00:33 
