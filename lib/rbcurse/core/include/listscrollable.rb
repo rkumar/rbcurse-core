@@ -429,12 +429,14 @@ module ListScrollable
     # NOTE: will not work if the list has different data from what is displayed
     # Nothing i can do about it.
     # Also does not work as expected if consecutive spaces FIXME
+    # Will not scroll list, if reaches end, jist goes on and vanshes FIXME
     #
     def forward_word
       $multiplier = 1 if !$multiplier || $multiplier == 0
       line = @current_index
       buff = @list[line].to_s
-      pos = @curpos
+      return unless buff
+      pos = @curpos || 0 # list does not have curpos
       $multiplier.times {
         found = buff.index(/[[:punct:][:space:]]/, pos)
         if !found
