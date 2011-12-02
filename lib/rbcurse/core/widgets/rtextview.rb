@@ -703,7 +703,7 @@ module RubyCurses
     def fire_action_event
       return if @list.nil? || @list.size == 0
       require 'rbcurse/core/include/ractionevent'
-      aev = TextActionEvent.new self, :PRESS, current_value(), @current_index, @curpos
+      aev = TextActionEvent.new self, :PRESS, current_value().to_s, @current_index, @curpos
       fire_handler :PRESS, aev
     end
     # called by listscrollable, used by scrollbar ENTER_ROW
