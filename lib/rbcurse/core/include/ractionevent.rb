@@ -50,7 +50,7 @@ module RubyCurses
     end
     # the text of the line on which the user is
     def text
-      source.current_value
+      source.current_value.to_s
     end
     # the word under the cursor TODO
     # if its a text with pipe delim, then ??
