@@ -55,6 +55,7 @@ module RubyCurses
       @col = 0
       @show_focus = false  # don't highlight row under focus
       @list = []
+      map_keys
       super
       # ideally this should have been 2 to take care of borders, but that would break
       # too much stuff !
@@ -65,7 +66,6 @@ module RubyCurses
       @_events << :ENTER_ROW # new, should be there in listscrollable ??
       install_keys # do something about this nonsense FIXME
       init_vars
-      map_keys
     end
     def init_vars #:nodoc:
       @curpos = @pcol = @toprow = @current_index = 0
@@ -94,6 +94,8 @@ module RubyCurses
       bind_key(?\M-l, :scroll_right)
       bind_key(?\M-h, :scroll_left)
       bind_key([?\C-x, ?\C-s], :saveas)
+      # have placedhere so multi-bufer can override BS to prev buffer
+      bind_keys([KEY_BACKSPACE,KEY_BSPACE,KEY_DELETE], :cursor_backward)
       #bind_key(?r) { getstr("Enter a word: ") }
       bind_key(?m, :disp_menu)
     end
@@ -102,9 +104,17 @@ module RubyCurses
     # e.g.         set_content File.open("README.txt","r").readlines
     # set wrap at time of passing :WRAP_NONE :WRAP_WORD
     # XXX if we widen the textview later, as in a vimsplit that data
-    # will still be wrapped at this width !!
-    def set_content list, wrap = :WRAP_NONE
-      @wrap_policy = wrap
+    # will sti1ll be wrapped at this width !!
+    #  2011-12-3 changed wrap to hash, so we can use content_type :ansi, :tmux
+    def set_content list, config = {} #wrap = :WRAP_NONE
+      @content_type = config[:content_type]
+      _title = config[:title]
+      self.title = _title if _title
+      if @content_type
+        formatted_text list, @content_type
+        return
+      end
+      @wrap_policy = config[:wrap]
       if list.is_a? String
         if @wrap_policy == :WRAP_WORD
           data = wrap_text list
@@ -318,8 +328,8 @@ module RubyCurses
         cursor_backward
       when KEY_RIGHT, ?l.getbyte(0)
         cursor_forward
-      when KEY_BACKSPACE, KEY_BSPACE, KEY_DELETE
-        cursor_backward
+      #when KEY_BACKSPACE, KEY_BSPACE, KEY_DELETE
+        #cursor_backward
       when ?\C-a.getbyte(0) #, ?0.getbyte(0)
         # take care of data that exceeds maxlen by scrolling and placing cursor at start
         @repaint_required = true if @pcol > 0 # tried other things but did not work
@@ -644,7 +654,6 @@ module RubyCurses
     # How can application add to this, or override
     # TODO: use another window at bottom, statuswindow
     def disp_menu  #:nodoc:
-      require 'rbcurse/extras/widgets/menutree'
       # we need to put this into data-structure so that i can be manipulated by calling apps
       # This should not be at the widget level, too many types of menus. It should be at the app
       # level only if the user wants his app to use this kind of menu.
@@ -673,6 +682,7 @@ module RubyCurses
 
 
 =begin
+      require 'rbcurse/extras/widgets/menutree'
       menu = PromptMenu.new self 
       menu.add( menu.create_mitem( 's', "Goto start ", "Going to start", Proc.new { goto_start} ))
       menu.add(menu.create_mitem( 'r', "scroll right", "I have scrolled ", :scroll_right ))
