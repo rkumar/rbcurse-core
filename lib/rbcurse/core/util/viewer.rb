@@ -38,6 +38,7 @@ module RubyCurses
       pf = config.fetch(:print_footer, true)
       ta = config.fetch(:title_attrib, 'bold')
       fa = config.fetch(:footer_attrib, 'bold')
+      type = config[:content_type]
 
       layout = { :height => wh, :width => ww, :top => wt, :left => wl } 
       v_window = VER::Window.new(layout)
@@ -57,6 +58,8 @@ module RubyCurses
         #border_attrib :reverse
         border_color blue_white
       end
+      require 'rbcurse/core/include/multibuffer'
+      textview.extend(RubyCurses::MultiBuffers)
 
       t = textview
       t.bind_key('<'){ f = t.form.window; c = f.left - 1; f.hide; f.mvwin(f.top, c); f.show;
@@ -73,7 +76,8 @@ module RubyCurses
       }
       # yielding textview so you may further configure or bind keys or events
       begin
-      textview.set_content content #, :WRAP_WORD
+      textview.set_content content, :content_type => type
+      textview.add_content content, :content_type => type
       # the next can also be used to use formatted_text(text, :ansi)
       yield textview if block_given? 
       v_form.repaint
@@ -91,7 +95,7 @@ module RubyCurses
       rescue => err
           $log.error " VIEWER ERROR #{err} "
           $log.debug(err.backtrace.join("\n"))
-        alert err.to_s
+        alert "Viewer:" + err.to_s
       ensure
         v_window.destroy if !v_window.nil?
       end
@@ -120,6 +124,7 @@ module RubyCurses
       end
     end
   end  # class
+
 end # module
 if __FILE__ == $PROGRAM_NAME
 require 'rbcurse/core/util/app'
