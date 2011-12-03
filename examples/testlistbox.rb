@@ -11,6 +11,47 @@ class RubyCurses::List
   # also, f overrides list f mapping. TODO
   include ViEditable
 end
+  def my_help_text
+    <<-eos
+
+    =========================================================================
+    Basic Usage
+
+    Press <ENTER> on a class name on the first list, to view ri information
+    for it on the right.
+    
+    Tab to right area, and press <ENTER> on a method name, to see its details
+    Press / <slash> in any box to search. e.g /String will take you to the
+    first occurrence of String. <n> will take you to next.
+    
+    To go quickly to first class starting with 'S', type <f> followed by <S>.
+    Then press <n> to go to next match.
+    
+    =========================================================================
+    Vim Edit Keys
+
+    The list on left has some extra vim keys enabled such as :
+    yy     - yank/copy current line/s
+    P, p   - paste after or before
+    dd     - delete current line
+    o      - insert a line after this one
+    C      - change content of current line
+    These are not of use here, but are demonstrative of list capabilities.
+
+    =========================================================================
+    Buffers
+
+    Ordinary a textview contains only one buffer. However, the one on the right
+    is extended for multiple buffers. Pressing ENTER on the left on several 
+    rows opens multiple buffers on the right. Use M-n (Alt-N) and M-p to navigate.
+    ALternatively, : maps to a menu, so :n and :p may also be used.
+    <BACKSPACE> will also go to previous buffer, like a browser.
+
+    =========================================================================
+           Press <M-n> for next help screen, or try :n 
+
+    eos
+  end
 if $0 == __FILE__
   include RubyCurses
 
@@ -22,6 +63,7 @@ if $0 == __FILE__
 
     @window = VER::Window.root_window
     $catch_alt_digits = true; # emacs like alt-1..9 numeric arguments
+    install_help_text my_help_text
     # Initialize few color pairs 
     # Create the window to be associated with the form 
     # Un post form and free the memory
@@ -30,6 +72,7 @@ if $0 == __FILE__
       colors = Ncurses.COLORS
       $log.debug "START #{colors} colors testlistbox.rb --------- #{@window} "
       @form = Form.new @window
+      @form.bind_key(KEY_F1){ display_app_help }
       @form.window.printstring 0, 30, "Demo of Listbox - some vim keys", $normalcolor, BOLD
       r = 1; fc = 1;
 
@@ -64,46 +107,27 @@ if $0 == __FILE__
       listb.bind(:PRESS) { 
         w = @form.by_name["tv"]; 
         lines = `ri -f bs #{listb.text}`.split("\n")
-        #w.set_content(lines); 
-        w.formatted_text(lines, :ansi)
-        w.title = listb.text
+        #w.set_content(lines, :ansi)
+        w.add_content(lines, :content_type => :ansi, :title => listb.text)
+        w.buffer_last
+        #w.title = listb.text
       }
 
       tv = RubyCurses::TextView.new @form, :row => r, :col => w+1, :height => h, :width => FFI::NCurses.COLS-w-1,
       :name => "tv", :title => "Press Enter on method"
       tv.set_content ["Press Enter on list to view ri information in this area.", 
         "Press ENTER on method name to see details"]
+      require 'rbcurse/core/include/multibuffer'
+      tv.extend(RubyCurses::MultiBuffers)
+
+      # pressing ENTER on a method name will popup details for that method
       tv.bind(:PRESS) { |ev|
         w = ev.word_under_cursor.strip
         text = `ri -f bs #{tv.title}.#{w}` rescue "Not details for #{w}"
         text = text.split("\n")
-        temptext = ["sending in","some text"]
-        view(temptext) do |t|
-          t.formatted_text(text, :ansi)
-        end
+        view(text, :content_type => :ansi)
       }
 
-      #undom = SimpleUndo.new listb
-
-
-=begin
-    # using ampersand to set mnemonic
-    col = FFI::NCurses.COLS-10
-    row = FFI::NCurses.LINES-2
-    cancel_button = Button.new @form do
-      text "&Close"
-      row row
-      col col
-    end
-    cancel_button.command { |form| 
-      if confirm("Do your really want to quit?")
-        throw(:close); 
-      else
-        $message.value = "Quit aborted"
-      end
-    }
-
-=end
 
     @form.repaint
     @window.wrefresh
