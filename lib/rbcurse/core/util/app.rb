@@ -329,44 +329,6 @@ module RubyCurses
       end
       opts
     end
-    def display_app_help
-      if respond_to? :help_text
-        arr = help_text
-      else
-
-        filename = File.dirname(__FILE__) + "/../docs/index.txt"
-        if File.exists?(filename)
-          arr = File.open(filename,'r').readlines
-        else
-          #$stderr.puts "could not locate file #{filename}. " 
-          #puts `pwd`
-          arr = []
-          arr << "    NO HELP SPECIFIED FOR APP "
-          arr << "    "
-          arr << "     --- General help ---          "
-          arr << "    F10         -  exit application "
-          arr << "    Alt-x       -  select commands  "
-          arr << "    :           -  select commands  "
-          arr << "    "
-        end
-        case arr
-        when String
-          arr = arr.split("\n")
-        when Array
-        end
-        w = arr.max_by(&:length).length
-
-        require 'rbcurse/core/util/viewer'
-        RubyCurses::Viewer.view(arr, :layout => [2, 10, [4+arr.size, 24].min, w+2],:close_key => ?q, :title => "[ Help ]", :print_footer => true) do |t|
-          # you may configure textview further here.
-          #t.suppress_borders true
-          #t.color = :black
-          #t.bgcolor = :white
-          # or
-          #t.attr = :reverse
-        end
-      end
-    end
     # bind a key to a method at global (form) level
     # Note that individual component may be overriding this.
     # FIXME: why are we using rawmessage and then getchar when ask would suffice
@@ -422,7 +384,7 @@ module RubyCurses
       f = @form.get_current_field
       if f.respond_to?('help_text')
         h = f.help_text
-        alert "#{h}"
+        textdialog "#{h}"
       else
         alert "Could not get field #{f} or does not respond to helptext"
       end
