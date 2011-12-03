@@ -518,6 +518,65 @@ def longest_in_list list  #:nodoc:
   end    
   longest
 end    
+def install_help_text text
+  @_help_text = text
+end
+# this routine prints help_text for an application
+# If help_text has been set using install_help_text
+# it will be displayed. Else, general help will be
+# displayed. Even when custom help is displayed,
+# user may use <next> to see general help.
+#
+# earlier in app.rb
+def display_app_help
+  filename = File.dirname(__FILE__) + "/../docs/index.txt"
+  # defarr contains default help
+  if File.exists?(filename)
+    defarr = File.open(filename,'r').readlines
+  else
+    arr = []
+    arr << "    NO HELP SPECIFIED FOR APP "
+    arr << "    "
+    arr << "     --- General help ---          "
+    arr << "    F10         -  exit application "
+    arr << "    Alt-x       -  select commands  "
+    arr << "    :           -  select commands  "
+    arr << "    "
+    defarr = arr
+  end
+  defhelp = true
+  if respond_to? :help_text
+    arr = help_text
+    defhelp = false
+  elsif @_help_text
+    arr = @_help_text
+    defhelp = false
+  else
+  end
+  case arr
+  when String
+    arr = arr.split("\n")
+  when Array
+  end
+  #w = arr.max_by(&:length).length
+  h = FFI::NCurses.LINES - 4
+  w = FFI::NCurses.COLS - 10
+
+    require 'rbcurse/core/util/viewer'
+    RubyCurses::Viewer.view(arr, :layout => [2, 4, h, w],:close_key => KEY_F10, :title => "[ Help ]", :print_footer => true) do |t|
+      # you may configure textview further here.
+      #t.suppress_borders true
+      #t.color = :black
+      #t.bgcolor = :white
+      # or
+      #t.attr = :reverse
+
+      # help was provided, so default help is provided in second buffer
+      unless defhelp
+        t.add_content defarr, :title => ' General Help '
+      end
+    end
+end
 #
 =begin  
 http://www.kammerl.de/ascii/AsciiSignature.php
