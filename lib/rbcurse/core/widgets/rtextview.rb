@@ -86,6 +86,7 @@ module RubyCurses
     end
     def map_keys
       bind_key([?g,?g], 'goto start'){ goto_start } # mapping double keys like vim
+      bind_key(?G, 'goto end'){ goto_bottom() }
       bind_key([?',?'], 'goto last position'){ goto_last_position } # vim , goto last row position (not column)
       bind_key(?/, :ask_search)
       bind_key(?n, :find_more)
@@ -94,6 +95,8 @@ module RubyCurses
       bind_key(?\M-l, :scroll_right)
       bind_key(?\M-h, :scroll_left)
       bind_key([?\C-x, ?\C-s], :saveas)
+      bind_keys([?\C-d, 32], 'scroll forward'){ scroll_forward() }
+      bind_key(?\C-b, 'scroll backward'){ scroll_backward() }
       # have placedhere so multi-bufer can override BS to prev buffer
       bind_keys([KEY_BACKSPACE,KEY_BSPACE,KEY_DELETE], :cursor_backward)
       #bind_key(?r) { getstr("Enter a word: ") }
@@ -304,14 +307,6 @@ module RubyCurses
       end
       # We can improve later
       case ch
-      when ?\C-n.getbyte(0), 32
-        scroll_forward
-      when ?\C-p.getbyte(0)
-        scroll_backward
-      when ?\C-[.getbyte(0), ?t.getbyte(0)
-        goto_start #start of buffer # cursor_start
-      when ?\C-].getbyte(0), ?G.getbyte(0)
-        goto_end # end / bottom cursor_end
       when KEY_UP, ?k.getbyte(0)
         #select_prev_row
         ret = up
