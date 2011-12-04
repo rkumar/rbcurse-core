@@ -423,15 +423,19 @@ module RubyCurses
         cmdline = str.split
         cmd = cmdline.shift #.to_sym
         return unless cmd # added 2011-09-11 FFI
+        f = @form.get_current_field
         if respond_to?(cmd, true)
           if cmd == "close"
             throw :close # other seg faults in del_panel window.destroy executes 2x
           else
             res = send cmd, *cmdline
           end
+        elsif f.respond_to?(cmd, true)
+          res = f.send(cmd, *cmdline)
         else
-          alert "#{self.class} does not respond to #{cmd} "
+          alert "App: #{self.class} does not respond to #{cmd} "
           ret = false
+          # what is this execute_this: some kind of general routine for all apps ?
           ret = execute_this(cmd, *cmdline) if respond_to?(:execute_this, true)
           say_with_pause("#{self.class} does not respond to #{cmd} ", :color_pair => $promptcolor) unless ret
           # should be able to say in red as error
