@@ -552,6 +552,7 @@ def display_app_help
     arr = @_help_text
     defhelp = false
   else
+    arr = defarr
   end
   case arr
   when String
