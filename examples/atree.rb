@@ -80,8 +80,8 @@ App.new do
 
         end
         #stack :margin_top => 2 do
-        stack :margin_top => 0, :width_pc => "40", :height_pc => "100" do
-          t = textview  :suppress_borders => true
+        stack :margin_top => 0, :width_pc => "40", :height => :expand do
+          t = textview  :suppress_borders => true, :height_pc => 100
             var.command do |filename| 
               filename = filename.value
               if File.directory? filename
