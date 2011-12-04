@@ -394,7 +394,7 @@ module RubyCurses
     # Actually, this is naive, you would want to pass some values in like current data value
     # or lines ??
     # Also may want command completion, or help so all commands can be displayed
-    def get_command_from_user choices=["quit"]
+    def get_command_from_user choices=["quit","help"]
       #code, str = rbgetstr(@window, $lastline, 0, "", 80, :default => ":")
       #return unless code == 0
             @_command_history ||= Array.new
@@ -923,6 +923,7 @@ module RubyCurses
     def quit
       throw(:close)
     end
+    def help; display_app_help; end
     # Initialize curses
     def init_ncurses
       VER::start_ncurses  # this is initializing colors via ColorMap.setup
