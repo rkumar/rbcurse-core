@@ -52,7 +52,6 @@ App.new do
         item :w, :which
       end
     end
-    #menu.display @form.window, $error_message_row, $error_message_col, $datacolor #, menu
     menu.display_new :title => "Menu"
   end
   # fill list with actual gems available on your system
