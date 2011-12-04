@@ -853,7 +853,16 @@ end
             ret = action.call
             break
           when Symbol
-            ret = @caller.send(action)
+            if @caller.respond_to?(action, true)
+              $log.debug "XXX:  IO caller responds to action #{action} "
+              ret = @caller.send(action)
+            elsif @caller.respond_to?(:execute_this, true)
+              ret = @caller.send(:execute_this, action)
+            else
+              alert "PromptMenu: unidentified action #{action} for #{@caller.class} "
+              raise "PromptMenu: unidentified action #{action} for #{@caller.class} "
+            end
+
             break
           else 
             $log.debug " Unidentified flying class #{action.class} "
