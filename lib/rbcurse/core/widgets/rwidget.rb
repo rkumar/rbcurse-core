@@ -366,6 +366,17 @@ module RubyCurses
       def bind_key keycode, *args, &blk
         $log.debug " #{@name} bind_key received #{keycode} "
         @key_handler ||= {}
+        #
+        # added on 2011-12-4 so we can pass a description for a key and print it
+        # The first argument may be a string, it will not be removed
+        # so existing programs will remain as is.
+        @key_label ||= {}
+        if args[0].is_a?(String) || args[0].is_a?(Symbol)
+          @key_label[keycode] = args[0] 
+        else
+          @key_label[keycode] = :unknown
+        end
+
         if !block_given?
           blk = args.pop
           raise "If block not passed, last arg should be a method symbol" if !blk.is_a? Symbol
@@ -394,6 +405,39 @@ module RubyCurses
         end
         @key_args ||= {}
         @key_args[keycode] = args
+
+      end
+      def print_key_bindings *args
+        f  = get_current_field
+        labels = [@key_label, f.key_label]
+        arr = []
+        labels.each_with_index { |h, i|  
+          case i
+          when 0
+            arr << "  ===  Form bindings ==="
+          when 1
+            arr << "  === Current field bindings ==="
+          end
+
+          h.each_pair { |name, val| 
+            if name.is_a? Fixnum
+              name = keycode_tos name
+            elsif name.is_a? String
+              name = keycode_tos(name.getbyte(0))
+            elsif name.is_a? Array
+              s = []
+              name.each { |e|
+                s << keycode_tos(e.getbyte(0))
+              }
+              name = s
+            else
+              #$log.debug "XXX: KEY #{name} #{name.class} "
+            end
+            arr << " %-30s %s" % [name ,val]
+            $log.debug "KEY: #{name} : #{val} "
+          }
+        }
+        textdialog arr
       end
       def bind_keys keycodes, *args, &blk
         keycodes.each { |k| bind_key k, *args, &blk }
@@ -677,6 +721,8 @@ module RubyCurses
     attr_accessor :focussed  # is this widget in focus, so they may paint differently
 
     dsl_accessor :height_pc, :width_pc # tryin out in stacks and flows 2011-11-23 
+
+    attr_reader :key_label
 
     def initialize aform, aconfig={}, &block
       # I am trying to avoid passing the nil when you don't want to give a form.
@@ -1634,8 +1680,14 @@ module RubyCurses
   #
   def map_keys
     return if @keys_mapped
-    bind_keys([?\M-?,?\?]) { alert(get_current_field.help_text, 'title' => 'Help Text', :bgcolor => 'green', :color => :white) if get_current_field.help_text }
-    #bind_key(?\?) { alert(get_current_field.help_text.split(",")) if get_current_field.help_text }
+    bind_keys([?\M-?,?\?], 'show field help') { 
+      if get_current_field.help_text 
+        textdialog(get_current_field.help_text, 'title' => 'Help Text', :bgcolor => 'green', :color => :white) 
+      else
+        print_key_bindings
+      end
+    }
+    bind_key(FFI::NCurses::KEY_F9, "Print keys", :print_key_bindings) # show bindings, tentative on F9
     @keys_mapped = true
   end
   
