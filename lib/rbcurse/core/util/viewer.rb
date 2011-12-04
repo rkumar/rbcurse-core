@@ -65,16 +65,16 @@ module RubyCurses
       textview.extend(RubyCurses::MultiBuffers)
 
       t = textview
-      t.bind_key('<'){ f = t.form.window; c = f.left - 1; f.hide; f.mvwin(f.top, c); f.show;
+      t.bind_key('<', 'move window left'){ f = t.form.window; c = f.left - 1; f.hide; f.mvwin(f.top, c); f.show;
         f.reset_layout([f.height, f.width, f.top, c]); 
       }
-      t.bind_key('>'){ f = t.form.window; c = f.left + 1; f.hide; f.mvwin(f.top, c); 
+      t.bind_key('>', 'move window right'){ f = t.form.window; c = f.left + 1; f.hide; f.mvwin(f.top, c); 
         f.reset_layout([f.height, f.width, f.top, c]); f.show;
       }
-      t.bind_key('^'){ f = t.form.window; c = f.top - 1 ; f.hide; f.mvwin(c, f.left); 
+      t.bind_key('^', 'move window up'){ f = t.form.window; c = f.top - 1 ; f.hide; f.mvwin(c, f.left); 
         f.reset_layout([f.height, f.width, c, f.left]) ; f.show;
       }
-      t.bind_key('V'){ f = t.form.window; c = f.top + 1 ; f.hide; f.mvwin(c, f.left); 
+      t.bind_key('V', 'move window down'){ f = t.form.window; c = f.top + 1 ; f.hide; f.mvwin(c, f.left); 
         f.reset_layout([f.height, f.width, c, f.left]); f.show;
       }
       # yielding textview so you may further configure or bind keys or events
