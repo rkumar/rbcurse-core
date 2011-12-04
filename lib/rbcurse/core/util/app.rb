@@ -968,7 +968,7 @@ module RubyCurses
         awin = @window
         catch(:close) do
           @form = Form.new @window
-          @form.bind_key([?\C-x, ?c]) { suspend(false) do
+          @form.bind_key([?\C-x, ?c], 'suspend') { suspend(false) do
             system("tput cup 26 0")
             system("tput ed")
             system("echo Enter C-d to return to application")
@@ -979,11 +979,11 @@ module RubyCurses
           # this is a very rudimentary default command executer, it does not 
           # allow tab completion. App should use M-x with names of commands
           # as in appgmail
-          @form.bind_key(?:) { 
+          @form.bind_key(?:, 'prompt') { 
             str = get_command_from_user
           }
 
-          @form.bind_key(?\M-x){
+          @form.bind_key(?\M-x, 'M-x commands'){
             # TODO previous command to be default
             opts = get_all_commands()
             @_command_history ||= Array.new
@@ -1021,8 +1021,8 @@ module RubyCurses
               end
             end
           }
-          @form.bind_key(KEY_F1){ display_app_help }
-          @form.bind_key([?q,?q]){ throw :close } if $log.debug?
+          @form.bind_key(KEY_F1, 'help'){ display_app_help }
+          @form.bind_key([?q,?q], 'quit' ){ throw :close } if $log.debug?
 
           #@message = Variable.new
           #@message.value = ""
