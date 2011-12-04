@@ -1,7 +1,34 @@
 require 'rbcurse/core/util/app'
 
-
 App.new do 
+  def app_menu
+      menu = PromptMenu.new self do
+        item :e, :edit
+        item :o, :open_new
+        item :d, :delete
+        item :u, :undo_delete
+        #item :y, :yank
+        #item :p, :paste
+        item :/, :search
+      end
+      menu.display_new :title => "Menu"
+  end
+  # to execute when app_menu is invoked
+  def execute_this *cmd
+    cmd = cmd[0][0] # extract first letter of command
+    cmdi = cmd.getbyte(0)
+    case cmd
+    when 'e','o','p'
+      @window.ungetch cmdi
+    when 'y','d'
+      @window.ungetch cmdi
+      @window.ungetch cmdi
+    when 'u'
+      @window.ungetch cmd.upcase.getbyte(0)
+    when 's'
+      @window.ungetch ?\/.getbyte(0)
+    end
+  end
 def help_text
     <<-eos
          Help for tabular widgets   
@@ -83,7 +110,7 @@ def _edit h, row, title
 end
   header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Tabular Demo", :text_right =>"Fat-free !", 
       :color => :black, :bgcolor => :green #, :attr => :bold 
-  message "Press F10 to exit from here, F1 for help, F2 for menu"
+  message "Press F10 to exit, F1 for help, : for menu"
 
   h = %w[ Id Title Priority Status]
   file = "data/table.txt"
@@ -101,4 +128,5 @@ end
     tw.bind_key(?o) {  insert_row tw }
   end # stack
   status_line :row => FFI::NCurses.LINES-1
+  @form.bind_key(?:) {  app_menu }
 end # app
