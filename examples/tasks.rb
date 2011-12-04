@@ -42,19 +42,19 @@ App.new do
     lb = listbox :list => alist.sort, :title => "[ todos ]", :height_pc => 100, :name => "tasklist"
     lb.should_show_focus = false
     lb.cell_renderer CellRenderer.new
-    lb.bind_key(?d){ 
+    lb.bind_key(?d, "Delete Row"){ 
       if confirm("Delete #{lb.current_value} ?")
         lb.delete_at lb.current_index 
         # TODO reposition cursor at 0. use list_data_changed ?
       end
     }
-    lb.bind_key(?e){ 
+    lb.bind_key(?e, "Edit Row"){ 
       if ((value = get_string("Edit Task:", :width => 80, :default => lb.current_value, :maxlen => 80, :display_length => 70)) != nil)
 
         lb[lb.current_index]=value
       end
     }
-    lb.bind_key(?a){ 
+    lb.bind_key(?a, "Add Record"){ 
 
       # ADD
     task = Field.new :label => "    Task:", :display_length => 60, :maxlen => 80, :bgcolor => :cyan, :color => :black,
@@ -87,7 +87,7 @@ App.new do
     end
     }
     # decrease priority
-    lb.bind_key(?-){ 
+    lb.bind_key(?-, 'decrease priority'){ 
       line = lb.current_value
       p = line[1,1].to_i
       if p < 9
@@ -98,7 +98,7 @@ App.new do
       end
     }
     # increase priority
-    lb.bind_key(?+){ 
+    lb.bind_key(?+, 'increase priority'){ 
       line = lb.current_value
       p = line[1,1].to_i
       if p > 1
@@ -113,14 +113,14 @@ App.new do
       end
     }
     # mark as done
-    lb.bind_key(?x){ 
+    lb.bind_key(?x, 'mark done'){ 
       line = lb.current_value
       line[0,1] = "x"
       lb[lb.current_index]=line
       lb.list(lb.list.sort)
     }
     # flag task with a single character
-    lb.bind_key(?!){ 
+    lb.bind_key(?!, 'flag'){ 
       line = lb.current_value.chomp
       value = get_string("Flag for #{line}. Enter one character.", :maxlen => 1, :display_length => 1)
       #if ((value = get_string("Edit Task:", :width => 80, :default => lb.current_value)) != nil)
