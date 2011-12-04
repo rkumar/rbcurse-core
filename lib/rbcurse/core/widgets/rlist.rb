@@ -131,20 +131,20 @@ module RubyCurses
     end
     def map_keys
       return if @keys_mapped
-      bind_key(?f){ ask_selection_for_char() }
-      bind_key(?\M-v){ @one_key_selection = false }
-      bind_key(?j){ next_row() }
-      bind_key(?k){ previous_row() }
-      bind_key(?\C-d){ scroll_forward() }
-      bind_key(?\C-b){ scroll_backward() }
-      bind_key(?G){ goto_bottom() }
-      bind_key([?g,?g]){ goto_top() }
-      bind_key([?',?']){ goto_last_position() }
-      bind_key(?/){ ask_search() }
-      bind_key(?n){ find_more() }
+      bind_key(?f, 'next occurence of char'){ ask_selection_for_char() }
+      bind_key(?\M-v, 'toggle one_key_selection'){ @one_key_selection = false }
+      bind_key(?j, 'next row'){ next_row() }
+      bind_key(?k, 'previous row'){ previous_row() }
+      bind_key(?\C-d, 'scroll forward'){ scroll_forward() }
+      bind_key(?\C-b, 'scroll backward'){ scroll_backward() }
+      bind_key(?G, 'goto end'){ goto_bottom() }
+      bind_key([?g,?g], 'goto top'){ goto_top() }
+      bind_key([?',?'], 'goto last position'){ goto_last_position() }
+      bind_key(?/, 'ask search'){ ask_search() }
+      bind_key(?n, 'find next'){ find_more() }
       bind_key(32){ toggle_row_selection() }
-      bind_key(10){ fire_action_event }
-      bind_key(13){ fire_action_event }
+      bind_key(10, 'fire action event'){ fire_action_event }
+      bind_key(13, 'fire action event'){ fire_action_event }
       list_bindings
       @keys_mapped = true
 
