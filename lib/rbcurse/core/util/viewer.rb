@@ -26,7 +26,7 @@ module RubyCurses
       when Array
         content = what
       else
-        raise ArgumentError, "Expecting Filename or Contents (array), but got #{what.class} "
+        raise ArgumentError, "Viewer: Expecting Filename or Contents (array), but got #{what.class} "
       end
       wt = 0 # top margin
       wl = 0 # left margin
@@ -43,7 +43,10 @@ module RubyCurses
       layout = { :height => wh, :width => ww, :top => wt, :left => wl } 
       v_window = VER::Window.new(layout)
       v_form = RubyCurses::Form.new v_window
-      blue_white = get_color($datacolor, :white, 235)
+      colors = Ncurses.COLORS
+      back = :blue
+      back = 235 if colors >= 256
+      blue_white = get_color($datacolor, :white, back)
       #blue_white = RubyCurses::Utils.get_color($datacolor, :white, 235)
       textview = TextView.new v_form do
         name   "Viewer" 
