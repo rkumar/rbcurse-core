@@ -4,6 +4,7 @@ App.new do
   var = Variable.new
   header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Tree Demo", :text_right =>"New Improved!", :color => :black, :bgcolor => :white, :attr => :bold 
   message "Press Enter to expand/collapse"
+
       @form.bind_key(FFI::NCurses::KEY_F3) { 
         require 'rbcurse/core/util/viewer'
         RubyCurses::Viewer.view("rbc13.log", :close_key => KEY_RETURN, :title => "<Enter> to close")
