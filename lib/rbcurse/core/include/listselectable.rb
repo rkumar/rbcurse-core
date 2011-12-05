@@ -206,8 +206,8 @@ module RubyCurses
     def list_bindings
       # what about users wanting 32 and ENTER to also go to next row automatically
       # should make that optional, TODO
-      bind_key(32) { toggle_row_selection }
-      bind_key(0) { add_to_selection }
+      bind_key(32, 'toggle selection') { toggle_row_selection }
+      bind_key(0, 'range select') { add_to_selection }
       bind_key(?+, :ask_select) # --> calls select_values
       bind_key(?-, :ask_unselect) # please implement FIXME TODO
       bind_key(?a, :select_all)
