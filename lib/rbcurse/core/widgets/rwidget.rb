@@ -409,7 +409,9 @@ module RubyCurses
       end
       def print_key_bindings *args
         f  = get_current_field
-        labels = [@key_label, f.key_label]
+        #labels = [@key_label, f.key_label]
+        labels = [@key_label]
+        labels << f.key_label if f.key_label
         arr = []
         labels.each_with_index { |h, i|  
           case i
