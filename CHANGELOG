@@ -1,0 +1,1942 @@
+**2011-12-05**
+## 0.0.0 rbcurse-core
+
+1. Added a help system - on F1. 
+   '?' reveals key-bindings for form and current widget.
+
+2. bind_key includes string parameter which documents binding
+
+3. KEY_RETURN and KEY_ENTER fixed (values switched)
+
+4. textview can extend MultiBuffer (simple multibuffering)
+
+5. Moving map_keys prior to super in constructor of widgets
+   so app can override keys.
+
+6. textview: set_content second param is a Hash.
+
+7. App.rb: shortcuts and stack flow removed and replaced
+   with widgetshortcuts.rb. 
+	 Now there should be an outer flow or stack. Earlier,
+	 there could be two stacks with no outer stack or flow.
+
+	 New implementation allows height_pc and width_pc.
+	 Widgets can also have height_pc and width_pc if placed in stacks or flows
+	 in an App. Please check samples to see. 
+
+**2011-11-17**
+## 1.5.0
+
+### split rbcurse into core, extras and experimental
+    Now rbcurse is a meta-gem which includes the other three.
+
+### major rehaul of directory structures
+    ilb/core/widgets, lib/core/include, lib/core/system etc
+
+### class name changes
+
+    * rbasiclistbox -> rlist, shortcut: basic_list -> listbox
+		* rlistbox              , shortcut: list_box   -> edit_list
+    * rtable                , shortcut: table      -> edit_table
+    * rtabularwidget        , shortcut: tabular_widget -> table (alias)
+
+
+**2011-11-06**
+## 1.4.1
+
+### More cleanup of widget and form and window
+
+### Rewrite of tabbedpane and messagebox but not replaced old classes
+
+### Textview and Window and Statusline now can print colored text
+    Colored interface not yet final.
+
+### Some experimental work that will trickle into core classes in 1.5.0
+
+### Some standardization of core classes, more to follow.
+
+**2011-10-06**
+## 1.3.1 or 1.4.0
+
+### Major cleanup of widget class
+  Scrollpane support (buffering stuff all removed)
+
+### TabbedPane
+  Corrected, major changes
+
+### dsl_accessor and dsl_property
+  Now return self so we can chain.
+
+### return values of some keys (Class Form)
+  Earlier not returning anything meaningful or returning last_key
+  Now return NO_NEXT_FIELD or NO_PREVIOUS_FIELD
+
+### j and k keys used for down and up where possible
+   e.g. button and its children including checkbox
+
+### Miscellaneous
+
+  * Dynamic menuitems in menu (see menu1.tb)
+  * rework on menu and menubar, and keys using them
+  * FieldVetoException (see test2.rb)
+  * valid_range for Field (see test2.rb)
+  * fixed field's type method, earlier non-functional
+  * array and 4 integer constructor for Window
+  * StatusWindow class - 2 line window for alert, confirm and statuses as an
+    alternative to dialogs.
+  * status_dialog returning a handle so we can keep updating status then
+  close.
+  * many more minor adjustments, tweaks, issues
+
+**2011-09-26**
+## 1.3.0
+
+### Moving to ffi-ncurses
+   Essentially code changes for ffi-ncurses. ncurses gem no longer supported
+   as it was painful to install. Required ffi-ncurses >= 0.4.0
+   
+   Some bugfixes in demos and samples due to changes in 1.2.0, or ruby 1.9,  which went
+   unnoticed.
+
+### Deprecations
+   Some classes being deprecated:
+   - SplitPane (use vimsplit instead)
+   - ScrollPane (no substitute) Code supporting scrollpane will be removed
+   by 1.3.1 or 1.3.2  and this will not work.
+
+### Tabbedpane
+   Not working correctly since moving to ffi-ncurses. Will be completely
+   rewritten by 1.3.2.
+
+**2010-09-11**
+## 1.2.0
+
+### Additions
+
+ - App class that allows easy application development (like Shoes)
+ - MultiSplit class: Multicolumn widget (like SplitPane but allows many splits). 
+   aka Column Browse pattern (like OSX Finder). See examples/testmultisplit.rb
+ - Added Progress Bar class
+
+ - Added methods to Menu (rmenu.rb), so easy creation through DSL. See
+ examples/menu1.rb
+
+ - Added VimSplit - can have multiple splits stacked and flowed
+ - Added Tree     - tree control
+ - Added Scrollbar class
+ - Added Tabular - quick readonly tabular data generator that can be used with
+ listboxes or textviews.
+ - Added BasicList - a stripped down, readonly version of Listbox.
+ - 
+
+### Changes
+
+ - Field class now passes InputDataEvent when firing event, not self.
+   Earlier, user trapping :CHANGE would not know what happened (delete,
+   insert, etc) and what char was added, deleted.
+ - List and ListData and ListSelection listener
+   Many changes, new methods, def list(), space bar selects,
+   List listens to selection changes, selectionEvent contains List as source
+   not ListSelectionModel.
+ - Widget checks event names before firing and binding to save time in wrong
+ events.
+ - Listbox, some refactoring of `repaint`. Added convert_value_to_text since
+ we subclass this a lot.
+ - Listcellrenderer: refactoring and changes, will break extending classes!!
+ - Combolist - popup on spacebar
+ - replaced to_print_borders with suppress_borders in list related classes
+
+### Bugfixes
+
+ - TextArea would crash if user entered long line with no space (line >
+ display length) - fixed
+
+ - Menu items will not show mnemonic highlighted, if disabled. 
+   They will not fire if mnemonic key pressed, when disabled.
+
+**2010-08-30 11:59**
+## 1.1.4
+
+ - Some missing files such as tableextended.rb and vieditable
+   These got missed out in the gemspec.
+ - Added slice! to listdatamodel
+ - Also see ruby 1.9.2 changes below
+
+**2010-08-23 11:50**
+## ruby 1.9.2 related changes
+
+ Changes in 1.9.2 require the following changes:
+  - $: no longer includes ".". 
+    Fixed 2 examples.
+  - hash_update: cannot update hash during iteration
+    Modified rwidget.rb and rtable.rb
+
+    (Ref http://svn.ruby-lang.org/repos/ruby/tags/v1_9_2_0/ChangeLog)
+
+**2010-05-19 00:00** 
+## Table - added tableextended.rb for extended functions on tables
+
+Currently, increase or decrease column width using numeric args. 
+You will have to bind the method to a key in your app.
+
+**2010-05-13 00:00** 
+## Table - adding vim keys for navigation
+
+If table is not editable, then j k l h gg G etc may be used for navigation.
+
+**2010-03-01 00:00** 
+## Overhaul of tabbedpane
+
+Simplified, and it more or less completely makes sense now.
+A component may be added directly without creating a form
+which allows the TP to set row, col, and height width.
+
+At this moment, it no longer creates a form automatically, you have to call
+tp.form(tab) to get a form associated with the tab. Check code for latest on
+this. Or check samples: testtpane.rb and testtpane2.rb.
+
+**2010-02-18 22:58** 
+## RFED16 new simplified buffering
+
+Major changes. Most widgets redone (buffer part).
+Containers majorly done. Table and TabbedPane still pending.
+
+**2009-11-03 23:30**
+## tabbedpanes ##
+
+Now on first click of tabbed button, form is painted.
+A form.repaint for the lower form was required.
+
+frmincr200911032330.tgz
+* * *
+**2009-11-03 00:19**
+## some progress on tabbedpanes ##
+
+Ugly hacking and I really haven't a clue what's happening
+since there's internal forms working.
+Anyhow, its now showing up, can see form cursor moving.
+Does not show up immediately, have to press key several times for form to display.
+
+frmincr200911030018.tgz
+* * *
+**2009-11-02 13:15**
+## before rtabbedpane ##
+
+After all the changes, the new tabbedpane is not printing the form fields.
+Working on that now.
+
+frmincr200911021314.tgz
+* * *
+**2009-11-02 12:13**
+## splitpane and scrollpane working ##
+
+Both are working. Changes to copywin had caused issues. And printborder.
+Decreasing comp width does not reduce pad size, but pad keeps printing larger size.
+So in Splitpane it was overwriting. Now in Pad we maintain sheight as comp's height.
+Major change in pad, but hope it works and doesn't bomb out somewhere.
+
+frmincr200911021212.tgz
+* * *
+**2009-11-02 01:03**
+## SplitPane retouching ##
+
+began majorly misprinting after changes to printborder and copywin().
+ALmost corrected. Still some issues in copywin which are making separator and border
+to get eaten up.
+
+frmincr200911020102.tgz
+* * *
+**2009-11-01 22:28**
+## scrollbars in scrollpane ##
+
+Added scrollbars in scrollpane. Sized and positioned nicely.
+
+frmincr200911012228.tgz
+* * *
+**2009-11-01 01:05**
+## scrollpane WIP ##
+
+scrollpane with viewport and child object
+i can see the child within. have to test scrolling now.
+Issue is largely with copywin which gives errors.
+
+frmincr200911010104.tgz
+* * *
+**2009-10-31 22:07**
+## scrollpane WIP ##
+
+,,,
+
+frmincr200910312206.tgz
+* * *
+**2009-10-30 23:32**
+## more testing with SplitPane and 2 splitpanes in it ##
+
+vertical and horizontal
+check against min sizes
+
+frmincr200910302331.tgz
+* * *
+**2009-10-30 17:47**
+## buffering ##
+
+major change is buffering added (using pad)
+height and width added to Widget
+Splitpane added (midway)
+
+frmincr200910301746.tgz
+* * *
+**2009-10-07 10:14**
+## Prior to change in next_column ##
+
+Currently, after last visible column tab goes to next row.
+We want to scroll if more columns.
+At present, table will not print if a col goes out of bounds. but this does not impact
+first or last column to print variables.
+
+frmincr200910071012.tgz
+* * *
+** 2009-10-05 11:00 **
+## Horizontal scrolling in tables - some cleaning ##
+
+When increasing the size of a column, other cols could write
+outside the table. Fixed.
+
+* * *
+** 2009-10-05 00:00 **
+## Making changes for 1.9 and testing ##
+
+Mostly key related changes.
+However, there could be some string index change lurking around
+
+* * *
+** 2009-02-22 20:48 **
+
+## Released 0.1.2 ##
+
+- search in textview with wrap, case insensitive, highlighting searched text
+- table can have nil data
+- tabbed pane has ok_cancel button, ok by default
+- table autosizing - required for adhoc queries
+- table horizontal scrolling
+- editing when more columns than viewable in table
+- confirm dialog, normal mnemonics for buttons
+
+* * *
+** 2009-02-17 12:10 **
+## added table markers for data and columns before and after on border ##
+
+also added putting space in intercell area, but today i am not getting any 
+junk there anywaym while scrolling etc.
+
+* * *
+** 2009-02-16 22:10 **
+## added edit_length to TableColumn ##
+
+This is max editable length of editor component in tables.
+
+* * *
+** 2009-02-13 13:48 **
+## added button_type to tabbed pane ##
+
+Now buttons at bottom of tabbed pane. Will return selected_index
+to caller.
+Uploaded to github, will be included in 0.1.2.
+
+* * *
+** 2009-02-12 22:48 **
+## Code to stop table from printing a column if exceeding bounds ##
+
+Uploaded to github, will be included in 0.1.2.
+
+EXPERIMENTAL CODE: Affects only tables. Now table will not print a column or header
+if columns width causes it to exceed width of table.
+
+This means if you have a single column which is wider than table
+then it wont print. In Listboxes we always truncate data and pass to
+renderer. We could do that here, but it could get messy.
+
+* * *
+**2009-02-12 **
+## Missed one parameter in Table's repaint, and some Table Cell Renderers
+
+Fixed and uploaded as 0.1.1
+
+* * *
+**2009-02-11 00:57**
+## Path changes in order to make first gem ##
+
+the first gem is ready 0.1.0. So various path changes (removed all the lib's in require)
+
+frmincr200902110056.tgz
+* * *
+**2009-01-21 18:30**
+## Class Action ##
+
+Added a class Action to centralize actions or behavior.
+Popupmenu creates a jmenuitem with an action.
+
+frmincr200901211826.tgz
+* * *
+**2009-01-20 22:50**
+## Class PopupMenu ##
+
+Based on menubar, a popup menu. Intended to be used with widgets / components.
+
+frmincr200901202248.tgz
+* * *
+**2009-01-20 00:22**
+## Application Header like Alpine ##
+
+Similar application header made in applicationheader.rb
+
+frmincr200901200022.tgz
+* * *
+**2009-01-19 21:41**
+## Alpine Style Key Label Printing ##
+
+See testtodo.rb for example.
+Print Alpine Style labels at bottom
+
+frmincr200901192140.tgz
+* * *
+**2009-01-19 15:53**
+## Table Changed Event ##
+
+One may either trap the CHANGED event of a component OR
+a TABLE_EDITING_EVENT which gives us previous and new values, previous row and col.
+This will fire for each cell exited, and on editing stopped (if a user presses ENTER after editing).
+
+One example would be to set a date_modified if any column of a row changes. 
+
+Also am firing CHANGED from table for its cells.
+
+frmincr200901191548.tgz
+* * *
+**2009-01-18 22:11**
+## listbox, combo case insensitive match ##
+
+Char matches use casecmp
+
+Field was not calling process_key(ch) - now calling super in handle_key, so process_key is called
+in handle_key.
+
+frmincr200901182210.tgz
+* * *
+** 2009-01-18 12:37 **
+## modified? and def modified tf##
+
+changed fields modified? to check for change in field value
+
+Field ESC puts back original value
+
+TAB and BACKTAB in table. so you need to M-tab out of it.
+
+**2009-01-17 01:56**
+## Tables: editing options more polishing ##
+
+also, columns may be marked as non-editable
+calling on_leave of component 
+
+
+frmincr200901170155.tgz
+* * *
+**2009-01-16 20:13**
+## Table - cyclic traversal to next column, auto editing of cells ##
+
+Automatic editing on tabbing in and out on Table.
+Trying this out. USe Alt-Tab for going to next cell if you are editing a cell.
+If not editing then RIGHT and LEFT work.
+
+frmincr200901162012.tgz
+* * *
+**2009-01-16 00:31**
+## Tables: Events and Listeners implemented ##
+
+on enter row, col and cell.
+Table Column property change
+Various others.
+
+frmincr200901160030.tgz
+* * *
+**2009-01-15 01:23**
+## Events in tables added ##
+
+(just days backup)
+
+frmincr200901150122.tgz
+* * *
+** 2009-01-15 00:17 **
+
+Table on_enter and on_leave row, column and cell events
+
+Also put key definitions for table and listbox in listkeys.rb
+so they can be shared.
+Fixed def handle_key of listbox so if key not handled, it still
+tries further.
+
+**2009-01-14 12:56**
+## Forward and backward searching in Listbox ##
+
+M-f to start a forward search (asks for regex)
+M-F to start a backward search (asks for regex)
+M-g to keep searching forward
+M-G to reverse direction of search
+
+
+* * *
+**2009-01-13 23:29**
+## Split messagebox and listbox to separate files  ##
+
+* * *
+**2009-01-13 01:39**
+## Table Editing ##
+
+String, number, checkbox and combolist
+
+frmincr200901130139.tgz
+* * *
+**2009-01-13 01:03**
+## Table editing is on ##
+
+Testing and working out visual glitch in checkbox edit.
+One extra char displayed by editor but not by renderer.
+So a white space gets left over.
+
+frmincr200901130102.tgz
+* * *
+**2009-01-11 20:06**
+## editable lists: check and combo boxes ##
+
+Now you may edit a list of checkboxes or combo boxes
+
+frmincr200901112006.tgz
+* * *
+**2009-01-11 16:32**
+## combo box cell renderer in listbox ##
+
+almost done. some touching up
+
+frmincr200901111632.tgz
+* * *
+**2009-01-11 00:28**
+## ComboBoxCellRenderer ##
+
+For lists, to display combo boxes.
+Althoght does not make much sense. THe normal list box already has
+selection of rows. so its like a list which is now editable and selectable.
+
+This has only checkboxes. How do i pass in text in addition to booleans
+given that the method interface of renderers takes one value.
+
+frmincr200901110026.tgz
+* * *
+**2009-01-10 23:18**
+## About to move selector code up ##
+
+To avoid duplication in renderers
+
+frmincr200901102317.tgz
+* * *
+**2009-01-10 01:22**
+## listbox editing ##
+
+WIP, but i've got editing in.
+To sort out key related issues. Editing keys are clashing with selection
+and navig keys.
+Touching up also.
+
+frmincr200901100121.tgz
+* * *
+**2009-01-08 23:34**
+## class Textarea moved to new scrollable ##
+
+Thank God, done away with the old scrollable module.
+Textarea is now in rtextarea.rb
+
+frmincr200901082333.tgz
+* * *
+**2009-01-08 20:57**
+## wrapping option in TextArea ##
+
+WRAP_WORD passed with set_content
+
+frmincr200901082057.tgz
+* * *
+**2009-01-08 19:21**
+## New Listbox ##
+
+Movement between selected items (using ' and ") and C-e to clear selection.
+
+frmincr200901081921.tgz
+* * *
+**2009-01-08 14:38**
+## before moving TextView to listscrollable ##
+
+about to move
+
+frmincr200901081438.tgz
+* * *
+**2009-01-08 01:41**
+## firing property change and others ##
+
+Some major changes (internal)
+
+1.   In order not to repaint the entire form each time, we must only repaint a widget when modified.
+     However, as can be seen, widgets are being modified by other widgets. Thus whenever a property
+     is changed, we need a flag to be set that repainting is required.
+
+    Thus, copied dsl_accessor and made dsl_property. Whenever, such props are modified, a property 
+    change is now fired, and repaint_required is set to true.
+    I am currently changing this. What this means is that on startup, fire_prop_change will be called
+    many times, and i need to avoid this on first time instantiation. TODO.
+    
+2. The tricky part was text_variables. When there value changes any widget (such as label) auto
+   changes. When a text_variable is defined for  field, internally that field, adds itself as a 
+   dependent. When its value is changed, it fires a change to the dependent field.
+
+3. The real worrisome part was this:
+   When user passes in a hash in the constructor, i was directly setting variables, NOT calling
+   methods. Tracked this down. Now i am calling methods and not setting variables. See rwidget.rb
+   instance_variable_set (top). Only throrough testing will tell how much this change
+   will affect stuff. Maybe not.
+
+frmincr200901080133.tgz
+* * *
+**2009-01-07 23:35**
+## New Listbox ##
+
+with cleaner scrolling code, and cell renderer
+Largely done.
+
+frmincr200901072335.tgz
+* * *
+**2009-01-07 00:36**
+## Field storing datatypes ##
+
+1.   set_buffer updates datatype of data
+2.   get_value reverts to original datatype (stored as a string since many methods
+     do check length etc
+
+Widget binds_keys
+Certain widgets like tables etc would like to bind_keys which could be used by other
+widgets. Such as left and right keys or del key. So these should not be at the program
+level, but only at widget level.
+
+frmincr200901070034.tgz
+* * *
+**2009-01-05 01:51**
+## rtable with scrolling ##
+
+simple scrolling unlike scrollable which sucked biggie time
+
+frmincr200901050150.tgz
+* * *
+**2009-01-05 01:21**
+## rtable.rb ##
+
+more wip
+
+frmincr200901050121.tgz
+* * *
+**2009-01-04 01:01**
+## table wip ##
+
+
+
+frmincr200901040100.tgz
+* * *
+**2009-01-01 23:45**
+## before change to textare ##
+
+abot to put back \n and see
+
+frmincr200901012345.tgz
+* * *
+**2009-01-01 13:01**
+## Boolean buttons use "variable" not "text_variable" ##
+
+That was a misunderstanding. Checkbutton, Toggle and Radio use "variable" which 
+updates or gets updated by any changes.
+
+frmincr200901011300.tgz
+* * *
+**2008-12-31 23:46**
+## Variable modifications ##
+
+Had to move to get_value and set_value so that Variable could support a hash or array without
+anything else changing.
+That means if a set of checkboxes and radio buttons are based on one Variable which is a Hash,
+they will continue working as before, since they always pass t heir name as a second parm to set_value 
+(whch is used as a key, if Variable is a hash).
+Earlier i was using value= but that does not allow 2 params.
+In the case of a hash, even retrieving requires the widgt name as key.
+So seeing how many params are coming in does not work. Thus moving from value() and value= to get and set value.
+
+Currently, its there as RVariable. Will be moved to Variable in a day or so.
+
+frmincr200812312341.tgz
+* * *
+**2008-12-29 17:50**
+## textarea bugfixes in wrap and wrapping ##
+
+more bug fixes
+also added wrap_para (see menu Wrap)
+
+* * *
+**2008-12-28 21:05**
+## Textarea wrapping bugs fixed ##
+
+I believe things are working now.
+ALso added footers to the text area and view. That could help me in debugging too.
+
+frmincr200812282104.tgz
+* * *
+**2008-12-28 01:25**
+## WIP in Table ##
+
+working
+
+frmincr200812280125.tgz
+* * *
+**2008-12-27 01:07**
+## bug fixes in textarea cursor movement ##
+
+with respect to wrapping lines
+backspace behaviour.
+newlines
+still some glitches.
+
+* * *
+**2008-12-26 20:07**
+## Missed one case of wrapping in Textarea ##
+
+Whene there IS data in next row. Fixed.
+
+* * *
+**2008-12-25 18:30**
+## ACS_ boxes in TextArea and TextView ##
+
+ACS_ used for boxes
+
+* * *
+**2008-12-25 18:22**
+## better boxes using ACS_ for messagebox and Listbox ##
+
+Using ACS_ code to get boxes.
+
+* * *
+**2008-12-24 20:20**
+## InputDataEvent: firing events on changes in TextArea ##
+
+Now reporting changes in text happening in TextArea via InputDataEvent
+
+* * *
+**2008-12-24 15:51**
+## Alt-keys in TextArea and View were getting eaten up ##
+
+Returning alt keys so buttons and mnemonics can process
+
+* * *
+**2008-12-24 15:40**
+## vertical alignment of combolists ##
+
+ABove, below, center, and same row as field.
+
+* * *
+**2008-12-24 13:00**
+## added autoscroll to TextArea ##
+
+Goes to end with each "<<" command.
+Also fixed goto_end and goto_start. I had changed the names in TextArea but not in scrollable.
+
+* * *
+**2008-12-23 23:49**
+## Migrated buttons to mnemonic and ampersand for hotkeys ##
+
+Unerline will result in underline, overriding that created by ampersand, but not register key.
+mnemonic will register alt-key and underline first occurence
+Using ampersand will register and underline given occurrence.
+
+frmincr200812232347.tgz
+* * *
+**2008-12-23 13:38**
+## Added observers to events ##
+
+An object can listen in to events of another. Could be a hack.
+Helps if user creates an object which further creates others. User binds actioon to top level object.
+But we want internal objects events to also fire action.
+
+frmincr200812231337.tgz
+* * *
+## Multiple bindings for each event ##
+
+Each object can bind its actions without fear of overwriting each other.
+Variables update_command also stacked.
+
+**2008-12-22 15:13**
+
+## class Field: CHANGED event, triggered when tabbing out after changing ##
+
+.
+
+frmincr200812221513.tgz
+* * *
+**2008-12-22 12:52**
+## Added null_allowed to class Field ##
+
+if null_allowed, validation will be skipped if empty, however
+LEAVE event will be triggered.
+
+frmincr200812221251.tgz
+* * *
+**2008-12-22 02:02**
+## xterm-color key hacks and vt100/200 fixes ##
+
+F1..F4 hack for xterm color
+in getchar().
+Menu selection (highlighting) in rform.rb
+
+frmincr200812220201.tgz
+* * *
+**2008-12-20 22:05**
+## Removed CommonIO includes ##
+
+replaced with @window.printstring
+
+frmincr200812202204.tgz
+* * *
+**2008-12-20 13:23**
+## toggle_key for menu bar ##
+
+menu bar now can define and bind its toggle key.
+
+frmincr200812201322.tgz
+* * *
+**2008-12-19 21:28**
+## scrolling in edit box ##
+
+Implemented horiz scrolling in single line edit box
+Forgot to add:
+Editable and non-editabl combo-boxes were also added the other day.
+
+frmincr200812192127.tgz
+* * *
+**2008-12-15 14:16**
+## tabbedpanes - with radio buttons ##
+
+Much improved. Uses an extended radio button, so states of selected, focussed and unfocussed
+are easy to display.
+
+frmincr200812151415.tgz
+* * *
+**2008-12-14 16:50**
+## tabbedpane-part2 ##
+
+with panels and forms. but how to navigate between buttons and form.
+
+frmincr200812141650.tgz
+* * *
+**2008-12-14 14:24**
+## preliminary tabbed pane ##
+
+need to create form earlier so user can get the form and set it.
+
+frmincr200812141424.tgz
+* * *
+**2008-12-11 22:32**
+## Popuplist in action ##
+
+sample of popuplist called whenever cursor falls in User field.
+Pressing Enter passes the value.
+
+frmincr200812112231.tgz
+* * *
+**2008-12-11 01:27**
+## class PopupList ##
+
+wip but almost done.
+pops up a list which can be selected from.
+
+frmincr200812110126.tgz
+* * *
+**2008-12-03 20:13**
+## Field accepts values() and valid_regex() ##
+
+Restrict entry to values
+
+Validate field against valid_regex.
+
+frmincr200812032012.tgz
+* * *
+**2008-12-01 18:34**
+## Messagebox takes list ##
+
+Allow user to make a messagebox passing a list.
+
+frmincr200812011834.tgz
+* * *
+**2008-11-30 00:58**
+## friendly colors - under testing ##
+
+Have implemented human friendly colors for foreground and background
+Tested out on some widgets but not all. Need to totally test and clean code.
+Is functioning. See radio buttons and their label, see checkbox which makes the label bold.
+
+frmincr200811300056.tgz
+* * *
+**2008-11-29 21:10**
+## experimental Colormap to make color definitions easy ##
+
+Added a Colormap module that helps create and retrieve colors by human names
+so we can define colors in widgets without reference to color_pairs.
+
+frmincr200811292109.tgz
+* * *
+**2008-11-28 00:30**
+## CheckBoxMenuItem ##
+
+Implemented a checkbox menu item, works but i am not pleased, quite dirty.
+
+Widgets are tied to a form, for ease of construction.
+In the case of menus they are not, and menus print in a different manner.
+
+Submenu should also have been a class, perhaps. 
+
+frmincr200811280026.tgz
+* * *
+**2008-11-27 20:11**
+## ToggleButton ##
+
+Now a togglebutton class that is extended by Radio and checkbox
+Togglebutton is itself a toggleable button.
+
+frmincr200811272010.tgz
+* * *
+**2008-11-27 18:54**
+## extended radiobutton from checkbox ##
+
+to reduce code.
+Now i am thinkig both shuold extend one class. My ole Swing book gaves me a cool
+name to call it. ToggleButton!
+
+frmincr200811271853.tgz
+* * *
+**2008-11-27 12:13**
+## menubar hotkey ##
+
+Done handling of hotkey/mnemonic in menu
+and closing of menubar when action complete
+
+frmincr200811271212.tgz
+* * *
+**2008-11-27 00:24**
+## Titles in all scrollable views. ##
+
+Added titles and title attribs.
+
+frmincr200811270023.tgz
+* * *
+**2008-11-26 23:32**
+## horiz scrolling in TextView ##
+
+Textview now can scroll horiz.
+Ctrl-E and Ctrl-A behavior in cases of data exceeding width taken care of.
+
+frmincr200811262331.tgz
+* * *
+**2008-11-26 22:26**
+## TextView and other fixes ##
+
+Introduced a TextView widget which just shows multiline text, scrollable.
+Allows us to programmatically scroll the same.
+
+Tested and fixed LEAVE and ENTER of widgets (had forgotten that!).
+
+frmincr200811262224.tgz
+* * *
+**2008-11-26 11:49**
+## field.show ##
+
+1. implemented Field.show (password field in example will show *)
+
+2. created a method getvalue_for_paint, so that getvalue returns actual value for field
+or widget and no display stuff.
+
+3. Button. surround_chars. change the sq brackets to soething else.
+
+frmincr200811261147.tgz
+* * *
+**2008-11-25 23:58**
+## selectable in ListBox ##
+
+added a new module selectable copying from sqlpopup
+however, this is a window and not a pad so its much more diffucult.
+
+Due to field_enter and exit, the selected row shows affter 2 movements!
+
+Clear selection not yet functioning here. But select/deselect/next sel and prev sel are working.
+
+frmincr200811252356.tgz
+* * *
+**2008-11-22 23:20**
+## RadioButton ##
+
+Added another widget. took less than 2 mins: a radio button. Praps I should just extend CheckButton
+rather than copy. Just a couple of lines changed.
+Some bugs may have cropped up in Textarea after introduction of hard and soft returns.
+Entry was happening one col before where cursor was appearing.
+
+frmincr200811222319.tgz
+* * *
+**2008-11-22 21:50**
+## CheckBox ##
+
+Took me less than 5 mins to implement a CheckBox inheriting from button.
+
+frmincr200811222149.tgz
+* * *
+**2008-11-22 19:43**
+## textarea ##
+
+moving up characters when deleting
+soft and hard return so wrapping can be respected when deleting.
+
+frmincr200811221943.tgz
+* * *
+**2008-11-22 16:47**
+## textarea ##
+
+incoming data wrap it.
+But i do need to look at newlines and preserve. current logic loses them.
+
+frmincr200811221647.tgz
+* * *
+**2008-11-22 01:41**
+## textarea word wrap when pushing from behind ##
+
+still needs ironing out. could be some issues in rare cases.
+
+frmincr200811220140.tgz
+* * *
+**2008-11-22 00:45**
+## textarea with wrapping #1 ##
+
+wrapping as cursor exceeds border. however, not yet when we insert chars anddelete.
+
+frmincr200811220044.tgz
+* * *
+**2008-11-21 23:42**
+## textarea ##
+
+more issues in movement sorted out when end of length.
+Box showing correctly now.
+
+frmincr200811212342.tgz
+* * *
+**2008-11-21 22:16**
+## textarea with newlines ##
+
+added in newlines, and we don't print them.
+also when joining we remove.
+be careful i dont put two.
+
+frmincr200811212215.tgz
+* * *
+**2008-11-21 21:54**
+## Textarea more work on joining and spliting rows ##
+
+wip
+
+frmincr200811212153.tgz
+* * *
+**2008-11-21 17:39**
+## Textarea starting ##
+
+Have a basic textarea working
+Still very rough.
+
+frmincr200811211738.tgz
+* * *
+**2008-11-21 01:38**
+## Listbox ##
+
+created a scrollable listbox as a widget and put in my form.
+Also a scrollable module to include to get the functionality
+
+frmincr200811210137.tgz
+* * *
+**2008-11-20 15:58**
+## Variable ##
+
+Added custom to MessageBox
+
+Added class Variable and tested out with button and label.
+
+frmincr200811201558.tgz
+* * *
+**2008-11-20 01:38**
+## MessageBox ##
+
+Have made a messagebox just like links
+   - uses Button class.
+   - Not using labels etc yet. Not required. Keeping it simple.
+   
+
+frmincr200811200137.tgz
+* * *
+**2008-11-19 19:59**
+## Widget class as super ##
+
+Created the widget class with DSL properties
+Now all widgets extend it,
+so common functionality as well as DSLish.
+
+frmincr200811191958.tgz
+* * *
+**2008-11-19 01:07**
+## FIELD navigation ##
+
+a small hack and we can circle and it does not cause an overflow now.
+But the focusables array was much neater and less risky.
+
+frmincr200811190106.tgz
+* * *
+**2008-11-19 00:53**
+## FIELD ##
+
+I have reworked the logic of traversal to use a loop, no extra array and no 
+recursion. 
+Only issue is i cant circle around snce it goes into a stack overflow.
+The extra array was simpler though.
+
+frmincr200811190052.tgz
+* * *
+**2008-11-18 20:41**
+## menubar working !!! ##
+
+menubar working with submenus. destroys and passes contrl back to parent on LEFT
+and goes to nezt on RIGHT.
+
+frmincr200811182040.tgz
+* * *
+**2008-11-18 19:43**
+## menubar wip printing menu on leave and enter ##
+
+1. now submenu showing , onleave onenter okay.
+
+2. only thingie left is the navigation
+
+frmincr200811181942.tgz
+* * *
+**2008-11-18 19:05**
+## menubar wip ##
+
+Now submenu is created at tright time and destroyed onleave.
+
+     1. to take care of priting of menu as a menuitem
+     2. to pass control ofkeys into the new menu
+
+frmincr200811181904.tgz
+* * *
+**2008-11-18 18:18**
+## menubar wip ##
+
+paint does not create.
+wip
+but still to look into submenu
+
+frmincr200811181818.tgz
+* * *
+**2008-11-18 16:18**
+## menubar wip ##
+
+submenu paints itself since it s on enter
+need to make some  changes ...
+fire -paint submenu
+
+frmincr200811181617.tgz
+* * *
+**2008-11-18 03:04**
+## submenu ##
+
+it is displaying now, but firing immeidately.
+also we will need to walk down it and select.
+
+frmincr200811180303.tgz
+* * *
+**2008-11-18 00:40**
+## menu bar actions etc fine ##
+
+Barring ability to hav submenu's actions are working.
+
+frmincr200811180040.tgz
+* * *
+**2008-11-17 18:51**
+## menubar wip ##
+
+its up but no actions yet.
+
+frmincr200811171851.tgz
+* * *
+**2008-11-17 03:14**
+## menu menubar menuitem interim work ##
+
+interim work in progress 
+things are showing need alignment and polishing
+actions to do
+
+frmincr200811170313.tgz
+* * *
+**2008-11-16 22:09**
+## changed key handling down to objects ##
+
+so they can take and ignore what they want
+earlier form was trying to be too intelligent.
+
+frmincr200811162208.tgz
+* * *
+**2008-11-16 19:18**
+## Field form and label ##
+
+Tried to do more of method_missing and define_method to make it dsl-ish but failed.
+Added datatype, chars_allowed and some bug-fixing.
+Need to put exit_proc.
+Now to try out a menubar.
+
+frmincr200811161916.tgz
+* * *
+**2008-11-16 03:16**
+## Button which inherits label ##
+
+circular order of navigation
+editing taking care of different types of fields
+
+WAIT. What is label doing inside FORM Why ? it can remain on Window, no ?
+We are complicating code by inclusing in form and widgets.
+
+frmincr200811160315.tgz
+* * *
+**2008-11-16 01:17**
+## form implemented buttons too ##
+
+but i dont like the focusable part. need to redo
+
+frmincr200811160117.tgz
+* * *
+**2008-11-15 13:06**
+## changed in forms and fields as per TK ##
+
+changing things a bit.
+
+frmincr200811151306.tgz
+* * *
+**2008-11-15 02:33**
+## rform ruby forms fields ##
+
+I am writing a simpler form and field thingie.
+I know thats awfully ambitious, but the sequence of ncurses sucks.
+
+We need to be more dynamic.
+I have made a displayable form. But need to trap some keys are kick some asss.
+
+frmincr200811150232.tgz
+* * *
+**2008-11-14 18:48**
+## reintroduction of datasource ##
+
+testing sqlpopup wiht processes and data
+
+frmincr200811141847.tgz
+* * *
+**2008-11-14 00:01**
+## Fixes for smaller screens ##
+
+A lot of hardcoding for large screens
+
+     - changes in key labels
+     - changes in data and col names
+     - padrefresh
+     - bug in pressing space
+     - printing messages in centre, no more beeps please.
+Now small screens can be requested.
+
+frmincr200811140000.tgz
+* * *
+**2008-11-13 21:52**
+## Cleanup , Refact and polishing output ##
+
+1. cleaned up junk code
+
+2. moved classes out. made key label printer into a class
+
+3. common print modules
+
+4. common db module
+
+5. sizing of columns and formatting of titles
+
+6. align of num fields
+
+frmincr200811132151.tgz
+* * *
+**2008-11-13 10:46**
+## highlighting ##
+
+Using wchgat for highlighting pad instead of rewriting data
+Also, therefore changed select functionality.
+
+frmincr200811131045.tgz
+* * *
+**2008-11-13 01:15**
+## key_labels ##
+
+Worked on much better coded key_labels which don't require the poor hacky format the old one did
+ Saner.
+Also putting a message in -3 row and letting it go off. Its on the window. Goes off in next keystroke auto.
+
+frmincr200811130112.tgz
+* * *
+**2008-11-12 19:31**
+## flickering and key movement ##
+
+       - reduced flickering by doing werase only when absolutely nec. but this could lead
+         to some situations where clearing is not done. to keep checking.
+
+       - some errors in key movement due to wrong @window value or space etc
+         having incorrect checks. Need to keep checking.
+
+frmincr200811121929.tgz
+* * *
+**2008-11-12 12:41**
+## Regexp and symbols in mappings ##
+
+In order that printables can be used had to add REGEXP in mapping.
+
+Also added symbols
+
+So now we can't search Hash normally, have to iterate. So ordered hash hadto beused.
+Tried to move to arrays, but pendingkeys would have not been possible.
+Symbols are not tested yet.
+
+frmincr200811121239.tgz
+* * *
+**2008-11-12 00:39**
+## sqlpopup and keymapper ##
+
+
+We have a much simpler than VER keymapper. Code is small. 
+      - Uses keyboard.rb from VER project to give us ESC and meta/alt keys.
+      - We use same syntax for configuring such as class.let :mode do etc.
+      - Provided:
+               - single keys combinations
+               - a mode with its set of keys
+               - dual keys such as C-x C-c or C-x p etc which do not change mode.
+
+frmincr200811120036.tgz
+* * *
+**2008-11-11 23:40**
+## sqlpopup our own modes and key ##
+
+allows cx mode with its keys
+but its looks okay for a mode
+for a multiple key we would prefer to say : C-c C-x
+and not create a separate context./mode.
+
+frmincr200811112339.tgz
+* * *
+**2008-11-11 23:12**
+## sqlpopup my version ##
+
+trying to build a simpler version of sqlpopup
+that i can understand. VER is pretty complex and the scope is not relevant to our 
+kind of app.
+
+frmincr200811112311.tgz
+* * *
+**2008-11-10 12:25**
+## sqlpopup ##
+
+after some minor bugfixes in space bar, and better messages
+now i will try to integrate keymap and keyboard.
+
+frmincr200811101224.tgz
+* * *
+**2008-11-09 23:50**
+## sqlpopup out own keymapper ##
+
+
+Implemented a small quick dirty key method mapper. This will make transition to keyboard.rb
+easier.
+
+frmincr200811092349.tgz
+* * *
+**2008-11-09 19:37**
+## sqlpopup ##
+
+removed blank line and now selector on actual row 1.
+
+put columns on windw however, this means col names always shpwing but wont scroll!!
+
+frmincr200811091935.tgz
+* * *
+**2008-11-09 15:43**
+## clearing selection ##
+
+sqlpopup
+also numbering of lines based on content.length
+
+frmincr200811091542.tgz
+* * *
+**2008-11-09 13:05**
+## sqlpopup ##
+
+    - row selection and navigation.
+    - search was no longer scrolling, fixed that so prow is always displayed.
+
+frmincr200811091304.tgz
+* * *
+**2008-11-09 01:24**
+## sqlview.rb ##
+
+TABULAR sql view with much better scrolling like our old tabular thingie
+scrolling like alpine
+allows selection, we need to allow UNselect all, goto-selected etc.
+
+frmincr200811090123.tgz
+* * *
+**2008-11-08 22:03**
+## tabular view in pad ##
+
+Used the pad program to give TABULAR View too.
+SIMPLE view has column name and data per row.
+ALTERNATING has name followed by data in next row.
+TABULAR gives the entire result in one tabular form
+TABULAR implements a search using "/" and ^N and ^P to go back/forth in search.
+
+I need to make a selectable list which will return selectedrow, simple for use 
+as help in dataentry forms.
+
+frmincr200811082201.tgz
+* * *
+**2008-11-08 13:17**
+## sqlresultsetpadviewer ##
+
+Using pads, made a scrollable viewer for sql result sets.
+Has a goto record also.
+
+To make tabular, with option of selecting.
+
+frmincr200811081316.tgz
+* * *
+**2008-11-08 01:09**
+## sqlview.rb ##
+
+a program to view an sql resultset on screen.
+allows going through mult rows, and paging if more columns than will come on a screen.
+
+Not tested with really long data. Will data get cut off or cause errors or what.
+
+frmincr200811080108.tgz
+* * *
+**2008-11-07 20:24**
+## mandatory fields ##
+
+     - checking at time of get_current_values_as_hash
+     - display with asterisk if passed before form creation
+
+frmincr200811072023.tgz
+* * *
+**2008-11-07 13:10**
+## messages on execute and checks ##
+
+insert/del/update messages
+
+check on update/del whether select was done or not.
+
+frmincr200811071309.tgz
+* * *
+**2008-11-07 01:42**
+## on_exit and post_proc ##
+
+These 2 are duplicating each other,
+Got both to work though. samples in contractedit1101.rb
+
+frmincr200811070141.tgz
+* * *
+**2008-11-06 22:48**
+## rowid and crud options ##
+
+Have checked out contractedit1101 with view, edit, delete etc options.
+Made sure that only relvnt keys are visible and active
+
+## ROWID ##
+Now rowid can be switched on so edit and delete use that. Same for find all.
+
+frmincr200811062246.tgz
+* * *
+**2008-11-05 23:49**
+## create_view_one_application ##
+
+the first of the easy to call applications for a table, tell him you only want to view one
+contract. The user can only quit from there. No operations possible.
+
+Similarly now to do the view_any, delete_one, edit_one etc combinations.
+
+frmincr200811052348.tgz
+* * *
+**2008-11-03 00:18**
+## conditional submenu and sql options ##
+
+Using @sql_actions, one can specify which options should be shown to user
+   - retrict only to select, or upd/del etc, or give him no options
+   - have to take care of bind keys also in this situation.
+   - can start the program with a keyfield supplied
+     or with the values to display supplied.
+See contractedit1101.rb.
+
+frmincr200811030016.tgz
+* * *
+**2008-11-02 11:55**
+## basiceditform.rb ##
+
+functionality moved down from rbeditform to basicedit which should be instantiated
+hightlighting and helpproc display moved
+Now rbedit may either be extended and its handlers overridden,
+or else you can set handlers (if composing).
+
+frmincr200811021154.tgz
+* * *
+**2008-11-01 23:47**
+## contractedit1101.rb ##
+
+This conttains the contract edit with:
+    - calls to create_default_application which takes care of windows etc
+      So calling code is very few lines. Fully functional table realted CRUD screen.
+    - ADded WHERE and ORDER BY in actions.
+    - The search interface is still not clear. Using ^X-M for clearing screen and inserting.
+      Can be confusing.
+
+frmincr200811012345.tgz
+* * *
+**2008-10-31 14:48**
+## Actions: CRUD and FIND-all ##
+
+crud actions working
+findall, first, last, next, previous.
+
+frmincr200810311448.tgz
+* * *
+**2008-10-29 23:53**
+## SingleTable ##
+
+Have moved generic methods into a module which can be called or bound to keys.
+generic update,delete,select, insert and create_fields.
+Or maybe we can extend a class from rbedit. lets see.
+
+frmincr200810292352.tgz
+* * *
+**2008-10-29 00:32**
+## contractedit new_create_fields ##
+
+this method uses the newly pimped FIELD object, hoping to make it MUCHO easier to create fields.
+Still a lot more that can go in, validate against values. 
+
+frmincr200810290030.tgz
+* * *
+**2008-10-28 11:26**
+## more fields ##
+
+more touching.
+
+frmincr200810281126.tgz
+* * *
+**2008-10-28 11:16**
+## work on create_field ##
+
+an easier create_field method
+and many convenence methods for field settings and creation.
+not tested.
+changes are in rbform.rb
+
+frmincr200810281115.tgz
+* * *
+**2008-10-28 00:13**
+## contractedit.rb ##
+
+a lot of generic stuff
+does insert/update
+    - generic field creation
+
+frmincr200810280013.tgz
+* * *
+**2008-10-26 13:27**
+## new folder structure ##
+
+Finally used hoe
+    - created new structure
+    - called it rbcurse
+    - updated requires
+    - moved dsls to dsl and outputs to out. (older ones)
+    - now i will create DSLS and OUTs in a totally different area so i don't
+      clutter up the project.
+
+frmincr200810261325.tgz
+* * *
+**2008-10-26 00:57**
+## contractedit.rb ##
+
+passing a values hash and displaying values
+to pass an ID and have it select
+to save data on screen
+
+frmincr200810260057.tgz
+* * *
+**2008-10-25 23:08**
+## query and table app rewrite ##
+
+with yield
+and some awful changes in main variable so that printing of header and footer can happen
+header and footer win is driving me NUTS !!!!!
+
+frmincr200810252307.tgz
+* * *
+**2008-10-25 10:37**
+## update DSL to give edit app for emailer.rb ##
+
+_skelform2.rb generates emailer.rb with the block.
+
+frmincr200810251036.tgz
+* * *
+**2008-10-25 00:20**
+## more touches ##
+
+     - moved commons into EditApplication, removed from main
+     - entire header, footer creation in Edit Application.
+     - Is this causing more confusion, or reducing,
+     - main and app point to EA.
+     - perhaps emailer should not extend Application ?
+
+frmincr200810250019.tgz
+* * *
+**2008-10-24 22:03**
+## before yielding self ##
+
+making a zip before yielding self in EditApplication.
+
+frmincr200810242202.tgz
+* * *
+**2008-10-24 17:58**
+## lambda and method from DSL ##
+
+Did some crappy stuff so that you can use method or lambda from DSL.
+
+frmincr200810241757.tgz
+* * *
+**2008-10-24 14:34**
+## form and field handlers ##
+
+Done some changes to handlers, 
+    
+    - moved handle_unhandled_keys up to rbform
+    - used method(:) while passing procs
+    - trying to enforce usage of Proc or Method in handlers and not going to main
+      or datasource to check for an existing name
+      i.e. reduce coupling.
+    - tested with emailer.rb
+
+Am hoping to make sqlite etc based rbeditforms simpler to implement
+by cutting out dataasource nad passing handlers in to the form.
+
+frmincr200810241431.tgz
+* * *
+**2008-10-19 00:13**
+## proc ##
+
+bind and keys_handled has a proc too now
+
+passing form to handlers not curritem and listselected from rbeditform.
+to be done in tableapplication too. 
+
+frmincr200810190012.tgz
+* * *
+**2008-10-18 22:37**
+## set_proc ##
+
+one can set a proc for populating form and saving.
+Some other cleaning up too.
+
+frmincr200810182236.tgz
+* * *
+**2008-10-17 12:51**
+## FIELD related factoring ##
+
+A lot of stuff has gone into Field, valid, default, postproc
+This happens on get_value, set_value and field_term.
+
+frmincr200810171250.tgz
+* * *
+**2008-10-16 14:58**
+## touching up ##
+
+a few more touches so that DSL generates exactly like pines mailer.
+Some form refreshing so that focus is on first field.
+Also, clearing error at top of loop.
+
+frmincr200810161457.tgz
+* * *
+**2008-10-15 15:07**
+## cleanup ##
+
+removed @window, its already there are form_win() !
+
+frmincr200810151506.tgz
+* * *
+**2008-10-15 12:57**
+## set_value and get_value in FIELD ##
+
+Taking care of ML fields and chomp inside FIELD
+Next change is to knock off @current.
+
+frmincr200810151256.tgz
+* * *
+**2008-10-15 12:28**
+## Changes to FIELD ##
+
+set_value and get_value doing ML processing.
+But not calling it yet.
+
+frmincr200810151227.tgz
+* * *
+**2008-10-15 11:34**
+## email multiline format ##
+
+This was having to be called by the user in form_post_proc
+Now before save, heightwill be checked.
+
+Howevr, this should happen auto. Added get_value and set_value in FIELD. and maybe thats 
+where it shouldhappen.
+But we have to use it, too. We are using @current.
+
+frmincr200810151133.tgz
+* * *
+**2008-10-15 01:40**
+## Edit DSL ##
+
+Finally got the email program running from a DSL.
+One job pending still ... update_current_values.
+Some things could be generated at generate time, setup observers, rather
+than at load time.
+
+Still then need to start getting a  proper datasource into place.
+
+frmincr200810150138.tgz
+* * *
+**2008-10-14 14:29**
+## C-c ##
+
+1.  Now getting c-y, c-z, c-s and c-q
+2.  We seem to have lost C-c
+    The trap is eating it up totally.
+    Finally i am trapping and doing an ungetch for which had to open the Ncurses class
+    and fix.
+3. Also allowing user to bind_key and use the REQ_ values
+4. Fixed bugs so that keys_handled is called in rbeditform.
+
+frmincr200810141427.tgz
+* * *
+**2008-10-13 20:44**
+## Edit Emailer ##
+
+More cleaning u and corrections in C-x method.
+
+frmincr200810132044.tgz
+* * *
+**2008-10-13 18:50**
+## highlighting field ##
+
+Some cute coding, and we've got the current field label hightlighted.
+Sadly Message Text shows that : after it ;-(. That's the default.
+
+Now to get the silly keylabels functional.
+
+frmincr200810131848.tgz
+* * *
+**2008-10-13 17:32**
+## Edit screen ##
+
+More refactoring on editapplication and rbeditforms.
+Moved a lot iinto form. App should have less. Form should not keep calling into app.
+
+Also this version has fields centered abd reverse video. I am now going the alpine way.
+
+frmincr200810131731.tgz
+* * *
+**2008-10-13 12:57**
+## gen4.rb EDIT FORM ##
+
+I have the old gen2.rb redone into a datasource, rbeditform, editapplication.
+Just about coming up!
+Still many errors de to references from form to app.
+
+Totally unclear here as to what the app is doing, and should it have all thefunctinolity
+in it or not. Too much calling from form to app.
+
+Its quite a mess and needs a major overhaul.
+
+I also need to make changes so that rt_hashes and rt_fields dont have to be passed.
+
+Application should only have what is required by the main app for setting up and cleaning ==
+not all the stuff for regular work. 
+
+Form should contain all else.
+
+frmincr200810131253.tgz
+* * *
+**2008-10-12 13:32**
+## MENU ##
+
+Updated menu.skel so it generates a class that inherits from menuApplication.
+It generates a menu class.
+It is working !
+
+frmincr200810121331.tgz
+* * *
+**2008-10-12 00:29**
+## running from menu ##
+
+1.  Got the menu program working after all the changes in base classes.
+
+2. Got programs running from menu. Apparently, some panels were not being 
+   destroyed, so there was a BUS ERROR in update_panels.
+
+3. There was a warning of BOTTOM_WIN_WIDTH already defined that was messing the screen
+   and i could not see it clearly, so it bugged me a long time.
+
+All's okay but the skel programs have to be updated. The menu DSL minp1 has to be rerun to see
+if it gives correct output as per menu1.rb.
+Basically, panels have to be returned with windows so they can be destroyed.
+
+frmincr200810120025.tgz
+* * *
+**2008-10-10 20:48**
+## padreader and panelreader ##
+
+touched up both and maximized them.
+worked on keys of padreader.
+Called both from commons1. Seems okay.
+
+frmincr200810102048.tgz
+* * *
+**2008-10-10 18:19**
+## padreader.rb ##
+
+Made a class out of it
+Can view files using padreader using view_file(filename).
+Have not put buttons, and headers like in panelreader yet.
+
+frmincr200810101818.tgz
+* * *
+
+**2008-10-10 14:36**
+## form specific key labels - wip ##
+
+It is working but not standard
+Need to simplify it.
+qapp returns keylabels but does not support a keys_handled
+tapp has keyhasharray but does not generate its labels.
+we should junk app labels. that complicates things.
+
+frmincr200810101433.tgz
+* * *
+**2008-10-10 11:58**
+## tab and enter behaviour in query apps ##
+
+Tab moves between fields in query form
+Tab in table moves back to query form.
+Enter in table runs query as b4, but now also moves focus to table
+
+frmincr200810101157.tgz
+
+**2008-10-09 22:23**
+
+## HELP ##
+Using __FILE__ in  constructor of major programs to determine a name for file
+to check for help when user presses ?
+Application.rb checks for this.
+
+* * *
+**2008-10-09 19:14** 
+
+## panelreader ##
+deleting panel in ensure otherwise previous screen wuld be scr00d.
+
+## help ##
+Added a generic application_key_handler in Application.rb which shows
+page specific help. Currently, i have to work that out. Application should
+define a page. It by default pops up TODO !
+
+* * *
+**2008-10-09 18:02**
+
+More polishing on panelreader.rb
+But cannot get the line numbers correct.
+Also if I display line # on top, then cursor remains there.
+If i put the print statemnet at beg of loop, the line number is wonky.
+It is correct at end of loop, but then the cursor is stuck on top.
+
+* * *
+**2008-10-09 13:34**
+
+panelreader and editor
+so i can pop it up and view or edit content or a file
+
+* * *
+**2008-10-09 01:05**
+
+## datasource class ##
+
+  Made this more reusable. Lots of silly stuff changed.
+  * now it has a constructor.
+  * does not do any work other than init.
+  * more reusable than earlier.
+
+* * *
+**2008-10-08 18:16**
+
+## handling of cursor and selection in subseq queries ##
+
+especially if:
+  
+  *  fewer queries returned in second query
+  *  no queries returned in second query
+
+  Now cursor will always be in row one after a fresh query when you tab.
+  Can't tab in if no rows.
+
+* * *
+**2008-10-08 17:51**
+
+## get_curr_index bug ##
+
+this was returning one more (base 1) so some users were doing -1
+Some methods were getting wrong curr_item like the handle_? methods.
+
+User cannot tab into table if no data.
+
+Issue of wrong header count if no rows also fixed.
+
+* * *
+
+**2008-10-08 14:48**
+
+Moved stuff to Datasource class.
+Also checked out more stuff from DSL
+Added keys_handled to DLS and tested it.
+
+* * *
+
+**2008-10-07 22:40**
+
+1. based on datatype, aligning fields in table 
+2. based on datatype, using = in search query for integer and real and smallint
