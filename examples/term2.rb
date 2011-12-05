@@ -2,9 +2,31 @@ require 'rbcurse/core/util/app'
 require 'rbcurse/core/widgets/tabular'
 require 'rbcurse/core/widgets/scrollbar'
 
+  def my_help_text
+    <<-eos
+    term2.rb
+    =========================================================================
+    Basic Usage
+
+    This example shows different ways of putting data in tabular format.
+
+    The 2 tables on the right differ in behaviour. The first puts tabular data
+    into a listbox so you get single/multiple selection. The second puts tabular
+    data into a textview, so there's no selection. <space> scrolls instead of 
+    selects <ENTER> allows us to use the word under cursor for further actions. 
+
+    To see an example of placing tabular data in a tabular widget, see tabular.rb.
+    The advantage of tabular_widget is column resizing, hiding, aligning and sorting.
+
+    =========================================================================
+    :n or Alt-n for next buffer. 'q' to quit.
+
+    eos
+  end
 App.new do 
   header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Tabular Demo", :text_right =>"New Improved!", :color => :black, :bgcolor => :white, :attr => :bold 
   message "Press F10 to escape from here"
+  install_help_text my_help_text
 
   flow :width => FFI::NCurses.COLS , :height => FFI::NCurses.LINES-2 do
     stack :margin_top => 1, :width_pc => 20 do
