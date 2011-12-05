@@ -22,6 +22,15 @@ require 'rbcurse/core/widgets/rwidget'
 #require 'rbcurse/deprecated/widgets/rmessagebox'
 require 'rbcurse/core/widgets/rmessagebox'
 
+# trying out 2011-12-4 so non-apps can get it.
+require 'rbcurse/core/util/bottomline'
+$tt ||= RubyCurses::Bottomline.new 
+$tt.name = "$tt"
+require 'forwardable'
+module Kernel
+  extend Forwardable
+  def_delegators :$tt, :ask, :say, :agree, :choose, :numbered_menu, :display_text, :display_text_interactive, :display_list, :say_with_pause, :hide_bottomline, :say_with_wait
+end
 # -- moving to the new Messagebox 2011-11-19 v 1.5.0
 # Alert user with a one line message
 #
