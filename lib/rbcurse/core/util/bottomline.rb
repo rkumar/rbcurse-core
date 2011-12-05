@@ -320,7 +320,7 @@ module RubyCurses
       #
       # text to be shown if user presses M-h
       #
-      attr_accessor :helptext
+      attr_accessor :help_text
       attr_accessor :color_pair
       attr_accessor :history
 
@@ -984,7 +984,7 @@ module RubyCurses
       @key_handler_proc = @question.key_handler_proc
       @default = @question.default
       $log.debug "XXX: ASK RBGETS got default: #{@default} "
-      @helptext = @question.helptext
+      @help_text = @question.help_text
       @answer_type = @question.answer_type
       if @question.answer_type.is_a? Array
         @completion_proc = Proc.new{|str| @answer_type.dup.grep Regexp.new("^#{str}") }
@@ -1242,8 +1242,8 @@ module RubyCurses
             str.slice!(curpos) #rescue next
             clear_line len+maxlen+1, @prompt_length
           when ?\M-h.getbyte(0) #                            HELP KEY
-            helptext = @helptext || "No help provided"
-            print_help(helptext) 
+            help_text = @help_text || "No help provided..."
+            print_help(help_text) 
             clear_line len+maxlen+1
             print_str @statement # UGH
             #return 7, nil
@@ -1473,10 +1473,10 @@ module RubyCurses
       print_str("%-*s" % [len," "], :y => from)
     end
 
-    def print_help(helptext)
+    def print_help(help_text)
       # best to popup a window and hsow that with ENTER to dispell
-      print_str("%-*s" % [helptext.length+2," "])
-      print_str("%s" % helptext)
+      print_str("%-*s" % [help_text.length+2," "])
+      print_str("%s" % help_text)
       sleep(5)
     end
     def get_response
@@ -1592,7 +1592,7 @@ module RubyCurses
         w = rc.window
         rc.display_menu list1
         # earlier wmove bombed, now move is (window.rb 121)
-        str = ask(prompt) { |q| q.change_proc = Proc.new { |str| w.wmove(1,1) ; w.wclrtobot;  
+        str = ask(prompt) { |q| q.help_text = config[:help_text] ;  q.change_proc = Proc.new { |str| w.wmove(1,1) ; w.wclrtobot;  
 
           l = list1.select{|e| e.index(str)==0}  ;  # select those starting with str
 
@@ -1808,7 +1808,7 @@ if __FILE__ == $PROGRAM_NAME
     entry = {}
     entry[:file]       = ask("File?  ", Pathname)  do |q| 
       q.completion_proc = Proc.new {|str| Dir.glob(str +"*") }
-      q.helptext = "Enter start of filename and tab to get completion"
+      q.help_text = "Enter start of filename and tab to get completion"
     end
     alert "file: #{entry[:file]} "
     $log.debug "FILE: #{entry[:file]} "
@@ -1824,7 +1824,7 @@ if __FILE__ == $PROGRAM_NAME
     entry[:state]       = ask("State?  ") do |q|
       q._case     = :up
       q.validate = /\A[A-Z]{2}\Z/
-      q.helptext = "Enter 2 characters for your state"
+      q.help_text = "Enter 2 characters for your state"
     end
     entry[:zip]         = ask("Zip?  ") do |q|
     q.validate = /\A\d{5}(?:-?\d{4})?\Z/
