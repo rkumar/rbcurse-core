@@ -132,7 +132,7 @@ module RubyCurses
     end
     def map_keys
       return if @keys_mapped
-      bind_key(?f, 'next occurence of char'){ ask_selection_for_char() }
+      bind_key(?f, 'next row starting with char'){ ask_selection_for_char() }
       bind_key(?\M-v, 'toggle one_key_selection'){ @one_key_selection = false }
       bind_key(?j, 'next row'){ next_row() }
       bind_key(?k, 'previous row'){ previous_row() }
