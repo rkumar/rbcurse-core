@@ -1,4 +1,8 @@
-# this program tests out various widgets.
+# this program tests out a listbox
+# This is written in the old style where we start and end ncurses and initiate a 
+# getch loop. It gives more control.
+# The new style is to use App which does the ncurses setup and teardown, as well
+# as manages keys. It also takes care of logger and includes major stuff.
 require 'logger'
 require 'rbcurse'
 require 'rbcurse/core/widgets/rlist'
@@ -69,41 +73,43 @@ if $0 == __FILE__
     # Un post form and free the memory
 
     catch(:close) do
-      colors = Ncurses.COLORS
-      $log.debug "START #{colors} colors testlistbox.rb --------- #{@window} "
       @form = Form.new @window
-      @form.bind_key(KEY_F1){ display_app_help }
+      @form.bind_key(KEY_F1, 'help'){ display_app_help }
+
+      # this is the old style of printing something directly on the window.
+      # The new style is to use a header
       @form.window.printstring 0, 30, "Demo of Listbox - some vim keys", $normalcolor, BOLD
       r = 1; fc = 1;
 
-      $results = Variable.new
-      $results.value = "F10 quits. Try j k gg G o O C dd f<char> w yy p P / . Press ENTER on Class or Method"
-      var = RubyCurses::Label.new @form, {'text_variable' => $results, "row" => FFI::NCurses.LINES-2, 
-        "col" => fc, "display_length" => 100, "height" => 1}
+      # this is the old style of using a label at the screen bottom, you can use the status_line
+      
+      v = "F10 quits. F1 Help.  Try j k gg G o O C dd f<char> w yy p P / . Press ENTER on Class or Method"
+      var = RubyCurses::Label.new @form, {'text' => v, "row" => FFI::NCurses.LINES-2, 
+        "col" => fc, "display_length" => 100}
+
       h = FFI::NCurses.LINES-3
       file = "./data/ports.txt"
       #mylist = File.open(file,'r').readlines 
       mylist = `ri -f bs`.split("\n")
       w = 25
       #0.upto(100) { |v| mylist << "#{v} scrollable data" }
-      listb = List.new @form do
-        name   "mylist" 
-        row  r 
-        col  1 
-        width w
-        height h
-        list mylist
-        selection_mode :SINGLE
-        show_selector true
+      #
+      listb = List.new @form, :name   => "mylist" ,
+        :row  => r ,
+        :col  => 1 ,
+        :width => w,
+        :height => h,
+        :list => mylist,
+        :selection_mode => :SINGLE,
+        :show_selector => true,
         #row_selected_symbol "[X] "
         #row_unselected_symbol "[ ] "
-        title " Ruby Classes "
+        :title => " Ruby Classes "
         #title_attrib 'reverse'
-      end
       listb.one_key_selection = false # this allows us to map keys to methods
       listb.vieditable_init_listbox
       include Io
-      listb.bind_key(?r){ get_file("Get a file:", 70) }
+      listb.bind_key(?r, 'get file'){ get_file("Get a file:", 70) }
       listb.bind(:PRESS) { 
         w = @form.by_name["tv"]; 
         lines = `ri -f bs #{listb.text}`.split("\n")
@@ -123,9 +129,12 @@ if $0 == __FILE__
       # pressing ENTER on a method name will popup details for that method
       tv.bind(:PRESS) { |ev|
         w = ev.word_under_cursor.strip
-        text = `ri -f bs #{tv.title}.#{w}` rescue "Not details for #{w}"
-        text = text.split("\n")
-        view(text, :content_type => :ansi)
+        # check that user did not hit enter on empty area
+        if w != ""
+          text = `ri -f bs #{tv.title}.#{w}` rescue "No details for #{w}"
+          text = text.split("\n")
+          view(text, :content_type => :ansi)
+        end
       }
 
 
@@ -138,12 +147,12 @@ if $0 == __FILE__
     end
   end
 rescue => ex
+  $log.debug( ex) if ex
+  $log.debug(ex.backtrace.join("\n")) if ex
 ensure
   @window.destroy if !@window.nil?
   VER::stop_ncurses
   p ex if ex
   p(ex.backtrace.join("\n")) if ex
-  $log.debug( ex) if ex
-  $log.debug(ex.backtrace.join("\n")) if ex
 end
 end
