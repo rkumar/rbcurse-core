@@ -36,7 +36,7 @@ module VER
     attr_reader   :window_type   # window or pad to distinguish 2009-11-02 23:11 
     attr_accessor :name  # more for debugging log files. 2010-02-02 19:58 
     attr_accessor :modified # has it been modified and may need a refresh
-    attr_reader   :bottomline  # experimental here 2010-11-03 22:19 
+    #attr_reader   :bottomline  # experimental here 2010-11-03 22:19 
 
     # @param [Array, Hash] window coordinates (ht, w, top, left)
     # or 
@@ -81,7 +81,6 @@ module VER
       @name ||="#{self}"
       @modified = true
       $catch_alt_digits ||= false # is this where is should put globals ? 2010-03-14 14:00 XXX
-      #init_bottomline # bottomline to creates its own window 2011-10-8 
     end
     ##
     # this is an alternative constructor
@@ -864,19 +863,6 @@ module VER
     # use in place of mvaddch if your widget could be using a pad or window
     def rb_mvaddch row, col, char
       mvaddch row, col, char
-    end
-    # experimentally
-    # Add a bottomline to window when creating root_window
-    # this way its available even when App is not used.
-    def init_bottomline
-      unless @bottomline
-        require 'forwardable'
-        require 'rbcurse/core/util/bottomline'
-        @bottomline = RubyCurses::Bottomline.new self, $error_message_row
-        @bottomline.name = "window.rb"
-        extend Forwardable
-        def_delegators :@bottomline, :ask, :say, :agree, :choose
-      end
     end
     def close_command *args, &block
       @close_command ||= []
