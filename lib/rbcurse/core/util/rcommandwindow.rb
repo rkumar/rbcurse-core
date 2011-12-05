@@ -295,6 +295,7 @@ module RubyCurses
       @to
     end
     # displays a list
+    # Why did we create another list ? 2011-12-5 
     class ListObject
       attr_reader :cw
       attr_reader :list
