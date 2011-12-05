@@ -65,7 +65,7 @@ module RubyCurses
       w = arr.max_by(&:length).length
 
       require 'rbcurse/core/util/viewer'
-      RubyCurses::Viewer.view(arr, :layout => [2, 10, [4+arr.size, 24].min, w+2],:close_key => KEY_RETURN, :title => "<Enter> to close", :print_footer => true) do |t|
+      RubyCurses::Viewer.view(arr, :layout => [2, 10, [4+arr.size, 24].min, w+2],:close_key => KEY_ENTER, :title => "<Enter> to close", :print_footer => true) do |t|
       # you may configure textview further here.
       #t.suppress_borders true
       #t.color = :black
@@ -97,7 +97,7 @@ module RubyCurses
         res << ex.backtrace.join("\n") 
       end
       res.gsub!("\t","   ")
-      RubyCurses::Viewer.view(res.split("\n"), :close_key => KEY_RETURN, :title => "<Enter> to close, M-l M-h to scroll")
+      RubyCurses::Viewer.view(res.split("\n"), :close_key => KEY_ENTER, :title => "<Enter> to close, M-l M-h to scroll")
     end
     def shell_out command
       @window.hide
