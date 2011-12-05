@@ -1,5 +1,4 @@
-          NO HELP SPECIFIED FOR THIS APP
-
+                       G E N E R A L   H E L P
               <q> to quit this window. <Space> to scroll. 
 
 ==============================================================================
