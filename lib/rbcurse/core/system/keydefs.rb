@@ -14,9 +14,9 @@
 KEY_TAB    = 9
 KEY_F1  = FFI::NCurses::KEY_F1
 KEY_F10  = FFI::NCurses::KEY_F10
-KEY_ENTER  = 10 # FFI::NCurses::KEY_ENTER gives 343
+KEY_ENTER  = 13 # FFI::NCurses::KEY_ENTER gives 343
+KEY_RETURN = 10  # FFI gives 10 too
 KEY_BTAB  = 353 # nc gives same
-KEY_RETURN = 13  # Nc gives 343 for KEY_ENTER
 KEY_DELETE = 330
 KEY_BACKSPACE = KEY_BSPACE = 127 # Nc gives 263 for BACKSPACE
 KEY_CC     = 3   # C-c
