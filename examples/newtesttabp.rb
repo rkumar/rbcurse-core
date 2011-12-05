@@ -17,11 +17,11 @@ class TestTabbedPane
     @window = VER::Window.root_window
     @form = Form.new @window
     r = 1; c = 30;
-      @tp = RubyCurses::TabbedPane.new @form, :height => 12, :width  => 50,
+      tp = RubyCurses::TabbedPane.new @form, :height => 12, :width  => 50,
         :row => 13, :col => 10 do
         button_type :ok
       end
-      @tp.add_tab "&Language" do
+      tp.add_tab "&Language" do
         _r = 2
         colors = [:red, :green, :cyan]
         %w[ ruby jruby macruby].each_with_index { |e, i| 
@@ -35,7 +35,7 @@ class TestTabbedPane
             :col => 5
         }
       end
-      @tp.add_tab "&Settings" do
+      tp.add_tab "&Settings" do
         r = 2
         butts = [ "Use &HTTP/1.0", "Use &frames", "&Use SSL" ]
         bcodes = %w[ HTTP, FRAMES, SSL ]
@@ -48,7 +48,7 @@ class TestTabbedPane
             :col => 5
         end
       end
-      @tp.add_tab "&Editors" do
+      tp.add_tab "&Editors" do
         butts = %w[ &Vim E&macs &Jed &Other ]
         bcodes = %w[ VIM EMACS JED OTHER]
         row = 2
@@ -61,8 +61,8 @@ class TestTabbedPane
             :col => 5
         end
       end
-      @help = "q to quit. Use any key of key combination to see what's caught. Check logger too"
-            RubyCurses::Label.new @form, {'text' => @help, "row" => 1, "col" => 2, "color" => "yellow"}
+      help = "q to quit. <TAB> through tabs, Space or Enter to select Tab."
+      RubyCurses::Label.new @form, {:text => help, :row => 1, :col => 2, :color => :yellow}
       @form.repaint
       @window.wrefresh
       Ncurses::Panel.update_panels
@@ -70,8 +70,6 @@ class TestTabbedPane
         @form.handle_key(ch)
         @window.wrefresh
       end
-      #@tp.show
-      #@tp.handle_keys
   end
 end
 if $0 == __FILE__
