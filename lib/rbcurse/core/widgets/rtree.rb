@@ -74,6 +74,7 @@ module RubyCurses
       @suppress_borders = false
       @row_offset = @col_offset = 1
       @current_index = 0
+      @one_key_selection = false # use vim keys 
       super
       #@selection_mode ||= :single # default is multiple, anything else given becomes single
       @win = @graphic    # 2010-01-04 12:36 BUFFERED  replace form.window with graphic
@@ -104,7 +105,7 @@ module RubyCurses
         @left_margin ||= @row_selected_symbol.length
       end
       @left_margin ||= 0
-      @one_key_selection = true if @one_key_selection.nil?
+      #@one_key_selection = true if @one_key_selection.nil?
       @row_offset = @col_offset = 0 if @suppress_borders
       @internal_width = 2 # taking into account borders accounting for 2 cols
       @internal_width = 0 if @suppress_borders # should it be 0 ???
@@ -116,7 +117,7 @@ module RubyCurses
       @keys_mapped = true
       $log.debug " cam in XXXX  map keys"
       bind_key(32){ toggle_row_selection() }
-      bind_key(KEY_RETURN) { toggle_expanded_state() }
+      bind_key(KEY_ENTER) { toggle_expanded_state() }
       bind_key(?o) { toggle_expanded_state() }
       bind_key(?f){ ask_selection_for_char() }
       bind_key(?\M-v){ @one_key_selection = !@one_key_selection }
