@@ -35,7 +35,7 @@ Core intends to be :
 
    * be backward compatible.
 
-   * simple, maintaible code
+   * simple, maintainable code
 
 I shall be standardizing core over the next one or two minor versions. I shall also be simplifying code as much as possible to make it maintainable and more bug-free.
 
@@ -43,6 +43,10 @@ Method names in some classes may change, and one or two widget names will change
 The new tabbedpane and messagebox will replace the old ones, while the old ones will move to /deprecated.
 
 Color formatting needs to be standardized and a proper API firmed up for that, so user code does not get affected by internal changes. Similarly, work on textpad may get integrated into some widgets since it could simplify their code.
+
+I have not yet begun working on extras and experimental as yet. This contains code that was working
+in rbcurse-1.5, but not tested or touched since then. I will only get around there after polishing
+the core a bit more. The code lies on github.
 
 ## Install
 
@@ -58,7 +62,7 @@ Color formatting needs to be standardized and a proper API firmed up for that, s
 
 * rbcurse - <http://github.com/rkumar/rbcurse/>
 
-* rbcurse-core - <http://github.com/rkumar/rbcurse-core/>
+* rbcurse-extras - <http://github.com/rkumar/rbcurse-extras/>
 
 * rbcurse-experimental - <http://github.com/rkumar/rbcurse-experimental/>
 
