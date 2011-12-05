@@ -41,25 +41,25 @@ class Tester
 
       # use an array to populate
       # we need to do root_visible = false so you get just a list
-    model  = %W[ ruby cobol jruby smalltalk fortran piethon purrl lithp ]
+    model  = %W[ ruby lua jruby smalltalk haskell scheme perl lisp ]
     Tree.new @form, :data => model, :row =>2, :col=>2, :height => 20, :width => 30
 
     when 3
 
       # use an Has to populate
       #model = { :ruby => %W[ "jruby", "mri", "yarv", "rubinius", "macruby" ], :python => %W[ cpython jython laden-swallow ] }
-      model = { :ruby => [ "jruby", {:mri => %W[ 1.8.6 1.8.7]}, {:yarv => %W[1.9.1 1.9.2]}, "rubinius", "macruby" ], :python => %W[ cpython jython laden-swallow ] }
+      model = { :ruby => [ "jruby", {:mri => %W[ 1.8.6 1.8.7]}, {:yarv => %W[1.9.1 1.9.2]}, "rubinius", "macruby" ], :python => %W[ cpython jython pypy ] }
 
     Tree.new @form, :data => model, :row =>2, :col=>2, :height => 20, :width => 30
     #when 4
     else
       Tree.new @form, :row =>2, :col=>2, :height => 20, :width => 30 do
         root "root" do
-          branch "hello" do
-            leaf "world"
+          branch "vim" do
+            leaf "vimrc"
           end
-          branch "goodbyee" do
-            leaf "java"
+          branch "ack" do
+            leaf "ackrc"
           end
         end
       end
@@ -67,8 +67,8 @@ class Tester
     end
 
     #
-    @help = "C-q to quit. Pass command-line argument 1,2,3,4  #{$0} "
-    RubyCurses::Label.new @form, {'text' => @help, "row" => 1, "col" => 2, "color" => "yellow"}
+    help = "C-q to quit. <ENTER> to expand nodes. j/k to navigate. Pass command-line argument 1,2,3,4  #{$0} "
+    RubyCurses::Label.new @form, {:text => help, :row => 1, :col => 2, :color => :cyan}
     @form.repaint
     @window.wrefresh
     Ncurses::Panel.update_panels
