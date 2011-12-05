@@ -9,9 +9,9 @@ require 'fileutils'
 # @since 1.2.0
 module RubyCurses
   # a data viewer for viewing some text or filecontents
-  # view filename, :close_key => KEY_RETURN
+  # view filename, :close_key => KEY_ENTER
   # send data in an array
-  # view Array, :close_key => KEY_RETURN, :layout => [0,0,23,80]
+  # view Array, :close_key => KEY_ENTER, :layout => [0,0,23,80]
   # when passing layout reserve 4 rows for window and border. So for 2 lines of text
   # give 6 rows.
   class Viewer
@@ -90,8 +90,8 @@ module RubyCurses
       #  user should not need to specify key, since that becomes inconsistent across usages
         while((ch = v_window.getchar()) != ?\C-q.getbyte(0) )
           break if ch == config[:close_key] || ch == ?q.ord
-          # if you've asked for RETURN then i also check for 10 and 13
-          break if (ch == 10 || ch == 13) && config[:close_key] == KEY_RETURN
+          # if you've asked for ENTER then i also check for 10 and 13
+          break if (ch == 10 || ch == 13) && config[:close_key] == KEY_ENTER
           v_form.handle_key ch
           v_form.repaint
         end
@@ -136,7 +136,7 @@ App.new do
   header = app_header "rbcurse 1.2.0", :text_center => "Viewer Demo", :text_right =>"New Improved!", :color => :black, :bgcolor => :white, :attr => :bold 
   message "Press F1 to exit from here"
 
-    RubyCurses::Viewer.view(ARGV[0] || $0, :close_key => KEY_RETURN, :title => "Enter to close") do |t|
+    RubyCurses::Viewer.view(ARGV[0] || $0, :close_key => KEY_ENTER, :title => "Enter to close") do |t|
       # you may configure textview further here.
       #t.suppress_borders true
       #t.color = :black
