@@ -759,19 +759,19 @@ module RubyCurses
     end
     def saveas name=nil, config={}
       unless name
-        name = @graphic.ask "File to save as: "
+        name = ask "File to save as: "
         return if name.nil? || name == ""
       end
       exists = File.exists? name
       if exists # need to prompt
-        return unless @graphic.agree("Overwrite existing file? ", true)
+        return unless agree("Overwrite existing file? ", true)
       end
       l = getvalue
       File.open(name, "w"){ |f|
         l.each { |line| f.puts line }
         #l.each { |line| f.write line.gsub(/\r/,"\n") }
       }
-      @graphic.say "#{name} written."
+      say_with_wait "#{name} written."
     end
 
 
