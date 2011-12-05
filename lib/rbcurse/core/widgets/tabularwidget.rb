@@ -146,8 +146,8 @@ module RubyCurses
     end
     def map_keys
       # remove bindings from here. we call repeatedly
-      bind_key([?g,?g]){ goto_start } # mapping double keys like vim
-      bind_key([?',?']){ goto_last_position } # vim , goto last row position (not column)
+      bind_key([?g,?g], 'goto start'){ goto_start } # mapping double keys like vim
+      bind_key([?',?'], 'goto last'){ goto_last_position } # vim , goto last row position (not column)
       bind_key(?/, :ask_search) # XXX TESTME
       bind_key(?n, :find_more) # XXX TESTME
       bind_key([?\C-x, ?>], :scroll_right)
