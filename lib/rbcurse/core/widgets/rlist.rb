@@ -95,6 +95,7 @@ module RubyCurses
       @selected_index = nil
       @row_offset = @col_offset = 1
       @should_show_focus = true # Here's its on since the cellrenderer will show it on repaint
+      @one_key_selection = false # use vim keys
       super
       @_events.push(*[:ENTER_ROW, :LEAVE_ROW, :LIST_SELECTION_EVENT, :PRESS])
       # I have moved this here so user can override keys.
