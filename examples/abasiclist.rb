@@ -70,7 +70,7 @@ App.new do
   def specification
     w = @form.by_name['lb2']
     name = w.text.split()[0]
-    textdialog(%x[ gem specification #{name} ].split("\n") )
+    textdialog(%x[ gem specification #{name} ].split("\n") , :title => 'Specification')
   end
 
   # execute just man for the brew package
@@ -116,7 +116,7 @@ App.new do
     cmd = cmd[0].to_s
     res = %x[ #{m} #{cmd} #{name}].split("\n")
     res ||= "Error in command [#{cmd}] [#{name}] "
-    textdialog( res ) if res
+    textdialog( res, :title => cmd ) if res
   end
 
   colors = Ncurses.COLORS
