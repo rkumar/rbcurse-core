@@ -22,15 +22,6 @@ require 'rbcurse/core/widgets/rwidget'
 #require 'rbcurse/deprecated/widgets/rmessagebox'
 require 'rbcurse/core/widgets/rmessagebox'
 
-# trying out 2011-12-4 so non-apps can get it.
-require 'rbcurse/core/util/bottomline'
-$tt ||= RubyCurses::Bottomline.new 
-$tt.name = "$tt"
-require 'forwardable'
-module Kernel
-  extend Forwardable
-  def_delegators :$tt, :ask, :say, :agree, :choose, :numbered_menu, :display_text, :display_text_interactive, :display_list, :say_with_pause, :hide_bottomline, :say_with_wait
-end
 # -- moving to the new Messagebox 2011-11-19 v 1.5.0
 # Alert user with a one line message
 #
@@ -66,7 +57,8 @@ end
 # Are we doing anyhting to let caller know, cancel was pressed. FIXME
 # @param [String] a label such as "Enter name:"
 # @return [String] value entered by user
-def get_string label, config={}
+# @yield [Field] field created by messagebox
+def get_string label, config={} # yield Field
   config[:title] ||= "Entry"
   label_config = config[:label_config] || {}
   label_config[:row] ||= 2
@@ -97,6 +89,8 @@ def get_string label, config={}
     item Label.new nil, label_config
     item Field.new nil, field_config
   end
+  # added yield to override settings
+  yield tp.form.by_name[:name] if block_given?
   index = tp.run
   if index == 0 # OK
     return tp.form.by_name[:name].text
@@ -109,14 +103,15 @@ end
 # new version using new messagebox
 # @param [String] question
 # @return [Boolean] true or false
-# FIXME focus hould fall on default button so ENTER does not fire first one.
+# @yield [Label]
+# 
 def confirm text, config={}, &block
   title = config['title'] || "Confirm"
   config[:default_button] ||= 0
-  #instance_eval &block if block_given?
+
   mb = RubyCurses::MessageBox.new config  do
     title title
-    message text
+    message text &block
     button_type :yes_no
   end
   index = mb.run
@@ -131,140 +126,6 @@ end
 # alert("You did not enter anything!", {"title"=>"Wake Up", "bgcolor"=>"blue", "color"=>"white"})
 # block currently ignored. don't know what to do, can't pass it to MB since alread sending in a block
 #
-def DEPalert text, config={}, &block
-  title = config['title'] || "Alert"
-  #instance_eval &block if block_given?
-  if text.is_a? RubyCurses::Variable # added 2011-09-20 incase variable passed
-    text = text.get_value
-  end
-  mb = RubyCurses::MessageBox.new nil, config  do
-    title title
-    message text
-    button_type :ok
-  end
-end
-# confirms from user returning :YES or :NO
-# Darn, should have returned boolean, now have to live with it.
-def OLDconfirm text, config={}, &block
-  title = config['title'] || "Confirm"
-  #instance_eval &block if block_given?
-  mb = RubyCurses::MessageBox.new nil, config  do
-    title title
-    message text
-    button_type :yes_no
-  end
-  return mb.selected_index == 0 ? :YES : :NO
-end
-
-##
-# allows user entry of a string.
-# In config you may pass Field related properties such as chars_allowed, valid_regex, values, etc.
-def DEPget_string(message, len=50, default="", config={})
-
-  config["input_config"] = {}
-  config["input_config"]["maxlen"] = len
-  config["maxlen"]=len
-  title = config["title"] || "Input required"
-  mb = RubyCurses::MessageBox.new nil, config do
-    title title
-    message message
-    type :input
-    button_type :ok
-    default_value default
-  end
-  return mb.input_value
-end
-
-##
-# Added 2009-02-05 13:16 
-# get a string from user with some additional checkboxes and optionally supply default values
-# Usage:
-#sel, inp, hash = get_string_with_options("Enter a filter pattern", 20, "*", {"checkboxes" => ["case sensitive","reverse"], "checkbox_defaults"=>[true, false]})
-# sel, inp, hash = get_string_with_options("Enter a filter pattern", 20, "*", {"checkboxes" => ["case sensitive","reverse"]})
-# $log.debug " POPUP: #{sel}: #{inp}, #{hash['case sensitive']}, #{hash['reverse']}"
-#
-# @param: message to print, 
-# @param: length of entry field
-# @param: default value of field
-# @param: configuration of box or field
-#         checkboxes: array of strings to use as checkboxes
-#         checkbox_defaults : array of true/false default values for each cb
-# @return: int 0 OK, 1 cancel pressed
-# @return: string value entered
-# @return: hash of strings and booleans for checkboxes and values
-#
-# @deprecated - user should be able to do this quite easily now.
-def TODOget_string_with_options(message, len=20, default="", config={})
-  title = config["title"] || "Input required"
-  input_config = config["input_config"] || {}
-  checks = config["checkboxes"] 
-  checkbox_defaults = config["checkbox_defaults"] || []
-
-  height = config["height"] || 1
-  display_length = config["display_length"] || 30
-
-  r = 3
-  c = 4
-  mform = RubyCurses::Form.new nil
-  message_label = RubyCurses::Label.new mform, {'text' => message, "name"=>"message_label","row" => r, "col" => c, "display_length" => display_length,  "height" => height, "attr"=>"reverse"}
-
-  r += 1
-  input = RubyCurses::Field.new mform, input_config do
-    name   "input" 
-    row  r 
-    col  c 
-    display_length  display_length
-    maxlen len
-    set_buffer default
-  end
-  if !checks.nil?
-    r += 2
-    checks.each_with_index do |cbtext,ix|
-      field = RubyCurses::CheckBox.new mform do
-        text cbtext
-        name cbtext
-        value checkbox_defaults[ix]||false
-        color 'black'
-        bgcolor 'white'
-        row r
-        col c
-      end
-      r += 1
-    end
-  end
-  radios = config["radiobuttons"] 
-  if !radios.nil?
-    radio_default = config["radio_default"] || radios[0]
-    radio = RubyCurses::Variable.new radio_default
-    r += 2
-    radios.each_with_index do |cbtext,ix|
-      field = RubyCurses::RadioButton.new mform do
-        variable radio
-        text cbtext
-        value cbtext
-        color 'black'
-        bgcolor 'white'
-        row r
-        col c
-      end
-      r += 1
-    end
-  end
-  mb = RubyCurses::MessageBox.new mform do
-    title title
-    button_type :ok_cancel
-    default_button 0
-  end
-  hash = {}
-  if !checks.nil?
-    checks.each do |c|
-      hash[c] = mform.by_name[c].getvalue
-    end
-  end
-  hash["radio"] = radio.get_value unless radio.nil?
-  # returns button index (0 = OK), value of field, hash containing values of checkboxes
-  return mb.selected_index, mform.by_name['input'].getvalue, hash
-end
 
 # ------------------------ We've Moved here from window class ---------------- #
 #                                                                              #
@@ -300,18 +161,21 @@ def _print_message type, text, aconfig={}, &block
     text = text.to_s
   end
   # NOTE we are polluting global namespace
-  aconfig.each_pair { |k,v| instance_variable_set("@#{k}",v) }
+  # fixed on 2011-12-6 . to test
+  #aconfig.each_pair { |k,v| instance_variable_set("@#{k}",v) }
+  color = aconfig[:color]
+  bgcolor = aconfig[:bgcolor]
   ewin = _create_footer_window #*@layout
   r = 0; c = 1;
   case type 
   when :error
-    @color ||= 'red'
-    @bgcolor ||= 'black'
+    color ||= 'red'
+    bgcolor ||= 'black'
   else
-    @color ||= :white
-    @bgcolor ||= :black
+    color ||= :white
+    bgcolor ||= :black
   end
-  color_pair = get_color($promptcolor, @color, @bgcolor)
+  color_pair = get_color($promptcolor, color, bgcolor)
   ewin.bkgd(Ncurses.COLOR_PAIR(color_pair));
   ewin.printstring r, c, text, color_pair
   ewin.printstring r+1, c, "Press a key", color_pair
@@ -332,10 +196,13 @@ def confirm_window text, aconfig={}, &block
   end
   ewin = _create_footer_window
   r = 0; c = 1;
-  aconfig.each_pair { |k,v| instance_variable_set("@#{k}",v) }
-  @color ||= :white
-  @bgcolor ||= :black
-  color_pair = get_color($promptcolor, @color, @bgcolor)
+  #aconfig.each_pair { |k,v| instance_variable_set("@#{k}",v) }
+  # changed on 2011-12-6 
+  color = aconfig[:color]
+  bgcolor = aconfig[:bgcolor]
+  color ||= :white
+  bgcolor ||= :black
+  color_pair = get_color($promptcolor, color, bgcolor)
   ewin.bkgd(Ncurses.COLOR_PAIR(color_pair));
   ewin.printstring r, c, text, color_pair
   ewin.printstring r+1, c, "[y/n]", color_pair
