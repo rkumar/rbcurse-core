@@ -18,14 +18,15 @@ require 'logger'
 require 'rbcurse'
 require 'rbcurse/core/util/widgetshortcuts'
 
-require 'rbcurse/core/util/bottomline'
-$tt ||= RubyCurses::Bottomline.new 
-$tt.name = "$tt"
-require 'forwardable'
-module Kernel
-  extend Forwardable
-  def_delegators :$tt, :ask, :say, :agree, :choose, :numbered_menu, :display_text, :display_text_interactive, :display_list, :say_with_pause, :hide_bottomline, :say_with_wait
-end
+# 2011-12-6 trying to make conditional or avoid bottomline totally
+#require 'rbcurse/core/util/bottomline'
+#$tt ||= RubyCurses::Bottomline.new 
+#$tt.name = "$tt"
+#require 'forwardable'
+#module Kernel
+  #extend Forwardable
+  #def_delegators :$tt, :ask, :say, :agree, :choose, :numbered_menu, :display_text, :display_text_interactive, :display_list, :say_with_pause, :hide_bottomline, :say_with_wait
+#end
 include RubyCurses
 include RubyCurses::Utils
 include Io
@@ -85,8 +86,9 @@ module RubyCurses
     # the row on which to prompt user for any inputs
     #attr_accessor :prompt_row # 2011-10-17 14:06:22
 
-    extend Forwardable
-    def_delegators :$tt, :ask, :say, :agree, :choose, :numbered_menu, :display_text, :display_text_interactive, :display_list
+    # 2011-12-6 trying to make conditional or avoid bottomline totally
+    #extend Forwardable
+    #def_delegators :$tt, :ask, :say, :agree, :choose, :numbered_menu, :display_text, :display_text_interactive, :display_list
 
     # TODO: i should be able to pass window coords here in config
     # :title
@@ -333,6 +335,7 @@ module RubyCurses
     # Note that individual component may be overriding this.
     # FIXME: why are we using rawmessage and then getchar when ask would suffice
     def bind_global
+      require 'rbcurse/core/util/bottomline'
       opts = get_all_commands
       cmd = ask("Select a command (TAB for choices) : ", opts)
       if cmd.nil? || cmd == ""
@@ -395,9 +398,10 @@ module RubyCurses
     # or lines ??
     # Also may want command completion, or help so all commands can be displayed
     def get_command_from_user choices=["quit","help"]
+      require 'rbcurse/core/util/bottomline'
       #code, str = rbgetstr(@window, $lastline, 0, "", 80, :default => ":")
       #return unless code == 0
-            @_command_history ||= Array.new
+      @_command_history ||= Array.new
       str = ask("Cmd: ", choices) { |q| q.default = @_previous_command; q.history = @_command_history }
               @_command_history << str unless @_command_history.include? str
       # shell the command
@@ -984,6 +988,7 @@ module RubyCurses
           }
 
           @form.bind_key(?\M-x, 'M-x commands'){
+            require 'rbcurse/core/util/bottomline'
             # TODO previous command to be default
             opts = get_all_commands()
             @_command_history ||= Array.new
