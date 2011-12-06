@@ -758,6 +758,8 @@ module RubyCurses
       end
     end
     def saveas name=nil, config={}
+      # TODO - substitute with basic stuff from rdialog so we don't need to use bottomline
+      require 'rbcurse/core/util/bottomline'
       unless name
         name = ask "File to save as: "
         return if name.nil? || name == ""
