@@ -95,7 +95,6 @@ module RubyCurses
     end
     #
     # create a window at bottom and show and hide it.
-    # Causing a stack overflow since Window creates a bottomline too !
     #
     def _create_footer_window h = 1 , w = Ncurses.COLS, t = Ncurses.LINES-1, l = 0
       ewin = VER::Window.new(h, w , t, l)
@@ -1776,6 +1775,14 @@ module RubyCurses
   end
   end  # module
 end # module
+#require 'rbcurse/core/util/bottomline'
+$tt ||= RubyCurses::Bottomline.new 
+$tt.name = "$tt"
+require 'forwardable'
+module Kernel
+  extend Forwardable
+  def_delegators :$tt, :ask, :say, :agree, :choose, :numbered_menu, :display_text, :display_text_interactive, :display_list, :say_with_pause, :hide_bottomline, :say_with_wait
+end
 if __FILE__ == $PROGRAM_NAME
 
   #tabc = Proc.new {|str| Dir.glob(str +"*") }
