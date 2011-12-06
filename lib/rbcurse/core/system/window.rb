@@ -36,7 +36,6 @@ module VER
     attr_reader   :window_type   # window or pad to distinguish 2009-11-02 23:11 
     attr_accessor :name  # more for debugging log files. 2010-02-02 19:58 
     attr_accessor :modified # has it been modified and may need a refresh
-    #attr_reader   :bottomline  # experimental here 2010-11-03 22:19 
 
     # @param [Array, Hash] window coordinates (ht, w, top, left)
     # or 
@@ -728,51 +727,6 @@ module VER
       wattron(Ncurses.COLOR_PAIR(color) | att)
       mvwprintw(r, c, "%s", :string, string);
       wattroff(Ncurses.COLOR_PAIR(color) | att)
-    end
-    # @deprecated
-    def print_error_message text=$error_message.get_value
-      alert text
-    end
-    # added by rk 2008-11-29 19:01 
-    # @deprecated. use global method of same name in rdialog
-    def print_status_message text=$status_message
-      #VER::print_status_message text
-      alert text
-    end
-    # added by rk 2008-11-29 19:01 
-    # Since these methods write directly to window they are not advised
-    # since clearing previous message we don't know how much to clear.
-    # Best to map error_message to a label.
-    #  2010-09-13 00:22 WE should not use these any longer.
-    #  Application should create a label and map a Variable named
-    #  $errormessage to it. We should only update the Variable
-    def DEPRECATED_print_error_message text=$error_message.get_value
-      r = $error_message_row || Ncurses.LINES-1
-      c = $error_message_col || (Ncurses.COLS-text.length)/2 
-
-      $log.debug "got ERROR MESSAGE #{text} row #{r} "
-      clear_error r, $datacolor
-      printstring r, c, text, color = $promptcolor
-      $error_message_clear_pending = true
-    end
-    # added by rk 2008-11-29 19:01 
-    # @deprecated. use global method of same name
-    def DEPRECATED_print_status_message text=$status_message
-      r = $status_message_row || Ncurses.LINES-1
-      clear_error r, $datacolor
-      # print it in centre
-      printstring r, (Ncurses.COLS-text.length)/2, text, color = $promptcolor
-    end
-    # Clear error message printed
-    # I am not only clearing if something was printed. This is since
-    # certain small forms like TabbedForm top form throw an error on printstring.
-    # @deprecated 
-    def clear_error r = $error_message_row, color = $datacolor
-      return unless $error_message_clear_pending
-      c = $error_message_col || (Ncurses.COLS-text.length)/2 
-      sz = $error_message_size || Ncurses.COLS
-      printstring(r, c, "%-*s" % [sz, " "], color)
-      $error_message_clear_pending = false
     end
     ##
     # NOTE : FOR MESSAGEBOXES ONLY !!!! 
