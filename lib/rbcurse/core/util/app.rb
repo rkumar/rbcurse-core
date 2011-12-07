@@ -136,7 +136,7 @@ module RubyCurses
       @window.destroy if !@window.nil?
       $log.debug " INSIDE CLOSE, #{@stop_ncurses_on_close} "
       if @stop_ncurses_on_close
-        $tt.destroy  # added on 2011-10-9 since we created a window, but only hid it after use
+        $tt.destroy if $tt  # added on 2011-10-9 since we created a window, but only hid it after use
         VER::stop_ncurses
         $log.debug " CLOSING NCURSES"
       end
