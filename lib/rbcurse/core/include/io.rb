@@ -14,50 +14,67 @@ module Io
 
   # create a 2 line window at bottom to accept user input
   # 
-def __create_footer_window h = 2 , w = Ncurses.COLS, t = Ncurses.LINES-2, l = 0
-  ewin = VER::Window.new(h, w , t, l)
-end
-# 2011-11-27 I have replaced the getting of chars with a field
+  def __create_footer_window h = 2 , w = Ncurses.COLS, t = Ncurses.LINES-2, l = 0
+    ewin = VER::Window.new(h, w , t, l)
+  end
+  # 2011-11-27 I have replaced the getting of chars with a field
 
-# routine to get a string at bottom of window.
-# The first 3 params are no longer required since we create a window
-# of our own. 
-# @param [String] prompt - label to show
-# @param [Fixnum] maxlen - max length of input
-# @param [Hash] config - :default, :display_length of Field, :help_text, :tab_completion
-# help_text is displayed on F1
-# tab_completion is a proc which helps to complete user input
-#
-def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
-  begin
-    win = __create_footer_window
-    form = Form.new win
-    r = 0; c = 1;
-    default = config[:default] || ""
-    displen = config[:display_length] || maxlen
-    prompt = "#{prompt} [#{default}]: " unless default
-    field = Field.new form, :row => r, :col => c, :maxlen => maxlen, :default => default, :label => prompt,
-      :display_length => displen
-    #require 'rbcurse/core/include/rhistory'
-    #field.extend(FieldHistory)
-    #field.history_config :row => FFI::NCurses.LINES-12
-    #field.history %w[ jim john jack ruby jane jill just testing ]
-    form.repaint
-    win.wrefresh
-    prevchar = 0
-    entries = nil
-    while ((ch = win.getchar()) != 999)
-      break if ch == 10 || ch == 13
-      return -1, nil if ch == ?\C-c.getbyte(0) || ch == ?\C-g.getbyte(0)
-      #if ch == ?\M-h.getbyte(0) #                            HELP KEY
+  # routine to get a string at bottom of window.
+  # The first 3 params are no longer required since we create a window
+  # of our own. 
+  # @param [String] prompt - label to show
+  # @param [Fixnum] maxlen - max length of input
+  # @param [Hash] config - :default, :display_length of Field, :help_text, :tab_completion
+  # help_text is displayed on F1
+  # tab_completion is a proc which helps to complete user input
+  # This method is now only for backward compatibility
+  def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
+    config[:maxlen] = maxlen
+    rb_gets(prompt, config)
+  end
+
+  # get a string at the bottom of the screen
+  #
+  # @param [String] prompt - label to show
+  # @param [Hash] config - :default, :display_length of Field, :help_text, :tab_completion
+  # help_text is displayed on F1
+  # tab_completion is a proc which helps to complete user input
+  # @yield [Field] for overriding or customization
+  def rb_gets(prompt, config={}) # yield field
+    _max = FFI::NCurses.COLS-1
+    begin
+      win = __create_footer_window
+      form = Form.new win
+      r = 0; c = 1;
+      default = config[:default] || ""
+      displen = config[:display_length] || config[:maxlen] || _max
+      prompt = "#{prompt} [#{default}]: " unless default
+      maxlen = config[:maxlen] || _max
+      field = Field.new form, :row => r, :col => c, :maxlen => maxlen, :default => default, :label => prompt,
+        :display_length => displen
+      field.bgcolor = :blue
+      field.cursor_end if default.size > 0
+      yield field if block_given?
+      #require 'rbcurse/core/include/rhistory'
+      #field.extend(FieldHistory)
+      #field.history_config :row => FFI::NCurses.LINES-12
+      #field.history %w[ jim john jack ruby jane jill just testing ]
+      form.repaint
+      win.wrefresh
+      prevchar = 0
+      entries = nil
+      while ((ch = win.getchar()) != 999)
+        break if ch == 10 || ch == 13
+        return -1, nil if ch == ?\C-c.getbyte(0) || ch == ?\C-g.getbyte(0)
+        #if ch == ?\M-h.getbyte(0) #                            HELP KEY
         #help_text = config[:help_text] || "No help provided"
         #color = $datacolor
         #print_help(win, r, c, color, help_text)
         ## this will come over our text
-      #end
-      # TODO tab completion and help_text print on F1
-      # that field objects can extend, same for tab completion and gmail completion
-      if ch == KEY_TAB
+        #end
+        # TODO tab completion and help_text print on F1
+        # that field objects can extend, same for tab completion and gmail completion
+        if ch == KEY_TAB
           if config
             str = field.text
             if prevchar == 9
@@ -73,42 +90,44 @@ def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
             end
             if str
               field.text = str
+              field.cursor_end
               field.set_form_col # shit why are we doign this, text sets curpos to 0
             end
             form.repaint
             win.wrefresh
           end
 
-        # tab_completion
-        # if previous char was not tab, execute tab_completion_proc and push first entry
-        # else push the next entry
-      elsif ch == KEY_F1
-        help_text = config[:help_text] || "No help provided. C-c/C-g aborts. <TAB> completion. Alt-h history. C-a/e"
-        print_status_message help_text
+          # tab_completion
+          # if previous char was not tab, execute tab_completion_proc and push first entry
+          # else push the next entry
+        elsif ch == KEY_F1
+          help_text = config[:help_text] || "No help provided. C-c/C-g aborts. <TAB> completion. Alt-h history. C-a/e"
+          print_status_message help_text, :wait => 7
+        end
+        prevchar = ch
+        form.handle_key ch
+        win.wrefresh
       end
-      prevchar = ch
-      form.handle_key ch
-      win.wrefresh
+    rescue => err
+      Ncurses.beep
+      $log.error "EXC in rbgetsr #{err} "
+      $log.error(err.backtrace.join("\n")) 
+    ensure
+      win.destroy if win
     end
-  rescue => err
-    Ncurses.beep
-    $log.error "EXC in rbgetsr #{err} "
-    $log.error(err.backtrace.join("\n")) 
-  ensure
-    win.destroy if win
+    return 0, field.text
   end
-  return 0, field.text
-end
 
   # This is just experimental, trying out tab_completion
   # Prompt user for a file name, allowing him to tab to complete filenames
   # @param [String] label to print before field
   # @param [Fixnum] max length of field
   # @return [String] filename or blank if user cancelled
-  def get_file prompt, maxlen=70  #:nodoc:
+  def get_file prompt, config={}  #:nodoc:
+    maxlen = 70
     tabc = Proc.new {|str| Dir.glob(str +"*") }
-    config={}; config[:tab_completion] = tabc
-    config[:default] = "test"
+    config[:tab_completion] ||= tabc
+    #config[:default] = "test"
     ret, str = rbgetstr(nil,0,0, prompt, maxlen, config)
     #$log.debug " get_file returned #{ret} , #{str} "
     return "" if ret != 0
@@ -120,14 +139,14 @@ end
 
 
 
-    ##
-    # prints given text to window, in color at x and y coordinates
-    # @param [Window] window to write to
-    # @param [String] text to print
-    # @param [int] color pair such as $datacolor or $promptcolor
-    # @param [int] x  row
-    # @param [int] y  col
-    # @see Window#printstring
+  ##
+  # prints given text to window, in color at x and y coordinates
+  # @param [Window] window to write to
+  # @param [String] text to print
+  # @param [int] color pair such as $datacolor or $promptcolor
+  # @param [int] x  row
+  # @param [int] y  col
+  # @see Window#printstring
   def print_this(win, text, color, x, y)
     raise "win nil in print_this" unless win
     color=Ncurses.COLOR_PAIR(color);
@@ -137,7 +156,7 @@ end
     win.attroff(color);
     win.refresh
   end
-    
+
 
   #
   # warn user: currently flashes and places error in log file
