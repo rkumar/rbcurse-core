@@ -1928,6 +1928,8 @@ module RubyCurses
     def init_vars
       @pcol = 0                    # needed for horiz scrolling
       @curpos = 0                  # current cursor position in buffer
+                                   # this is the index where characters are put or deleted
+      #                            # when user edits
       @modified = false
       @repaint_required = true
     end
@@ -2039,6 +2041,8 @@ module RubyCurses
       #$log.debug " FIELD DATA #{@datatype}"
       @delete_buffer = @buffer.dup
       @buffer = value.to_s.dup
+      # don't allow setting of value greater than maxlen
+      @buffer = @buffer[0,@maxlen] if @buffer.length > @maxlen
       @curpos = 0
       # hope @delete_buffer is not overwritten
       fire_handler :CHANGE, InputDataEvent.new(@curpos,@curpos, self, :DELETE, 0, @delete_buffer)     # 2010-09-11 13:01 
@@ -2111,7 +2115,7 @@ module RubyCurses
     end
     @bgcolor ||= $def_bg_color
     @color   ||= $def_fg_color
-    $log.debug("repaint FIELD: #{id}, #{name}, #{row} #{col},  #{focusable} st: #{@state} ")
+    $log.debug("repaint FIELD: #{id}, #{name}, #{row} #{col},pcol:#{@pcol},  #{focusable} st: #{@state} ")
     #return if display_length <= 0 # added 2009-02-17 00:17 sometimes editor comp has 0 and that
     # becomes negative below, no because editing still happens
     @display_length = 1 if display_length == 0
@@ -2191,8 +2195,9 @@ module RubyCurses
   ## 
   # position cursor at start of field
   def cursor_home
-    set_form_col 0
+    @curpos = 0
     @pcol = 0
+    set_form_col 0
   end
   ##
   # goto end of field, "end" is a keyword so could not use it.
@@ -2201,12 +2206,28 @@ module RubyCurses
     if blen < @display_length
       set_form_col blen
     else
+      # there is a problem here FIXME. 
       @pcol = blen-@display_length
-      set_form_col @display_length-1
+      #set_form_col @display_length-1
+      set_form_col blen
     end
-    @curpos = blen # HACK 
+    @curpos = blen # this is position in array where editing or motion is to happen regardless of what you see
+                   # regardless of pcol (panning)
     #  $log.debug " crusor END cp:#{@curpos} pcol:#{@pcol} b.l:#{@buffer.length} d_l:#{@display_length} fc:#{@form.col}"
     #set_form_col @buffer.length
+  end
+  # sets the visual cursor on the window at correct place
+  # added here since we need to account for pcol. 2011-12-7 
+  # NOTE be careful of curpos - pcol being less than 0
+  def set_form_col col1=@curpos
+    @curpos = col1 || 0 # NOTE we set the index of cursor here
+    c = @col + @col_offset + @curpos - @pcol
+    min = @col + @col_offset
+    max = min + @display_length
+    c = min if c < min
+    c = max if c > max
+    $log.debug " #{@name} FIELD set_form_col #{c}, curpos #{@curpos}  , #{@col} + #{@col_offset} pcol:#{@pcol} "
+    setrowcol nil, c
   end
   def delete_eol
     return -1 unless @editable
@@ -2254,10 +2275,17 @@ module RubyCurses
     def delete_prev_char
       return -1 if !@editable 
       return if @curpos <= 0
+      # if we've panned, then unpan, and don't move cursor back
+      # Otherwise, adjust cursor (move cursor back as we delete)
+      adjust = true
+      if @pcol > 0
+        @pcol -= 1
+        adjust = false
+      end
       @curpos -= 1 if @curpos > 0
       delete_at
+      addcol -1 if adjust # move visual cursor back
       set_modified 
-      addcol -1
     end
     ## add a column to cursor position. Field
     def addcol num
