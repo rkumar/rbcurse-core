@@ -99,8 +99,8 @@ module RubyCurses
       bind_key(?\C-b, 'scroll backward'){ scroll_backward() }
       # have placedhere so multi-bufer can override BS to prev buffer
       bind_keys([KEY_BACKSPACE,KEY_BSPACE,KEY_DELETE], :cursor_backward)
-      #bind_key(?r) { getstr("Enter a word: ") }
-      bind_key(?m, :disp_menu)
+      bind_key(?r) { getstr("Enter a word: ") } if $log.debug?
+      bind_key(?m, :disp_menu)                  if $log.debug?
     end
     ## 
     # send in a list
@@ -635,13 +635,14 @@ module RubyCurses
     end
     ## this is just a test of prompting user for a string
     #+ as an alternative to the dialog.
-    def getstr prompt, maxlen=10  #:nodoc:
+    def getstr prompt, maxlen=80  #:nodoc:
       tabc = Proc.new {|str| Dir.glob(str +"*") }
       config={}; config[:tab_completion] = tabc
-      config[:default] = "default"
+      config[:default] = "test"
+      config[:display_length] = 11
       $log.debug " inside getstr before call "
       ret, str = rbgetstr(@form.window, @row+@height-1, @col+1, prompt, maxlen, config)
-      $log.debug " rbgetstr returned #{ret} , #{str} "
+      $log.debug " rbgetstr returned #{ret} ,#{str}."
       return "" if ret != 0
       return str
     end
