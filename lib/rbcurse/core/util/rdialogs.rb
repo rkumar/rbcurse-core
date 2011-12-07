@@ -141,6 +141,8 @@ end
 def print_status_message text, aconfig={}, &block
   _print_message :status, text, aconfig, &block
 end
+alias :rb_puts print_status_message
+
 # new version with a window created on 2011-10-1 12:30 AM 
 # Now can be separate from window class, needing nothing, just a util class
 # Why are we dealing with $error_message, that was due to old idea which failed
@@ -180,14 +182,21 @@ def _print_message type, text, aconfig={}, &block
   ewin.printstring r, c, text, color_pair
   ewin.printstring r+1, c, "Press a key", color_pair
   ewin.wrefresh
-  ewin.getchar
+  if aconfig[:wait]
+    #try this out, if user wants a wait, then it will wait for 7 seconds, or if a key is pressed sooner
+    Ncurses::halfdelay(tenths = 70)
+    ewin.getch
+    Ncurses::halfdelay(tenths = 10)
+  else
+    ewin.getchar
+  end
   ewin.destroy
 end
 #
 # Alternative to confirm dialog, if you want this look and feel, at last 2 lines of screen
 # @param [String] text to prompt
 # @return [true, false] 'y' is true, all else if false
-def confirm_window text, aconfig={}, &block
+def rb_confirm text, aconfig={}, &block
   case text
   when RubyCurses::Variable # added 2011-09-20 incase variable passed
     text = text.get_value
@@ -218,6 +227,7 @@ def confirm_window text, aconfig={}, &block
   end
   retval
 end
+alias :confirm_window :rb_confirm
 # class created to display multiple messages without asking for user to hit a key
 # returns a window to which one can keep calling printstring with 0 or 1 as row.
 # destroy when finished.
