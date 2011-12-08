@@ -283,7 +283,7 @@ App.new do
         c = clist.current_value
         $where_columns ||= []
         hist = ["#{c} = "]
-        w = ask("(UP arrow to edit) where "){ |q| q.default = "#{c} = "; q.history = hist }
+        w = rb_gets("where "){ |q| q.default = "#{c} = "; q.history = hist }
         $where_columns << w if w
         message "where: #{$where_columns.last}. Press F4 when done"
         $log.debug "XXX: WHERE: #{$where_columns} "
@@ -451,7 +451,7 @@ App.new do
         #button_row = 17
         button "Save" do
           @cmd_history ||= []
-          filename = ask("File to append contents to: ") { |q| q.default = @oldfilename; q.history = @cmd_history }
+          filename = rb_gets("File to append contents to: ") { |q| q.default = @oldfilename; q.history = @cmd_history }
 
           if filename
             str = tarea.get_text
@@ -472,7 +472,7 @@ App.new do
             tarea.set_content(str) 
             message "Read content from #{str} "
           rescue => err
-            say_with_pause "No file named: #{str}: #{err.to_s} "
+            print_error_message "No file named: #{str}: #{err.to_s} "
           end
         end
         #ok_button = button( [button_row,30], "OK", {:mnemonic => 'O'}) do 
