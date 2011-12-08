@@ -29,8 +29,9 @@ module RubyCurses
       bind_key($history_key) { _show_history }
       # widget should have CHANGED event, or this will either give error, or just not work
       # else please update history whenever you want a value to be retrieved
-      bind(:CHANGED) { @history << @text unless @history.include? @text }
+      bind(:CHANGED) { @history << @text if @text && (!@history.include? @text) }
     end
+    def history=(x); history(x); end
     
     # pass in some configuration for histroy such as row and column to show popup on
     def history_config config={}
@@ -42,13 +43,29 @@ module RubyCurses
     private
     def _show_history
       return unless @history
+      return  if @history.empty?
       list = @history
+      @_history_config ||= {}
+      #list = ["No history"]  if @history.empty?
+      raise ArgumentError, "show_history got nil list" unless list
       # calculate r and c
-      c = @_history_config[:col] || @col # this is also dependent on window coords, as in a status_window or messagebox
-      r = @row - 10
-      if @row < 10
-        r = @row + 1
+      # col if fine, except for when there's a label.
+      c = @_history_config[:col] || @field_col || @col # this is also dependent on window coords, as in a status_window or messagebox
+      sz = @history.size
+      wrow = 0
+      wrow = self.form.window.top if self.form
+      crow = wrow + @row
+      # if list can be displayed above, then fit it just above
+      if crow > sz + 2
+        r = crow - sz - 2
+      else
+        # else fit it in next row
+        r = crow + 1
       end
+      #r = @row - 10
+      #if @row < 10
+        #r = @row + 1
+      #end
       r = @_history_config[:row] || r
       ret = popuplist(list, :row => r, :col => c, :title  => " History ")
       if ret
