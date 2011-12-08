@@ -138,6 +138,10 @@ end
 # new version with a window created on 2011-10-1 12:37 AM 
 # Now can be separate from window class, needing nothing, just a util class
 # prints a status message and pauses for a char
+# @param [String] text to print
+# @param [Hash] config: :color :bgcolor :color_pair
+#              :wait (numbr of seconds to wait for a key press and then close) if not givn
+#              will keep waiting for keypress (the default)
 def print_status_message text, aconfig={}, &block
   _print_message :status, text, aconfig, &block
 end
@@ -147,15 +151,20 @@ alias :rb_puts print_status_message
 # Now can be separate from window class, needing nothing, just a util class
 # Why are we dealing with $error_message, that was due to old idea which failed
 # scrap it and send the message.
+# @param [String] text to print
+# @param [Hash] config: :color :bgcolor :color_pair
+#              :wait (numbr of seconds to wait for a key press and then close) if not givn
+#              will keep waiting for keypress (the default)
 def print_error_message text, aconfig={}, &block
   _print_message :error, text, aconfig, &block
 end
-def _create_footer_window h = 2 , w = Ncurses.COLS, t = Ncurses.LINES-2, l = 0
+private
+def _create_footer_window h = 2 , w = Ncurses.COLS, t = Ncurses.LINES-2, l = 0  #:nodoc:
   ewin = VER::Window.new(h, w , t, l)
 end
 # @param [:symbol] :error or :status kind of message
-# @private
-def _print_message type, text, aconfig={}, &block
+#private
+def _print_message type, text, aconfig={}, &block  #:nodoc:
   case text
   when RubyCurses::Variable # added 2011-09-20 incase variable passed
     text = text.get_value
@@ -178,13 +187,20 @@ def _print_message type, text, aconfig={}, &block
     bgcolor ||= :black
   end
   color_pair = get_color($promptcolor, color, bgcolor)
+  color_pair = aconfig[:color_pair] || color_pair
   ewin.bkgd(Ncurses.COLOR_PAIR(color_pair));
   ewin.printstring r, c, text, color_pair
-  ewin.printstring r+1, c, "Press a key", color_pair
+  ewin.printstring(r+1, c, "Press a key ", color_pair) unless aconfig[:wait]
   ewin.wrefresh
   if aconfig[:wait]
-    #try this out, if user wants a wait, then it will wait for 7 seconds, or if a key is pressed sooner
-    Ncurses::halfdelay(tenths = 70)
+    #try this out, if user wants a wait, then it will wait for 5 seconds, or if a key is pressed sooner
+    value = aconfig[:wait]
+    if value.is_a? Fixnum
+      value = value * 10
+    else 
+      value = 50
+    end
+    Ncurses::halfdelay(tenths = value)
     ewin.getch
     Ncurses::halfdelay(tenths = 10)
   else
@@ -196,7 +212,15 @@ end
 # Alternative to confirm dialog, if you want this look and feel, at last 2 lines of screen
 # @param [String] text to prompt
 # @return [true, false] 'y' is true, all else if false
+public
 def rb_confirm text, aconfig={}, &block
+  # backward compatibility with agree()
+  if aconfig == true || aconfig == false
+    default = aconfig
+    aconfig = {}
+  else 
+    default = aconfig[:default]
+  end
   case text
   when RubyCurses::Variable # added 2011-09-20 incase variable passed
     text = text.get_value
@@ -220,8 +244,15 @@ def rb_confirm text, aconfig={}, &block
   retval = false
   begin
     ch =  ewin.getchar 
+    retval = (ch == 'y'.ord || ch == 'Y'.ord )
+    # if caller passed a default value and user pressed ENTER return that
+    # can be true or false so don't change this to "if default". 2011-12-8 
+    if !default.nil?
+      if ch == 13 || ch == KEY_ENTER
+        retval = default
+      end
+    end
     #retval = :YES if ch.chr == 'y' 
-    retval = (ch.chr == 'y' )
   ensure
     ewin.destroy
   end
@@ -328,6 +359,7 @@ end
 #  You may also pass bgcolor and color
 #  @since 1.4.1  2011-11-1 
 def popuplist list, config={}, &block
+  raise ArgumentError, "Nil list received by popuplist" unless list
   require 'rbcurse/core/widgets/rlist'
 
   max_visible_items = config[:max_visible_items]
@@ -399,6 +431,7 @@ def popuplist list, config={}, &block
 end
 # returns length of longest
 def longest_in_list list  #:nodoc:
+  raise ArgumentError, "rdialog.rb: longest_in_list recvd nil list" unless list
   longest = list.inject(0) do |memo,word|
     memo >= word.length ? memo : word.length
   end    
