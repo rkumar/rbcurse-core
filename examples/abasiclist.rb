@@ -140,7 +140,7 @@ App.new do
     end
   
  
-  label({:text => "F1 Help, F10 Quit. Press F4 and F5 to test popup, space or enter to select", :row => Ncurses.LINES-1, :col => 0})
+  label({:text => "F1 Help, F10 Quit. : for menu. Press F4 and F5 to test popup, space or enter to select", :row => Ncurses.LINES-1, :col => 0})
 
   @form.bind_key(FFI::NCurses::KEY_F4) { row = lb.current_index+lb.row; col=lb.col+lb.current_value.length+1;  ret = popuplist(%w[ andy berlioz strauss tchaiko matz beethoven], :row => row, :col => col, :title => "Names", :bgcolor => :blue, :color => :white) ; alert "got #{ret} "}
 
