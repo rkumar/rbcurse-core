@@ -759,22 +759,20 @@ module RubyCurses
       end
     end
     def saveas name=nil, config={}
-      # TODO - substitute with basic stuff from rdialog so we don't need to use bottomline
-      require 'rbcurse/core/util/bottomline'
       unless name
-        name = ask "File to save as: "
+        name = rb_gets "File to save as: "
         return if name.nil? || name == ""
       end
       exists = File.exists? name
       if exists # need to prompt
-        return unless agree("Overwrite existing file? ", true)
+        return unless rb_confirm("Overwrite existing file? ")
       end
       l = getvalue
       File.open(name, "w"){ |f|
         l.each { |line| f.puts line }
         #l.each { |line| f.write line.gsub(/\r/,"\n") }
       }
-      say_with_wait "#{name} written."
+      rb_puts "#{name} written."
     end
 
 
