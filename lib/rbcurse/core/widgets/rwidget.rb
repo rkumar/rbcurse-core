@@ -439,7 +439,7 @@ module RubyCurses
             $log.debug "KEY: #{name} : #{val} "
           }
         }
-        textdialog arr
+        textdialog arr, :title => "Key Bindings"
       end
       def bind_keys keycodes, *args, &blk
         keycodes.each { |k| bind_key k, *args, &blk }
@@ -1902,6 +1902,9 @@ module RubyCurses
     attr_reader :original_value                # value on entering field
     attr_accessor :overwrite_mode              # true or false INSERT OVERWRITE MODE
 
+    attr_reader :field_col                     # column on which field is printed
+                                               # required due to labels. Is updated after printing
+    #                                          # so can be nil if accessed early 2011-12-8 
     # For consistency, now width equates to display_length
     alias :width :display_length
     alias :width= :display_length=
@@ -2147,6 +2150,7 @@ module RubyCurses
       @col_offset = c-@col            # required so cursor lands in right place
     end
     @graphic.printstring r, c, sprintf("%-*s", display_length, printval), acolor, @attr
+    @field_col = c
     @repaint_required = false
   end
   def set_focusable(tf)
