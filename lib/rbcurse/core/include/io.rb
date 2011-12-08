@@ -28,9 +28,18 @@ module Io
   # help_text is displayed on F1
   # tab_completion is a proc which helps to complete user input
   # This method is now only for backward compatibility
+  # rbgetstr had various return codes based on whether user asked for help
+  # possibly mimicking alpine, or because i could do nothing about it.
+  # Now, rbgets handles that and only returns if the user cancels or enters
+  # a string, so rbgets does not need to return other codes.
   def rbgetstr(nolongerused, r, c, prompt, maxlen, config={})
     config[:maxlen] = maxlen
-    rb_gets(prompt, config)
+    str = rb_gets(prompt, config)
+    if str
+      return 0, str
+    else
+      return -1, nil
+    end
   end
 
   # get a string at the bottom of the screen
@@ -40,32 +49,52 @@ module Io
   # help_text is displayed on F1
   # tab_completion is a proc which helps to complete user input
   # @yield [Field] for overriding or customization
+  # @return [String, nil] String if entered, nil if canceled
   def rb_gets(prompt, config={}) # yield field
-    _max = FFI::NCurses.COLS-1
+      if config.is_a? Array
+        options = config
+        completion_proc = Proc.new{|str| 
+          options.dup.grep Regexp.new("^#{str}");
+        }
+        config = {}
+        config[:tab_completion] = completion_proc
+      end
     begin
       win = __create_footer_window
       form = Form.new win
       r = 0; c = 1;
       default = config[:default] || ""
-      displen = config[:display_length] || config[:maxlen] || _max
-      prompt = "#{prompt} [#{default}]: " unless default
+      prompt = "#{prompt} [#{default}]:" if default.size > 0
+      _max = FFI::NCurses.COLS-1-prompt.size-4
+      displen = config[:display_length] || [config[:maxlen] || 999, _max].min
       maxlen = config[:maxlen] || _max
       field = Field.new form, :row => r, :col => c, :maxlen => maxlen, :default => default, :label => prompt,
         :display_length => displen
-      field.bgcolor = :blue
+      bg = Ncurses.COLORS >= 236 ? 233 : :blue
+      field.bgcolor = bg
       field.cursor_end if default.size > 0
+      def field.default=(x); default(x);end
+
+      # if user wishes to use the yield and say "field.history = [x,y,z] then
+      # we should alredy have extended this, so lets make it permanent
+      #if config[:history]
+        #raise ArgumentError, "Field history must be an array" unless config[:history].is_a? Array
+        require 'rbcurse/core/include/rhistory'
+        field.extend(FieldHistory)
+        #field.history_config :row => 
+        field.history = config[:history]
+      #end
+
       yield field if block_given?
-      #require 'rbcurse/core/include/rhistory'
-      #field.extend(FieldHistory)
-      #field.history_config :row => FFI::NCurses.LINES-12
-      #field.history %w[ jim john jack ruby jane jill just testing ]
       form.repaint
       win.wrefresh
       prevchar = 0
       entries = nil
+      oldstr = nil # for tab completion, origal word entered by user
       while ((ch = win.getchar()) != 999)
-        break if ch == 10 || ch == 13
-        return -1, nil if ch == ?\C-c.getbyte(0) || ch == ?\C-g.getbyte(0)
+        break if ch == 10 || ch == 13 || ch == KEY_ENTER
+        #return -1, nil if ch == ?\C-c.getbyte(0) || ch == ?\C-g.getbyte(0)
+        return nil if ch == ?\C-c.getbyte(0) || ch == ?\C-g.getbyte(0)
         #if ch == ?\M-h.getbyte(0) #                            HELP KEY
         #help_text = config[:help_text] || "No help provided"
         #color = $datacolor
@@ -77,16 +106,21 @@ module Io
         if ch == KEY_TAB
           if config
             str = field.text
-            if prevchar == 9
+            if prevchar == KEY_TAB
               if !entries.nil? && !entries.empty?
                 str = entries.delete_at(0)
+              else
+                str = oldstr if oldstr
+                prevchar = ch = nil # so it can start again completing
               end
             else
               tabc = config[:tab_completion] unless tabc
               next unless tabc
-              entries = tabc.call(str)
-              $log.debug " tab got #{entries} "
+              oldstr = str.dup
+              entries = tabc.call(str).dup
+              $log.debug " tab got #{entries} for str=#{str}"
               str = entries.delete_at(0) unless entries.nil? || entries.empty?
+              str = str.to_s.dup
             end
             if str
               field.text = str
@@ -103,9 +137,67 @@ module Io
         elsif ch == KEY_F1
           help_text = config[:help_text] || "No help provided. C-c/C-g aborts. <TAB> completion. Alt-h history. C-a/e"
           print_status_message help_text, :wait => 7
+        else
+          form.handle_key ch
         end
         prevchar = ch
-        form.handle_key ch
+        win.wrefresh
+      end
+    rescue => err
+      Ncurses.beep
+      alert "EXC #{err.to_s} "
+      $log.error "EXC in rbgetsr #{err} "
+      $log.error(err.backtrace.join("\n")) 
+    ensure
+      win.destroy if win
+    end
+    config[:history] << field.text if config[:history] && field.text
+    return field.text
+  end
+
+  # get a character.
+  # unlike rb_gets allows user to enter control or alt or function character too.
+  # @param [String] prompt or label to show.
+  # @param [Hash] configuration such as default or regexp for validation
+  # @return [Fixnum] nil if canceled, or ret value of getchar which is numeric
+  # If default provided, then ENTER returns the default
+  def rb_getchar(prompt, config={}) # yield field
+    begin
+      win = __create_footer_window
+      #form = Form.new win
+      r = 0; c = 1;
+      default = config[:default] 
+      prompt = "#{prompt} [#{default}] " if default
+      win.mvprintw(r, c, "%s: " % prompt);
+      bg = Ncurses.COLORS >= 236 ? 236 : :blue
+      color_pair = get_color($reversecolor, :white, bg)
+      win.printstring r, c + prompt.size + 2, " ", color_pair
+
+      win.wrefresh
+      prevchar = 0
+      entries = nil
+      while ((ch = win.getchar()) != 999)
+        return default.ord if default && (ch == 13 || ch == KEY_ENTER)
+        return nil if ch == ?\C-c.getbyte(0) || ch == ?\C-g.getbyte(0)
+        if ch == KEY_F1
+          help_text = config[:help_text] || "No help provided. C-c/C-g aborts."
+          print_status_message help_text, :wait => 7
+          win.wrefresh # nevr had to do this with ncurses, but have to with ffi-ncurses ??
+          next
+        end
+        if config[:regexp]
+          reg = config[:regexp]
+          if ch > 0 && ch < 256
+            chs = ch.chr
+            return ch if chs =~ reg
+            alert "Wrong character. #{reg} "
+          else
+            alert "Wrong character. #{reg} "
+          end
+        else
+          return ch
+        end
+        #form.handle_key ch
         win.wrefresh
       end
     rescue => err
@@ -115,7 +207,7 @@ module Io
     ensure
       win.destroy if win
     end
-    return 0, field.text
+    return nil
   end
 
   # This is just experimental, trying out tab_completion
