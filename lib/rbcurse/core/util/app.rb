@@ -18,15 +18,6 @@ require 'logger'
 require 'rbcurse'
 require 'rbcurse/core/util/widgetshortcuts'
 
-# 2011-12-6 trying to make conditional or avoid bottomline totally
-#require 'rbcurse/core/util/bottomline'
-#$tt ||= RubyCurses::Bottomline.new 
-#$tt.name = "$tt"
-#require 'forwardable'
-#module Kernel
-  #extend Forwardable
-  #def_delegators :$tt, :ask, :say, :agree, :choose, :numbered_menu, :display_text, :display_text_interactive, :display_list, :say_with_pause, :hide_bottomline, :say_with_wait
-#end
 include RubyCurses
 include RubyCurses::Utils
 include Io
@@ -85,10 +76,6 @@ module RubyCurses
     attr_writer :quit_key
     # the row on which to prompt user for any inputs
     #attr_accessor :prompt_row # 2011-10-17 14:06:22
-
-    # 2011-12-6 trying to make conditional or avoid bottomline totally
-    #extend Forwardable
-    #def_delegators :$tt, :ask, :say, :agree, :choose, :numbered_menu, :display_text, :display_text_interactive, :display_list
 
     # TODO: i should be able to pass window coords here in config
     # :title
@@ -224,17 +211,13 @@ module RubyCurses
       $status_message.value = text # trying out 2011-10-9 
       #@message.value = text # 2011-10-17 14:07:01
     end
-    # @deprecated please use {#status_line} instead of a message label
-    def message_row row
-      raise "Please use create_message_label first as message_label is no longer default behaviour" unless @message_label
-      @message_label.row = row 
-    end
+
     # during a process, when you wish to update status, since ordinarily the thread is busy
     # and form does not get control back, so the window won't refresh.
     # This will only update on keystroke since it uses statusline
     # @deprecated please use {#status_line} instead of a message label
     def message_immediate text
-      $log.warn "DEPRECATED, use message(), or say_with_pause, or say"
+      $log.warn "DEPRECATED, use message(),  or rb_puts or use status_window"
       $status_message.value = text # trying out 2011-10-9 user needs to use in statusline command
       # 2011-10-17 knocking off label, should be printed on status_line
     end
@@ -335,48 +318,50 @@ module RubyCurses
     # Note that individual component may be overriding this.
     # FIXME: why are we using rawmessage and then getchar when ask would suffice
     def bind_global
-      require 'rbcurse/core/util/bottomline'
       opts = get_all_commands
-      cmd = ask("Select a command (TAB for choices) : ", opts)
+      cmd = rb_gets("Select a command (<tab> for choices) : ", opts)
       if cmd.nil? || cmd == ""
-        say_with_pause "Aborted."
+        rb_puts "Aborted."
         return
       end
       key = []
       str = ""
-      raw_message "Enter one or 2 keys. Finish with ENTER. Enter first key:"
-      #raw_message "Enter first key:"
-      ch = @window.getchar()
-      raw_message_destroy
-      if [KEY_ENTER, 10, 13, ?\C-g.getbyte(0)].include? ch
-        say_with_pause "Aborted."
+      #raw_message "Enter one or 2 keys. Finish with ENTER. Enter first key:"
+      #ch = @window.getchar()
+      #raw_message_destroy
+      #if [KEY_ENTER, 10, 13, ?\C-g.getbyte(0)].include? ch
+        #say_with_pause "Aborted."
+        #return
+      #end
+      # the next is fine but does not allow user to enter a control or alt or function character
+      # since it uses Field. It is fine if you want to force alphanum input
+      ch = rb_getchar("Enter one or two keys. Finish with <ENTER>. Enter first key:")
+      unless ch
+        rb_puts "Aborted. <Press a key>"
         return
       end
       key << ch
       str << keycode_tos(ch)
-      raw_message "Enter second key or hit return:"
-      ch = @window.getchar()
-      raw_message_destroy
-      if ch == 3 || ch == ?\C-g.getbyte(0)
-        say_with_pause "Aborted."
+      ch = rb_getchar  "Got #{str}. Enter second key or hit return:"
+      unless ch
+        rb_puts "Aborted. <Press a key>"
         return
       end
-      if ch == 10 || ch == KEY_ENTER || ch == 13
+      if ch == KEY_ENTER || ch == 13
       else
         key << ch
         str << keycode_tos(ch)
       end
       if !key.empty?
-        say_with_pause "Binding #{cmd} to #{str} "
+        rb_puts "Binding #{cmd} to #{str}. "
         key = key[0] if key.size == 1
         #@form.bind_key(key, cmd.to_sym) # not finding it, getting called by that comp
         @form.bind_key(key){ send(cmd.to_sym) }
       end
-      #message "Bound #{str} to #{cmd} "
-      raw_message_destroy
     end
     def bind_component
-      say_with_pause "Todo. <press>"
+      #rb_puts "Todo. ", :color_pair => get_color($promptcolor, :red, :black)
+      print_error_message "Todo this. "
       # the idea here is to get the current component
       # and bind some keys to some methods.
       # however, how do we divine the methods we can map to
@@ -387,9 +372,10 @@ module RubyCurses
       f = @form.get_current_field
       if f.respond_to?('help_text')
         h = f.help_text
-        textdialog "#{h}"
+        h = "No help text defined for this field.\nTry F1, or press '?' for key-bindings." unless h
+        textdialog "#{h}", :title => "Widget Help Text"
       else
-        alert "Could not get field #{f} or does not respond to helptext"
+        alert "Could not get field #{f} or does not respond to helptext. Try F1 or '?'"
       end
     end
     # prompts user for a command. we need to get this back to the calling app
@@ -398,11 +384,8 @@ module RubyCurses
     # or lines ??
     # Also may want command completion, or help so all commands can be displayed
     def get_command_from_user choices=["quit","help"]
-      require 'rbcurse/core/util/bottomline'
-      #code, str = rbgetstr(@window, $lastline, 0, "", 80, :default => ":")
-      #return unless code == 0
       @_command_history ||= Array.new
-      str = ask("Cmd: ", choices) { |q| q.default = @_previous_command; q.history = @_command_history }
+      str = rb_gets("Cmd: ", choices) { |q| q.default = @_previous_command; q.history = @_command_history }
               @_command_history << str unless @_command_history.include? str
       # shell the command
       if str =~ /^!/
@@ -441,7 +424,7 @@ module RubyCurses
           ret = false
           # what is this execute_this: some kind of general routine for all apps ?
           ret = execute_this(cmd, *cmdline) if respond_to?(:execute_this, true)
-          say_with_pause("#{self.class} does not respond to #{cmd} ", :color_pair => $promptcolor) unless ret
+          rb_puts("#{self.class} does not respond to #{cmd} ", :color_pair => $promptcolor) unless ret
           # should be able to say in red as error
         end
       end
@@ -988,12 +971,11 @@ module RubyCurses
           }
 
           @form.bind_key(?\M-x, 'M-x commands'){
-            require 'rbcurse/core/util/bottomline'
             # TODO previous command to be default
             opts = get_all_commands()
             @_command_history ||= Array.new
             # previous command should be in opts, otherwise it is not in this context
-            cmd = ask("Command: ", opts){ |q| q.default = @_previous_command; q.history = @_command_history }
+            cmd = rb_gets("Command: ", opts){ |q| q.default = @_previous_command; q.history = @_command_history }
             if cmd.nil? || cmd == ""
             else
               @_command_history << cmd unless @_command_history.include? cmd
@@ -1005,7 +987,7 @@ module RubyCurses
                 if rcmd.size == 1
                   cmd = rcmd.first
                 elsif !rcmd.empty?
-                  say_with_pause "Cannot resolve #{cmd}. Matches are: #{rcmd} "
+                  rb_puts "Cannot resolve #{cmd}. Matches are: #{rcmd} "
                 end
               end
               if respond_to?(cmd, true)
@@ -1018,11 +1000,11 @@ module RubyCurses
                   if exc
                     $log.debug( exc) 
                     $log.debug(exc.backtrace.join("\n")) 
-                    say_with_pause exc.to_s
+                    rb_puts exc.to_s
                   end
                 end
               else
-                say_with_pause("Command [#{cmd}] not supported by #{self.class} ", :color_pair => $promptcolor)
+                rb_puts("Command [#{cmd}] not supported by #{self.class} ", :color_pair => $promptcolor)
               end
             end
           }
