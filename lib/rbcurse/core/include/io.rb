@@ -145,7 +145,7 @@ module Io
       end
     rescue => err
       Ncurses.beep
-      alert "EXC #{err.to_s} "
+      textdialog [err.to_s, *err.backtrace], :title => "Exception"
       $log.error "EXC in rbgetsr #{err} "
       $log.error(err.backtrace.join("\n")) 
     ensure
