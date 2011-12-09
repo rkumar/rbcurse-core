@@ -464,16 +464,21 @@ App.new do
           else
             message "Aborted operation"
           end
-          hide_bottomline
+          #hide_bottomline
         end
         button "Read" do
           filter = "*"
-          str = choose filter, :title => "Files", :prompt => "Choose a file: "
-          begin
-            tarea.set_content(str) 
-            message "Read content from #{str} "
-          rescue => err
-            print_error_message "No file named: #{str}: #{err.to_s} "
+          #str = choose filter, :title => "Files", :prompt => "Choose a file: "
+          cproc = Proc.new { |str| Dir.glob(str + "*") }
+          str = rb_gets "Choose a file: ", :title => "Files", :tab_completion => cproc, 
+            :help_text => "Press <tab> to complete filenames. C-a, C-e, C-k. Alt-?"
+          if str && File.exists?(str)
+            begin
+              tarea.set_content(str) 
+              message "Read content from #{str} "
+            rescue => err
+              print_error_message "No file named: #{str}: #{err.to_s} "
+            end
           end
         end
         #ok_button = button( [button_row,30], "OK", {:mnemonic => 'O'}) do 
