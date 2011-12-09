@@ -131,9 +131,11 @@ if $0 == __FILE__
         w = ev.word_under_cursor.strip
         # check that user did not hit enter on empty area
         if w != ""
-          text = `ri -f bs #{tv.title}.#{w}` rescue "No details for #{w}"
-          text = text.split("\n")
-          view(text, :content_type => :ansi)
+          _text = `ri -f bs #{tv.title}.#{w} 2>&1` 
+          _text = _text.split("\n")
+          if _text && _text.size != 0
+            view(_text, :content_type => :ansi)
+          end
         end
       }
 
