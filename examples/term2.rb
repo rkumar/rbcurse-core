@@ -25,7 +25,7 @@ require 'rbcurse/core/widgets/scrollbar'
   end
 App.new do 
   header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Tabular Demo", :text_right =>"New Improved!", :color => :black, :bgcolor => :white, :attr => :bold 
-  message "Press F10 to escape from here"
+  message "F10 quit, F1 Help, ? Bindings"
   install_help_text my_help_text
 
   flow :width => FFI::NCurses.COLS , :height => FFI::NCurses.LINES-2 do
