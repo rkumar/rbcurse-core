@@ -60,7 +60,7 @@ module RubyCurses
       @x = '+'
       self.columns = cols if cols
       if !args.empty?
-        puts "ARGS after shift #{args} "
+        #puts "ARGS after shift #{args} "
         if !args.empty?
           self.data = args
         end
@@ -84,8 +84,8 @@ module RubyCurses
     # set data as an array of arrays
     # @param [Array<Array>] data as array of arrays
     def data=(list)
-      puts "got data: #{list.size} " if !$log
-      puts list if !$log
+      #puts "got data: #{list.size} " if !$log
+      #puts list if !$log
       @list = list
     end
 
@@ -213,7 +213,7 @@ module RubyCurses
         end
       }
       @fmstr = fmt.join(@y)
-      puts "format: #{@fmstr} "
+      #puts "format: #{@fmstr} " # 2011-12-09 23:09:57
     end
   end
 end
