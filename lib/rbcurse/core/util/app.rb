@@ -165,10 +165,10 @@ module RubyCurses
             begin
               @form.handle_key ch
             rescue => err
-              alert err.to_s
               $log.debug( "handle_key rescue reached ")
               $log.debug( err) 
               $log.debug(err.backtrace.join("\n")) 
+              textdialog [err.to_s, *err.backtrace], :title => "Exception"
             end
             #@form.repaint # was this duplicate ?? handle calls repaint not needed
             @window.wrefresh
