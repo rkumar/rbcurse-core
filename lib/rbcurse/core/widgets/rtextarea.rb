@@ -234,7 +234,8 @@ module RubyCurses
     # Added on 2011-10-10 
     # @since 1.4.0
     # @param [String, Array] String is an existing filename, Array is content to be replaced
-    def set_content lines
+    # Added config for compatibility with textview
+    def set_content lines, config={}
       case lines
       when String
         if File.exists? lines
@@ -249,7 +250,20 @@ module RubyCurses
       @list.replace lines
       @repaint_required = true
     end
-    alias :text :set_content
+    #alias :text :set_content
+    # set text
+    # Added for consistency with other widgets
+    def text(*val)
+      if val.empty?
+        return @list
+      end
+      set_content(*val)
+      self
+    end
+    def text=(val)
+      return unless val # added 2010-11-17 20:11, dup will fail on nil
+      set_content(val)
+    end
     def get_window
       @graphic
     end
@@ -271,12 +285,12 @@ module RubyCurses
       # the next was irritating if user wanted to add a row ! 2011-10-10 
       #bind_key(Ncurses::KEY_DOWN){ ret = down ; get_window.ungetch(KEY_TAB) if ret == :NO_NEXT_ROW }
       bind_key(Ncurses::KEY_DOWN){ ret = down ; }
-      bind_key(?\C-a){ cursor_bol }
-      bind_key(?\C-e){ cursor_eol }
-      bind_key(?\C-n) { scroll_forward }
-      bind_key(?\C-p) { scroll_backward }
-      bind_key(?\C-[) { goto_start }
-      bind_key(?\C-]) { goto_end }
+      bind_key(?\C-a, 'start of line'){ cursor_bol }
+      bind_key(?\C-e, 'end of line'){ cursor_eol }
+      bind_key(?\C-d, 'scroll forward') { scroll_forward }
+      bind_key(?\C-b, 'scroll backward') { scroll_backward }
+      bind_key(?\C-[, 'goto start') { goto_start }
+      bind_key(?\C-], 'goto end') { goto_end }
 
       bind_key(KEY_BACKSPACE){ delete_prev_char if @editable }
       bind_key(KEY_BSPACE){ delete_prev_char if @editable}
@@ -284,10 +298,12 @@ module RubyCurses
       bind_key(?\M-f, :forward_word)
 
       #bind_key(127){ delete_prev_char }
-      bind_key(330){ delete_curr_char if @editable }
+      bind_key(330, 'delete current char'){ delete_curr_char if @editable }
       #bind_key(?\C-k){ delete_eol }
       #bind_key(?\C-_){ undo_delete_eol }
       #bind_key(27){ set_buffer @original_value }
+      bind_key([?\C-x, ?e], :edit_external)
+      bind_key([?\C-x, ?\C-s], :saveas)
       @keys_mapped = true
     end
 
@@ -914,6 +930,40 @@ module RubyCurses
     def text_redo
       return unless @undo_handler
       @undo_handler.redo
+    end
+
+    def edit_external
+      require 'rbcurse/core/include/appmethods'
+      require 'tempfile'
+      f = Tempfile.new("rbcurse")
+      l = self.text
+      l.each { |line| f.puts line }
+      fp = f.path
+      f.flush
+
+      editor = ENV['EDITOR'] || 'vi'
+      vimp = %x[which #{editor}].chomp
+      ret = shell_out "#{vimp} #{fp}"
+      if ret
+        lines = File.open(f,'r').readlines
+        set_content(lines, :content_type => @old_content_type)
+      end
+    end
+    def saveas name=nil, config={}
+      unless name
+        name = rb_gets "File to save as: "
+        return if name.nil? || name == ""
+      end
+      exists = File.exists? name
+      if exists # need to prompt
+        return unless rb_confirm("Overwrite existing file? ")
+      end
+      l = getvalue
+      File.open(name, "w"){ |f|
+        l.each { |line| f.puts line }
+        #l.each { |line| f.write line.gsub(/\r/,"\n") }
+      }
+      rb_puts "#{name} written."
     end
   end # class textarea
   ##
