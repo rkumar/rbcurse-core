@@ -81,7 +81,7 @@ def view_sql stmt
   rescue => err
     $log.error err.to_s
     $log.error(err.backtrace.join("\n"))
-    alert err.to_s
+    textdialog [err.to_s, *err.backtrace], :title => "Exception"
   end
 end
 
@@ -279,7 +279,7 @@ App.new do
           alert "Select a table first." 
         end
       end
-      clist.bind_key('w') {
+      clist.bind_key('w', 'add to where condition') {
         c = clist.current_value
         $where_columns ||= []
         hist = ["#{c} = "]
@@ -288,14 +288,14 @@ App.new do
         message "where: #{$where_columns.last}. Press F4 when done"
         $log.debug "XXX: WHERE: #{$where_columns} "
       }
-      clist.bind_key('o') {
+      clist.bind_key('o', 'add to order by') {
         c = clist.current_value
         $order_columns ||= []
         $order_columns << c if c
         message "order (asc): #{$order_columns.last}. Press F4 when done"
         $log.debug "XXX: ORDER: #{$order_columns} "
       }
-      clist.bind_key('O') {
+      clist.bind_key('O', 'add to ordery by desc') {
         c = clist.current_value
         $order_columns ||= []
         $order_columns << " #{c} desc " if c
@@ -338,7 +338,7 @@ App.new do
       tarea_keyarray = keyarray + [ ["M-z", "Commands"], nil ]
       #tarea_sub_keyarray = [ ["r", "Run"], ["c", "clear"], ["w","Save"], ["a", "Append next"], 
       #["y", "Yank"], ["Y", "yank pop"] ]
-      tarea_sub_keyarray = [ ["r", "Run"], ["c", "clear"], ["w","Kill Ring Save (M-w)"], ["a", "Append Next"], 
+      tarea_sub_keyarray = [ ["r", "Run"], ["c", "clear"], ["e", "Edit externally"], ["w","Kill Ring Save (M-w)"], ["a", "Append Next"], 
         ["y", "Yank (C-y)"], ["Y", "yank pop (M-y)"],
         ["u", "Undo (C-_)"], ["R", "Redo (C-r)"],
       ]
@@ -373,18 +373,18 @@ App.new do
       end
 
 
-      @form.bind_key([?q,?q]) { throw :close }
-      @form.bind_key(?\M-t) do
+      @form.bind_key([?q,?q], 'quit') { throw :close }
+      @form.bind_key(?\M-t, 'select table') do
         if $current_db.nil?
           alert "Please select database first"
         else
           create_popup( get_table_names,:single) {|value| $selected_table = $current_table =  value}
         end
       end
-      @form.bind_key(?\M-d) do
+      @form.bind_key(?\M-d, 'select database') do
         ask_databases
       end
-      @form.bind_key(FFI::NCurses::KEY_F4) do
+      @form.bind_key(FFI::NCurses::KEY_F4, 'view data') do
         $where_string = nil
         $order_string = nil
         if $where_columns
@@ -409,7 +409,7 @@ App.new do
     stack :width_pc => 80 do
       tarea = textarea :name => 'tarea', :height => 5, :title => 'Sql Statement'
       #undom = SimpleUndo.new tarea
-      tarea.bind_key(Ncurses::KEY_F4) do
+      tarea.bind_key(Ncurses::KEY_F4, 'view data') do
         text = tarea.get_text
         if text == ""
           alert "Please enter a query and then hit F4. Or press F4 over column list"
@@ -418,9 +418,10 @@ App.new do
         end
       end
       tarea.bind(:ENTER) { @adock.mode :tarea }
-      tarea.bind_key(?\M-z){
+      tarea.bind_key(?\M-z, 'textarea submenu'){
 
         hash = { 'c' => lambda{ tarea.remove_all },
+          'e' => lambda{ tarea.edit_external },
           'w' => lambda{ tarea.kill_ring_save },
           'a' => lambda{ tarea.append_next_kill },
           'y' => lambda{ tarea.yank },
