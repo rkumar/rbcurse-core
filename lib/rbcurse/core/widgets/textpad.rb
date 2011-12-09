@@ -392,7 +392,7 @@ module RubyCurses
           rescue => err
             $log.error " TEXTPAD ERROR #{err} "
             $log.debug(err.backtrace.join("\n"))
-            alert err.to_s
+            textdialog ["Error in TextPad: #{err} ", *err.backtrace], :title => "Exception"
             # FIXME why does this result in a blank spot on screen till its refreshed again
             # should not happen if its deleting its panel and doing an update panel
           end
@@ -402,7 +402,7 @@ module RubyCurses
       rescue => err
         $log.debug( err) if err
         $log.debug(err.backtrace.join("\n")) if err
-        alert "Got an exception in PadReader: #{err}. Check log"
+        textdialog ["Error in TextPad: #{err} ", *err.backtrace], :title => "Exception"
         $error_message.value = ""
       ensure
       end
