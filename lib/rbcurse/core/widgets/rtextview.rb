@@ -95,6 +95,7 @@ module RubyCurses
       bind_key(?\M-l, :scroll_right)
       bind_key(?\M-h, :scroll_left)
       bind_key([?\C-x, ?\C-s], :saveas)
+      bind_key([?\C-x, ?e], :edit_external)
       bind_keys([?\C-d, 32], 'scroll forward'){ scroll_forward() }
       bind_key(?\C-b, 'scroll backward'){ scroll_backward() }
       # have placedhere so multi-bufer can override BS to prev buffer
@@ -117,6 +118,7 @@ module RubyCurses
         formatted_text list, @content_type
         return
       end
+      # please note that content type is lost once formatted text does it's work
       @wrap_policy = config[:wrap]
       if list.is_a? String
         if @wrap_policy == :WRAP_WORD
@@ -138,7 +140,18 @@ module RubyCurses
       init_vars
     end
     # for consistency with other objects that respect text
-    alias :text :set_content
+    #alias :text :set_content
+    def text(*val)
+      if val.empty?
+        return @list
+      end
+      set_content(*val)
+      self
+    end
+    def text=(val)
+      return unless val # added 2010-11-17 20:11, dup will fail on nil
+      set_content(val)
+    end
     def formatted_text text, fmt
       require 'rbcurse/core/include/chunk'
       @formatted_text = text
@@ -257,6 +270,8 @@ module RubyCurses
       @repaint_footer_required = true if @oldrow != @current_index # 2011-10-15 
       print_foot if @print_footer && !@suppress_borders && @repaint_footer_required
     end
+    # this sucks and should not be used but is everywhere, should
+    # use text()
     def getvalue
       @list
     end
@@ -369,7 +384,7 @@ module RubyCurses
         rescue => err
           $log.error " TEXTVIEW ERROR #{err} "
           $log.debug(err.backtrace.join("\n"))
-          alert err.to_s
+          textdialog [err.to_s, *err.backtrace], :title => "Exception"
         end
         return :UNHANDLED if ret == :UNHANDLED
       end
@@ -510,6 +525,7 @@ module RubyCurses
         #l = []
         #@formatted_text.each { |e| l << cp.convert_to_chunk(e) }
 
+        @old_content_type = @content_type
         text(l)
         @formatted_text = nil
 
@@ -773,6 +789,27 @@ module RubyCurses
         #l.each { |line| f.write line.gsub(/\r/,"\n") }
       }
       rb_puts "#{name} written."
+    end
+
+    # edit content of textview in EDITOR and bring back
+    # NOTE: does not maintain content_type, so if you edit ansi text,
+    # it will come back in as normal text
+    def edit_external
+      require 'rbcurse/core/include/appmethods'
+      require 'tempfile'
+      f = Tempfile.new("rbcurse")
+      l = self.text
+      l.each { |line| f.puts line }
+      fp = f.path
+      f.flush
+
+      editor = ENV['EDITOR'] || 'vi'
+      vimp = %x[which #{editor}].chomp
+      ret = shell_out "#{vimp} #{fp}"
+      if ret
+        lines = File.open(f,'r').readlines
+        set_content(lines, :content_type => @old_content_type)
+      end
     end
 
 
