@@ -71,8 +71,8 @@ App.new do
   end
   ht = 24
   borderattrib = :reverse
-  @header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Yet Another Email Client that sucks", 
-    :text_right =>"", :color => :white, :bgcolor => 235
+  @header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Bottomline Test", 
+    :text_right =>"Click :", :color => :white, :bgcolor => 235
   message "Press F10 to exit, F1 Help, : for Menu  "
 
 
