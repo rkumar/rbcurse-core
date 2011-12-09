@@ -111,7 +111,7 @@ def confirm text, config={}, &block
 
   mb = RubyCurses::MessageBox.new config  do
     title title
-    message text &block
+    message text, &block 
     button_type :yes_no
   end
   index = mb.run
