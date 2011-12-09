@@ -100,12 +100,14 @@ module RubyCurses
       RubyCurses::Viewer.view(res.split("\n"), :close_key => KEY_ENTER, :title => "<Enter> to close, M-l M-h to scroll")
     end
     def shell_out command
-      @window.hide
+      w = @window || @form.window
+      w.hide
       Ncurses.endwin
-      system command
+      ret = system command
       Ncurses.refresh
       #Ncurses.curs_set 0  # why ?
-      @window.show
+      w.show
+      return ret
     end
   end # utils
 end # module RubyC
