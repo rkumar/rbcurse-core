@@ -163,7 +163,8 @@ class PadReader
         rescue => err
           $log.debug( err) if err
           $log.debug(err.backtrace.join("\n")) if err
-          alert "Got an exception in PadReader: #{err}. Check log"
+
+          textdialog ["Error in padreader: #{err} ", *err.backtrace], :title => "Exception"
           $error_message.value = ""
         ensure
         end
