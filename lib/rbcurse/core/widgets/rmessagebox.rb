@@ -168,8 +168,8 @@ module RubyCurses
     # A textview object is created and yielded.
     #
     def text message
-      @suggested_w = @width || (FFI::NCurses.COLS * 0.70).floor
-      @suggested_h = @height || (FFI::NCurses.LINES * 0.70).floor
+      @suggested_w = @width || (FFI::NCurses.COLS * 0.80).floor
+      @suggested_h = @height || (FFI::NCurses.LINES * 0.80).floor
 
       message_col = 3
       r = 2
@@ -179,11 +179,21 @@ module RubyCurses
       bgclr = @bgcolor || :black
 
       if message.is_a? Array
+        l = longest_in_list message
+        if l > @suggested_w 
+          if l < FFI::NCurses.COLS
+            #@suggested_w = l
+            @suggested_w = FFI::NCurses.COLS-2 
+          else
+            @suggested_w = FFI::NCurses.COLS-2 
+          end
+          display_length = @suggested_w-6
+        end
         # reduce width and height if you can based on array contents
       else
         message = wrap_text(message, display_length).split("\n")
       end
-      message_height = message.size
+      message_height = message.size + 8
       # reduce if possible if its not required.
       #
       r1 = (FFI::NCurses.LINES-@suggested_h)/2
@@ -217,7 +227,7 @@ module RubyCurses
           rescue => err
             $log.debug( err) if err
             $log.debug(err.backtrace.join("\n")) if err
-            alert "Exception in Messagebox: #{err}. Check log"
+            textdialog ["Error in Messagebox: #{err} ", *err.backtrace], :title => "Exception"
             @window.refresh # otherwise the window keeps showing (new FFI-ncurses issue)
             $error_message.value = ""
           ensure
