@@ -2045,7 +2045,7 @@ module RubyCurses
       @delete_buffer = @buffer.dup
       @buffer = value.to_s.dup
       # don't allow setting of value greater than maxlen
-      @buffer = @buffer[0,@maxlen] if @buffer.length > @maxlen
+      @buffer = @buffer[0,@maxlen] if @maxlen && @buffer.length > @maxlen
       @curpos = 0
       # hope @delete_buffer is not overwritten
       fire_handler :CHANGE, InputDataEvent.new(@curpos,@curpos, self, :DELETE, 0, @delete_buffer)     # 2010-09-11 13:01 
