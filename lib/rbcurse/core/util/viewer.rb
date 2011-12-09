@@ -98,7 +98,7 @@ module RubyCurses
       rescue => err
           $log.error " VIEWER ERROR #{err} "
           $log.debug(err.backtrace.join("\n"))
-        alert "Viewer:" + err.to_s
+          textdialog ["Error in viewer: #{err} ", *err.backtrace], :title => "Exception"
       ensure
         v_window.destroy if !v_window.nil?
       end
