@@ -54,7 +54,7 @@ class TabbedWindow
         rescue => err
           $log.debug( err) if err
           $log.debug(err.backtrace.join("\n")) if err
-          alert "Got an exception in NewTabbedWindow: #{err}. Check log"
+          textdialog ["Error in TabbedWindow: #{err} ", *err.backtrace], :title => "Exception"
           $error_message.value = ""
         ensure
         end
