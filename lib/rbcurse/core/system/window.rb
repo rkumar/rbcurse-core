@@ -288,7 +288,7 @@ module VER
         attrib ||= defattr
 
         cc, bg = ColorMap.get_colors_for_pair color
-        $log.debug "XXX: CHUNK window #{text}, cp #{color} ,  attrib #{attrib}. #{cc}, #{bg} "
+        #$log.debug "XXX: CHUNK window #{text}, cp #{color} ,  attrib #{attrib}. #{cc}, #{bg} " 
         color_set(color,nil) if color
         wattron(attrib) if attrib
         print(text)
@@ -607,7 +607,7 @@ module VER
       if content.is_a? String
         printstring(r,c,content, color, att)
       elsif content.is_a? Chunks::ChunkLine
-        $log.debug "XXX: using chunkline"
+        #$log.debug "XXX: using chunkline" # 2011-12-10 12:40:13
         wmove r, c
         a = get_attrib att
         show_colored_chunks content, color, a
