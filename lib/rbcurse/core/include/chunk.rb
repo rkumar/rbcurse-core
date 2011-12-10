@@ -148,7 +148,7 @@ module Chunks
         when String
 
           ## create the chunk
-          $log.debug "XXX:  CHUNK     using on #{p}  : #{@color_pair} , #{@attrib} "
+          #$log.debug "XXX:  CHUNK     using on #{p}  : #{@color_pair} , #{@attrib} " # 2011-12-10 12:38:51
 
           #chunk =  [color_pair, p, attrib] 
           chunk = Chunk.new @color_pair, p, @attrib
