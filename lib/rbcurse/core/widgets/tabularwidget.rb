@@ -525,6 +525,7 @@ module RubyCurses
       end
       $multiplier = 0 # you must reset if you've handled a key. if unhandled, don't reset since parent could use
       set_form_row
+      $status_message.value =  "F10 quit, F1 Help, : menu, toprow #{@toprow} current #{@current_index} "
       return 0 # added 2010-01-12 22:17 else down arrow was going into next field
     end
     #
@@ -671,7 +672,6 @@ module RubyCurses
 
       print_borders if (@suppress_borders == false && @repaint_all) # do this once only, unless everything changes
       _maxlen = @maxlen || @width-@internal_width
-      $log.debug " #{@name} Tabularwidget repaint width is #{@width}, height is #{@height} , maxlen #{maxlen}/ #{@maxlen}, #{@graphic.name} roff #{@row_offset} coff #{@col_offset}" 
       tr = @toprow
       acolor = get_color $datacolor
       h = scrollatrow() 
@@ -679,6 +679,7 @@ module RubyCurses
       print_header
       r += @_header_adjustment # for column header
       @longest_line = @width #maxlen
+      $log.debug " #{@name} Tabularwidget repaint width is #{@width}, height is #{@height} , maxlen #{maxlen}/ #{@maxlen}, #{@graphic.name} roff #{@row_offset} coff #{@col_offset}, r #{r} top #{toprow} ci #{current_index} "
       0.upto(h - @_header_adjustment) do |hh|
         crow = tr+hh
         if crow < rc
