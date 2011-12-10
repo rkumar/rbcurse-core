@@ -83,6 +83,7 @@ module RubyCurses
       @internal_width = 2
       @internal_width = 0 if @suppress_borders
 
+      @search_found_ix = nil # so old searches don't get highlighted
     end
     def map_keys
       bind_key([?g,?g], 'goto start'){ goto_start } # mapping double keys like vim
