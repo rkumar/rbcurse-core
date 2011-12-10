@@ -84,6 +84,7 @@ module ListScrollable
     rc = row_count
     @old_toprow = @toprow
 
+    @_header_adjustment ||= 0
     @current_index = 0 if @current_index < 0  # not lt 0
     @current_index = rc-1 if @current_index >= rc && rc>0 # not gt rowcount
     @toprow = rc-h-1 if rc > h && @toprow > rc - h - 1 # toprow shows full page if possible
@@ -92,7 +93,11 @@ module ListScrollable
       @toprow = @current_index - h
     elsif @current_index < @toprow
       # curr has gone above table,  move toprow up
-      @toprow = @current_index
+      # sometimes current row gets hidden below header line
+      @toprow = @current_index - (@_header_adjustment ||0)
+      # prev line can make top row -1, however, if we are going back, lets 
+      # put it at start of page, so first or second row is not hidden
+      @toprow = 0 if @toprow < h
     end
  
     @row_changed = false
@@ -248,7 +253,8 @@ module ListScrollable
   # 2009-01-17 13:25 
   def set_focus_on arow
     @oldrow = @current_index
-    arow += @_header_adjustment if @_header_adjustment # for tables 2011-11-30 
+    # the next line fixed cursor positioning, but when wraparound then it messed up
+    # matching line would get hidden
     @current_index = arow
     bounds_check if @oldrow != @current_index
   end
@@ -283,18 +289,10 @@ module ListScrollable
       @search_direction_prev =  mb.widget("0").value
       @search_case = mb.widget("1").value
       @search_wrap = mb.widget("2").value
-      #
-      #-----
-      #options = ["Search backwards", "case insensitive", "Wrap around"]
-      #sel,regex,hash =  get_string_with_options("Enter regex to search", 20, @last_regex||"", "checkboxes"=>options, "checkbox_defaults"=>[@search_direction_prev,@search_case,@search_wrap])
-      #return if sel != 0
-      #@search_direction_prev =  hash[options[0]]
-      #@search_case = hash[options[1]]
-      #@search_wrap = hash[options[2]]
       if @search_direction_prev == true
-        ix = _find_prev regex, @current_index
+        ix = _find_prev regex, @current_index - (@_header_adjustment || 0), true
       else
-        ix = _find_next regex, @current_index
+        ix = _find_next regex, @current_index - (@_header_adjustment || 0), true
       end
       if ix.nil?
         alert("No matching data for: #{regex}")
@@ -314,13 +312,15 @@ module ListScrollable
     end
     # find forwards
     # Using this to start a search or continue search
-    def _find_next regex=@last_regex, start = @search_found_ix 
+    def _find_next regex=@last_regex, start = @search_found_ix, first_time = false
       #raise "No previous search" if regex.nil?
       warn "No previous search" and return if regex.nil?
       #$log.debug " _find_next #{@search_found_ix} : #{@current_index}"
+      extra = 1
+      extra = 0 if first_time
       fend = @list.size-1
       if start != fend
-        start += 1 unless start == fend
+        start += extra unless start == fend # used to be +=1 so we don't get stuck in same row
         @last_regex = regex
         @search_start_ix = start
         regex = Regexp.new(regex, Regexp::IGNORECASE) if @search_case
@@ -334,6 +334,7 @@ module ListScrollable
           if !m.nil?
             @find_offset = m.offset(0)[0]
             @find_offset1 = m.offset(0)[1]
+            ix += (@_header_adjustment || 0)
             @search_found_ix = ix
             return ix 
           end
@@ -348,6 +349,7 @@ module ListScrollable
           if !m.nil?
             @find_offset = m.offset(0)[0]
             @find_offset1 = m.offset(0)[1]
+            ix += (@_header_adjustment || 0)
             @search_found_ix = ix
             return ix 
           end
@@ -403,6 +405,7 @@ module ListScrollable
         if !m.nil?
           @find_offset = m.offset(0)[0]
           @find_offset1 = m.offset(0)[1]
+          ix += (@_header_adjustment || 0)
           @search_found_ix = ix
           return ix 
         end
@@ -416,7 +419,8 @@ module ListScrollable
           m=row.match(regex)
           if !m.nil?
             @find_offset = m.offset(0)[0]
-          @find_offset1 = m.offset(0)[1]
+            @find_offset1 = m.offset(0)[1]
+            ix += (@_header_adjustment || 0)
             @search_found_ix = ix
             return ix 
           end
