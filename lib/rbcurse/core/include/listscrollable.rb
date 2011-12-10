@@ -318,6 +318,7 @@ module ListScrollable
       #$log.debug " _find_next #{@search_found_ix} : #{@current_index}"
       extra = 1
       extra = 0 if first_time
+      start ||= 0
       fend = @list.size-1
       if start != fend
         start += extra unless start == fend # used to be +=1 so we don't get stuck in same row
