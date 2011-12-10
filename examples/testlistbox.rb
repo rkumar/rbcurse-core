@@ -1,3 +1,6 @@
+# WARNING : IF THIS PROGRAM HANGS check the ri command 
+# Maybe your version of ri has different options and is going interactive.
+# ruby 1.9.3's ri requires a -l option or else if becomes interactive.
 # this program tests out a listbox
 # This is written in the old style where we start and end ncurses and initiate a 
 # getch loop. It gives more control.
@@ -90,7 +93,7 @@ if $0 == __FILE__
       h = FFI::NCurses.LINES-3
       file = "./data/ports.txt"
       #mylist = File.open(file,'r').readlines 
-      mylist = `ri -f bs`.split("\n")
+      mylist = `ri -l `.split("\n")
       w = 25
       #0.upto(100) { |v| mylist << "#{v} scrollable data" }
       #
