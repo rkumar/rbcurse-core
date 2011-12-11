@@ -145,19 +145,12 @@ module RubyCurses
 
     end
     def map_keys
-      # remove bindings from here. we call repeatedly
-      bind_key([?g,?g], 'goto start'){ goto_start } # mapping double keys like vim
-      bind_key([?',?'], 'goto last'){ goto_last_position } # vim , goto last row position (not column)
-      bind_key(?/, :ask_search) # XXX TESTME
-      bind_key(?n, :find_more) # XXX TESTME
-      bind_key([?\C-x, ?>], :scroll_right)
-      bind_key([?\C-x, ?<], :scroll_left)
-      #bind_key(?r) { getstr("Enter a word: ") }
-      bind_key(?m, :disp_menu) # enhance this or cut it out - how can app leverage this. TODO
+      require 'rbcurse/core/include/listbindings'
+      bindings()
       bind_key(?w, :next_column)
       bind_key(?b, :previous_column)
-      bind_key(?i, :expand_column)
-      list_bindings
+      bind_key(?>, :expand_column) # just trying out
+      list_bindings # selection bindings
     end
 
     #
@@ -440,30 +433,6 @@ module RubyCurses
         return ret unless ret == :UNHANDLED
       end
       case ch
-      when ?\C-d.getbyte(0) #, 32
-        scroll_forward
-      when ?\C-b.getbyte(0)
-        scroll_backward
-      when ?\C-[.getbyte(0), ?t.getbyte(0)
-        goto_start #start of buffer # cursor_start
-      when ?\C-].getbyte(0), ?G.getbyte(0)
-        goto_end # end / bottom cursor_end
-      when KEY_UP, ?k.getbyte(0)
-        #select_prev_row
-        ret = up
-        get_window.ungetch(KEY_BTAB) if ret == :NO_PREVIOUS_ROW
-        check_curpos
-
-      when KEY_DOWN, ?j.getbyte(0)
-        ret = down
-        #get_window.ungetch(KEY_TAB) if ret == :NO_NEXT_ROW
-        check_curpos
-      when KEY_LEFT, ?h.getbyte(0)
-        cursor_backward
-      when KEY_RIGHT, ?l.getbyte(0)
-        cursor_forward
-      when KEY_BACKSPACE, KEY_BSPACE, KEY_DELETE
-        cursor_backward
       when ?\C-a.getbyte(0) #, ?0.getbyte(0)
         # take care of data that exceeds maxlen by scrolling and placing cursor at start
         @repaint_required = true if @pcol > 0 # tried other things but did not work
@@ -476,11 +445,7 @@ module RubyCurses
         blen = @buffer.rstrip.length
         set_form_col blen
         # search related 
-      when @KEY_ASK_FIND  # FIXME
-        ask_search
-      when @KEY_FIND_MORE  # FIXME
-        find_more
-      when 10, 13, KEY_ENTER
+      when KEY_ENTER, FFI::NCurses::KEY_ENTER
         #fire_handler :PRESS, self
         fire_action_event
       when ?0.getbyte(0)..?9.getbyte(0)
@@ -498,14 +463,6 @@ module RubyCurses
         # storing digits entered so we can multiply motion actions
         $multiplier *= 10 ; $multiplier += (ch-48)
         return 0
-        #when ?\C-u.getbyte(0)
-        ## multiplier. Series is 4 16 64
-        #@multiplier = (@multiplier == 0 ? 4 : @multiplier *= 4)
-        #return 0
-      when ?\M-l.getbyte(0) # just added 2010-03-05 not perfect
-        scroll_right # scroll data horizontally 
-      when ?\M-h.getbyte(0)
-        scroll_left
       when ?\C-c.getbyte(0)
         $multiplier = 0
         return 0
@@ -516,16 +473,16 @@ module RubyCurses
         rescue => err
           $error_message.value = err.to_s
           #          @form.window.print_error_message # changed 2011 dts  
-          textdialog ["Error in TabularWidget: #{err} ", *err.backtrace], :title => "Exception"
           $log.error " Tabularwidget ERROR #{err} "
           $log.debug(err.backtrace.join("\n"))
+          textdialog ["Error in TabularWidget: #{err} ", *err.backtrace], :title => "Exception"
           # XXX caller app has no idea error occurred so can't do anything !
         end
         return :UNHANDLED if ret == :UNHANDLED
       end
       $multiplier = 0 # you must reset if you've handled a key. if unhandled, don't reset since parent could use
       set_form_row
-      $status_message.value =  "F10 quit, F1 Help, : menu, toprow #{@toprow} current #{@current_index} "
+      $status_message.value =  "F10 quit, F1 Help, : menu, toprow #{@toprow} current #{@current_index} " if $log.debug?
       return 0 # added 2010-01-12 22:17 else down arrow was going into next field
     end
     #
@@ -902,39 +859,10 @@ module RubyCurses
       #$log.debug " FMT : #{@fmstr} "
       #alert "format:     #{@fmstr} "
     end
-    ## this is just a test of prompting user for a string
-    #+ as an alternative to the dialog.
-    def getstr prompt, maxlen=10  #:nodoc:
-      tabc = Proc.new {|str| Dir.glob(str +"*") }
-      config={}; config[:tab_completion] = tabc
-      config[:default] = "default"
-      $log.debug " inside getstr before call "
-      ret, str = rbgetstr(@form.window, @row+@height-1, @col+1, prompt, maxlen, config)
-      $log.debug " rbgetstr returned #{ret} , #{str} "
-      return "" if ret != 0
-      return str
-    end
-    # this is just a test of the simple "most" menu
-    def disp_menu  #:nodoc:
-      $error_message_row ||= 23 # FIXME
-      $error_message_col ||= 1 # FIXME
-      menu = PromptMenu.new self 
-      menu.add( menu.create_mitem( 's', "Goto start ", "Going to start", Proc.new { goto_start} ))
-      menu.add(menu.create_mitem( 'r', "scroll right", "I have scrolled ", :scroll_right ))
-      menu.add(menu.create_mitem( 'l', "scroll left", "I have scrolled ", :scroll_left ))
-      item = menu.create_mitem( 'm', "submenu", "submenu options" )
-      menu1 = PromptMenu.new( self, "Submenu Options")
-      menu1.add(menu1.create_mitem( 's', "CASE sensitive", "Ignoring Case in search" ))
-      menu1.add(menu1.create_mitem( 't', "goto last position", "moved to previous position", Proc.new { goto_last_position} ))
-      item.action = menu1
-      menu.add(item)
-      # how do i know what's available. the application or window should know where to place
-      #menu.display @form.window, 23, 1, $datacolor #, menu
-      menu.display @form.window, $error_message_row, $error_message_col, $datacolor #, menu
-    end
     ##
     # dynamically load a module and execute init method.
     # Hopefully, we can get behavior like this such as vieditable or multibuffers
+    # TODO CUT THIS OUT AND FIX IT, there are simpler ways like extend()
     def load_module requirename, includename
       require "rbcurse/#{requirename}"
       extend Object.const_get("#{includename}")
