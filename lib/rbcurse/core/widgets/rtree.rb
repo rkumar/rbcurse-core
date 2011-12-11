@@ -109,48 +109,28 @@ module RubyCurses
       @row_offset = @col_offset = 0 if @suppress_borders
       @internal_width = 2 # taking into account borders accounting for 2 cols
       @internal_width = 0 if @suppress_borders # should it be 0 ???
+      map_keys unless @keys_mapped
 
     end
     # maps keys to methods
     # checks @key_map can be :emacs or :vim.
     def map_keys
       @keys_mapped = true
-      $log.debug " cam in XXXX  map keys"
-      bind_key(32){ toggle_row_selection() }
-      bind_key(KEY_ENTER) { toggle_expanded_state() }
-      bind_key(?o) { toggle_expanded_state() }
-      bind_key(?f){ ask_selection_for_char() }
-      bind_key(?\M-v){ @one_key_selection = !@one_key_selection }
-      bind_key(KEY_DOWN){ next_row() }
-      bind_key(KEY_UP){ previous_row() }
-      bind_key(?O){ expand_children() }
-      bind_key(?X){ collapse_children() }
+      bind_key(32, 'toggle row selection'){ toggle_row_selection() }
+      bind_key(KEY_ENTER, 'toggle expanded state') { toggle_expanded_state() }
+      bind_key(?o, 'toggle expanded state') { toggle_expanded_state() }
+      bind_key(?f, 'first row starting with char'){ ask_selection_for_char() }
+      bind_key(?\M-v, 'one key selection toggle'){ @one_key_selection = !@one_key_selection }
+      bind_key(?O, 'expand children'){ expand_children() }
+      bind_key(?X, 'collapse children'){ collapse_children() }
       bind_key(?>, :scroll_right)
       bind_key(?<, :scroll_left)
-      bind_key(?\M-l, :scroll_right)
-      bind_key(?\M-h, :scroll_left)
       # TODO
-      bind_key(?x){ collapse_parent() }
-      bind_key(?p){ goto_parent() }
-      if $key_map == :emacs
-        $log.debug " EMACSam in XXXX  map keys"
-        bind_key(?\C-v){ scroll_forward }
-        bind_key(?\M-v){ scroll_backward }
-        bind_key(?\C-s){ ask_search() }
-        bind_key(?\C-n){ next_row() }
-        bind_key(?\C-p){ previous_row() }
-        bind_key(?\M->){ goto_bottom() }
-        bind_key(?\M-<){ goto_top() }
-      else # :vim
-        $log.debug " VIM cam in XXXX  map keys"
-        bind_key(?j){ next_row() }
-        bind_key(?k){ previous_row() }
-        bind_key(?\C-d){ scroll_forward }
-        bind_key(?\C-b){ scroll_backward }
-        bind_key(?G){ goto_bottom() }
-        bind_key([?g,?g]){ goto_top() }
-        bind_key(?/){ ask_search() }
-      end
+      bind_key(?x, 'collapse parent'){ collapse_parent() }
+      bind_key(?p, 'goto parent'){ goto_parent() }
+      require 'rbcurse/core/include/listbindings'
+      #ListBindings.bindings
+      bindings
     end
 
     ##
@@ -313,7 +293,6 @@ module RubyCurses
       return if @list.nil? || @list.empty?
       @current_index ||= 0
       @toprow ||= 0
-      map_keys unless @keys_mapped
       h = scrollatrow()
       rc = row_count
       $log.debug " tree got ch #{ch}"
