@@ -69,6 +69,8 @@ module VER
       $error_message_row ||= Ncurses.LINES-1
       $error_message_col ||= 1 # ask (bottomline) uses 0 as default so you can have mismatch. XXX
       $status_message ||= RubyCurses::Variable.new # in case not an App
+
+      $key_map ||= :vim
       init_vars
 
 
