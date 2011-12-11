@@ -316,7 +316,7 @@ module ListScrollable
       #raise "No previous search" if regex.nil?
       warn "No previous search" and return if regex.nil?
       #$log.debug " _find_next #{@search_found_ix} : #{@current_index}"
-      extra = 1
+      extra = 1 # first time search on current line, next time skip current line or else we get stuck.
       extra = 0 if first_time
       start ||= 0
       fend = @list.size-1
