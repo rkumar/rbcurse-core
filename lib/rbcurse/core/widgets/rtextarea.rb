@@ -279,32 +279,48 @@ module RubyCurses
 
     def map_keys
       return if @keys_mapped
-      bind_key(Ncurses::KEY_LEFT){ cursor_backward }
-      bind_key(Ncurses::KEY_RIGHT){ cursor_forward }
-      bind_key(Ncurses::KEY_UP){ ret = up;  get_window.ungetch(KEY_BTAB) if ret == :NO_PREVIOUS_ROW }
+      @key_map = :both # get both vim and emacs keys
+      require 'rbcurse/core/include/listbindings'
+      bindings
+      #
+      # There's one issue, if using vim keys, most of them won't
+      # work in text area. So you will need emacs keys in text area.
+
+      # moved to listbin
+      #bind_key(Ncurses::KEY_LEFT){ cursor_backward }
+      #bind_key(Ncurses::KEY_RIGHT){ cursor_forward }
+      #bind_key(Ncurses::KEY_UP){ ret = up;  get_window.ungetch(KEY_BTAB) if ret == :NO_PREVIOUS_ROW }
       # the next was irritating if user wanted to add a row ! 2011-10-10 
-      #bind_key(Ncurses::KEY_DOWN){ ret = down ; get_window.ungetch(KEY_TAB) if ret == :NO_NEXT_ROW }
-      bind_key(Ncurses::KEY_DOWN){ ret = down ; }
-      bind_key(?\C-a, 'start of line'){ cursor_bol }
-      bind_key(?\C-e, 'end of line'){ cursor_eol }
-      bind_key(?\C-d, 'scroll forward') { scroll_forward }
-      bind_key(?\C-b, 'scroll backward') { scroll_backward }
-      bind_key(?\C-[, 'goto start') { goto_start }
-      bind_key(?\C-], 'goto end') { goto_end }
+      ##bind_key(Ncurses::KEY_DOWN){ ret = down ; get_window.ungetch(KEY_TAB) if ret == :NO_NEXT_ROW }
+      #bind_key(Ncurses::KEY_DOWN){ ret = down ; }
 
       bind_key(KEY_BACKSPACE){ delete_prev_char if @editable }
       bind_key(KEY_BSPACE){ delete_prev_char if @editable}
       bind_key(?\M-d, :delete_word)
       bind_key(?\M-f, :forward_word)
 
-      #bind_key(127){ delete_prev_char }
-      bind_key(330, 'delete current char'){ delete_curr_char if @editable }
-      #bind_key(?\C-k){ delete_eol }
-      #bind_key(?\C-_){ undo_delete_eol }
+      # earlier 330
+      bind_key(FFI::NCurses::KEY_DC, 'delete current char'){ delete_curr_char if @editable }
+      bind_key(?\C-k, 'kill line'){ kill_line }
+      bind_key(?\C-_, 'undo'){ undo }
+      bind_key(?\C-r, 'redo') { text_redo }
       #bind_key(27){ set_buffer @original_value }
-      bind_key([?\C-x, ?e], :edit_external)
-      bind_key([?\C-x, ?\C-s], :saveas)
+      #bind_key([?\C-x, ?e], :edit_external)
+      #bind_key([?\C-x, ?\C-s], :saveas)
       @keys_mapped = true
+    end
+    # mimicking emacs behavior of C-k.
+    # delete entire line if at start, else delete till eol
+    def kill_line
+        # i'ved added curpos == 0 since emacs deletes a line if cursor is at 0
+        # Earlier behavior was based on alpine which leaves a blank line
+        if @editable
+          if @buffer.chomp == "" || @curpos == 0
+            delete_line
+          else
+            delete_eol 
+          end
+        end
     end
 
     # textarea
@@ -332,49 +348,15 @@ module RubyCurses
       end
       #$log.debug "TA: after : curpos #{@curpos} blen: #{@buffer.length}, w: #{@width} max #{@maxlen}"
       
+      #NOTE C-d being used for del what of scroll !!
       case ch
-      when KEY_ENTER, 10, KEY_RETURN
+      when KEY_ENTER, KEY_RETURN, FFI::NCurses::KEY_ENTER # numeric enter
         insert_break
-      when Ncurses.KEY_BACKSPACE, Ncurses.KEY_BSPACE
-        if @editable   # checking here means that i can programmatically bypass!!
-          delete_prev_char 
-        end
-      when Ncurses.KEY_DELETE, ?\C-d.getbyte(0) # delete char
-        if @editable
-          delete_curr_char 
-        end
-      when ?\C-k.getbyte(0) # delete till eol
-        # i'ved added curpos == 0 since emacs deletes a line if cursor is at 0
-        # Earlier behavior was based on alpine which leaves a blank line
-        if @editable
-          #if @buffer == ""
-          if @buffer.chomp == "" || @curpos == 0
-            delete_line
-          else
-            delete_eol 
-          end
-        end
       #when ?\C-u.getbyte(0)
         ## since textareas are editable we use a control key to increase
         ## multiplier. Series is 4 16 64
         #@multiplier = (@multiplier == 0 ? 4 : @multiplier *= 4)
         #return 0
-      when ?\C-_.getbyte(0) # changed from C-u so i can use C-u for multipliers
-        undo
-      when ?\C-r.getbyte(0) # redo if UndoHandler installed
-        text_redo # won't accept name redo
-      #when @KEY_ASK_FIND_FORWARD
-      #  ask_search_forward
-      #when @KEY_ASK_FIND_BACKWARD
-      #  ask_search_backward
-      when @KEY_ASK_FIND
-        ask_search
-      when @KEY_FIND_MORE
-        find_more
-      #when @KEY_FIND_NEXT
-      #  find_next
-      #when @KEY_FIND_PREV
-      #  find_prev
       else
         #$log.debug(" textarea ch #{ch}")
         ret = putc ch
