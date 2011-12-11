@@ -86,19 +86,11 @@ module RubyCurses
       @search_found_ix = nil # so old searches don't get highlighted
     end
     def map_keys
-      bind_key([?g,?g], 'goto start'){ goto_start } # mapping double keys like vim
-      bind_key(?G, 'goto end'){ goto_bottom() }
-      bind_key([?',?'], 'goto last position'){ goto_last_position } # vim , goto last row position (not column)
-      bind_key(?/, :ask_search)
-      bind_key(?n, :find_more)
-      bind_key([?\C-x, ?>], :scroll_right)
-      bind_key([?\C-x, ?<], :scroll_left)
-      bind_key(?\M-l, :scroll_right)
-      bind_key(?\M-h, :scroll_left)
-      bind_key([?\C-x, ?\C-s], :saveas)
-      bind_key([?\C-x, ?e], :edit_external)
-      bind_keys([?\C-d, 32], 'scroll forward'){ scroll_forward() }
-      bind_key(?\C-b, 'scroll backward'){ scroll_backward() }
+      require 'rbcurse/core/include/listbindings'
+      bindings()
+      #bind_key([?\C-x, ?\C-s], :saveas)
+      #bind_key([?\C-x, ?e], :edit_external)
+      bind_key(32, 'scroll forward'){ scroll_forward() }
       # have placedhere so multi-bufer can override BS to prev buffer
       bind_keys([KEY_BACKSPACE,KEY_BSPACE,KEY_DELETE], :cursor_backward)
       bind_key(?r) { getstr("Enter a word: ") } if $log.debug?
@@ -310,7 +302,7 @@ module RubyCurses
       $log.debug " textview got ch #{ch} "
       @old_pcol = @pcol
       @buffer = @list[@current_index]
-      if @buffer.nil? and row_count == 0
+      if @buffer.nil? && row_count == 0
         @list << "\r"
         @buffer = @list[@current_index]
       end
@@ -335,12 +327,10 @@ module RubyCurses
         # This should be configurable, or only if all rows are visible
         #get_window.ungetch(KEY_TAB) if ret == :NO_NEXT_ROW
         check_curpos
-      when KEY_LEFT, ?h.getbyte(0)
-        cursor_backward
-      when KEY_RIGHT, ?l.getbyte(0)
-        cursor_forward
-      #when KEY_BACKSPACE, KEY_BSPACE, KEY_DELETE
+      #when KEY_LEFT, ?h.getbyte(0)
         #cursor_backward
+      #when KEY_RIGHT, ?l.getbyte(0)
+        #cursor_forward
       when ?\C-a.getbyte(0) #, ?0.getbyte(0)
         # take care of data that exceeds maxlen by scrolling and placing cursor at start
         @repaint_required = true if @pcol > 0 # tried other things but did not work
@@ -352,12 +342,7 @@ module RubyCurses
         # it only goes to end of visible screen, set_form probably does a sanity check
         blen = row_length # @buffer.rstrip.length FIXME
         set_form_col blen
-        # search related 
-      when @KEY_ASK_FIND
-        ask_search
-      when @KEY_FIND_MORE
-        find_more
-      when 10, 13, KEY_ENTER
+      when KEY_ENTER, FFI::NCurses::KEY_ENTER
         #fire_handler :PRESS, self
         fire_action_event
       when ?0.getbyte(0)..?9.getbyte(0)
