@@ -132,21 +132,12 @@ module RubyCurses
     end
     def map_keys
       return if @keys_mapped
+      require 'rbcurse/core/include/listbindings'
+      bindings()
       bind_key(?f, 'next row starting with char'){ ask_selection_for_char() }
-      bind_key(?\M-v, 'toggle one_key_selection'){ @one_key_selection = false }
-      bind_key(?j, 'next row'){ next_row() }
-      bind_key(?k, 'previous row'){ previous_row() }
-      bind_key(?\C-d, 'scroll forward'){ scroll_forward() }
-      bind_key(?\C-b, 'scroll backward'){ scroll_backward() }
-      bind_key(?G, 'goto end'){ goto_bottom() }
-      bind_key([?g,?g], 'goto top'){ goto_top() }
-      bind_key([?',?'], 'goto last position'){ goto_last_position() }
-      bind_key(?/, 'ask search'){ ask_search() }
-      bind_key(?n, 'find next'){ find_more() }
-      bind_key(32){ toggle_row_selection() }
-      bind_key(10, 'fire action event'){ fire_action_event }
+      bind_key(?\M-v, 'toggle one_key_selection'){ @one_key_selection = !@one_key_selection }
       bind_key(13, 'fire action event'){ fire_action_event }
-      list_bindings
+      list_bindings # listselectable
       @keys_mapped = true
 
     end
@@ -278,59 +269,41 @@ module RubyCurses
       #map_keys unless @keys_mapped
       @current_index ||= 0
       @toprow ||= 0
-      h = scrollatrow()
-      rc = row_count
-      $log.debug " basiclistbox got ch #{ch}"
+      #h = scrollatrow()
+      #rc = row_count
+      #$log.debug " basiclistbox got ch #{ch}"
       #$log.debug " when kps #{@KEY_PREV_SELECTION}  "
       case ch
-      when KEY_UP  # show previous value
-        return previous_row
-      when KEY_DOWN  # show previous value
-        return next_row
-      when 32
-        return if is_popup and @selection_mode == 'single' # not allowing select this way since there will be a difference 
-        toggle_row_selection @current_index #, @current_index
-        @repaint_required = true
-      when 0 # c-space
-        add_to_selection
-      when @KEY_NEXT_SELECTION # ?'
-        $log.debug "insdie next selection"
-        @oldrow = @current_index
-        do_next_selection 
-        bounds_check
-      when @KEY_PREV_SELECTION # ?"
-        @oldrow = @current_index
-        $log.debug "insdie prev selection"
-        do_prev_selection 
-        bounds_check
-      when @KEY_CLEAR_SELECTION
-        clear_selection 
-        @repaint_required = true
+      #when 32
+        #return if is_popup and @selection_mode == 'single' # not allowing select this way since there will be a difference 
+        #toggle_row_selection @current_index #, @current_index
+        #@repaint_required = true
+      #when 0 # c-space
+        #add_to_selection
+      #when @KEY_NEXT_SELECTION # ?'
+        #$log.debug "insdie next selection"
+        #@oldrow = @current_index
+        #do_next_selection 
+        #bounds_check
+      #when @KEY_PREV_SELECTION # ?"
+        #@oldrow = @current_index
+        #$log.debug "insdie prev selection"
+        #do_prev_selection 
+        #bounds_check
+      #when @KEY_CLEAR_SELECTION
+        #clear_selection 
+        #@repaint_required = true
       when 27, ?\C-c.getbyte(0)
-        #editing_canceled @current_index if @cell_editing_allowed
-        #cancel_block # block NW XXX don't think its required. 2011-09-9  FFI
         $multiplier = 0
-      when @KEY_ASK_FIND_FORWARD
-      # ask_search_forward
-      when @KEY_ASK_FIND_BACKWARD
-      # ask_search_backward
-      when @KEY_FIND_NEXT
-      # find_next
-      when @KEY_FIND_PREV
-      # find_prev
-      when @KEY_ASK_FIND
-        ask_search
-      when @KEY_FIND_MORE
-        find_more
       when @KEY_BLOCK_SELECTOR
         mark_block #selection
       #when ?\C-u.getbyte(0)
         # multiplier. Series is 4 16 64
         # TESTING @multiplier = (@multiplier == 0 ? 4 : @multiplier *= 4)
       #  return 0
-      when ?\C-c.getbyte(0)
-        @multiplier = 0
-        return 0
+      #when ?\C-c.getbyte(0)
+        #@multiplier = 0
+        #return 0
       else
         # this has to be fixed, if compo does not handle key it has to continue into next part FIXME
         ret = :UNHANDLED # changed on 2009-01-27 13:14 not going into unhandled, tab not released
