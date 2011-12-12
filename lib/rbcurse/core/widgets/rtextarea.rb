@@ -20,6 +20,7 @@ require 'rbcurse'
 require 'rbcurse/core/include/listscrollable'
 require 'rbcurse/core/include/rinputdataevent'
 require 'rbcurse/core/include/listeditable'
+require 'rbcurse/core/include/bordertitle'
 
 #include Ncurses # FFI 2011-09-8 
 include RubyCurses
@@ -37,16 +38,16 @@ module RubyCurses
     include ListScrollable
     # NOTE: common editing functions moved to listeditable 
     include ListEditable
-    dsl_accessor :title
-    dsl_accessor :title_attrib   # bold, reverse, normal
-    dsl_accessor :footer_attrib  # bold, reverse, normal added 2009-12-26 18:25 was this missing or delib
+    #dsl_accessor :title
+    #dsl_accessor :title_attrib   # bold, reverse, normal
+    #dsl_accessor :footer_attrib  # bold, reverse, normal added 2009-12-26 18:25 was this missing or delib
     dsl_accessor :list           # the array of data to be sent by user
     dsl_accessor :maxlen         # max display length of a row/line 
     attr_reader :toprow
     dsl_accessor :auto_scroll    # boolean, keeps view at end as data is inserted.
     dsl_accessor :print_footer
     dsl_accessor :editable          # allow editing
-    dsl_accessor :suppress_borders # added 2010-02-12 12:21 values true or false
+    #dsl_accessor :suppress_borders # added 2010-02-12 12:21 values true or false
     attr_accessor :overwrite_mode # boolean: insert or overwrite, default false.
 
     def initialize form = nil, config={}, &block
@@ -72,21 +73,18 @@ module RubyCurses
       # 2010-01-10 19:35 compute locally if not set
       install_keys
       init_vars
+      bordertitle_init
     end
     def init_vars
       @repaint_required = true
       @repaint_footer_required = true # 2010-01-23 22:41 
       @toprow = @current_index = @pcol = 0
       @repaint_all=true 
-      ## 2010-02-12 12:20 RFED16 taking care if no border requested
-      @row_offset = @col_offset = 0 if @suppress_borders == true
-      # added 2010-02-11 15:11 RFED16 so we don't need a form.
-      @win_left = 0
-      @win_top = 0
+      @row_offset = @col_offset = 0 if @suppress_borders
       @longest_line = 0
       # if borders used, reduce 2 from width else 0
       @internal_width = 2
-      @internal_width = 2 if @suppress_borders
+      @internal_width = 2 if @suppress_borders # WHAT THE !!!! It should be zero
       bind_key(?\M-w, :kill_ring_save)
       bind_key(?\C-y, :yank)
       bind_key(?\M-y, :yank_pop)
@@ -180,7 +178,7 @@ module RubyCurses
     end
     ##
     # private
-    def print_borders
+    def OLDprint_borders
       window = @graphic # 2009-12-26 14:54 BUFFERED
       @color_pair = get_color($datacolor) # 2011-09-28 V1.3.1 
       bordercolor = @border_color || @color_pair
@@ -202,7 +200,7 @@ module RubyCurses
   
     end
     # private
-    def print_title
+    def OLDprint_title
       # truncate title if longer than width
       return unless @title
       @color_pair ||= get_color($datacolor)
