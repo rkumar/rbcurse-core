@@ -16,6 +16,7 @@ TODO:
 require 'rbcurse'
 require 'rbcurse/core/widgets/tree/treemodel'
 require 'rbcurse/core/widgets/tree/treecellrenderer'
+require 'rbcurse/core/include/bordertitle'
 
 TreeSelectionEvent = Struct.new(:node, :tree, :state, :previous_node, :row_first)
 
@@ -32,9 +33,9 @@ module RubyCurses
     include ListScrollable
     #extend Forwardable
     dsl_accessor :height
-    dsl_accessor :title
-    dsl_property :title_attrib   # bold, reverse, normal
-    dsl_accessor :border_attrib, :border_color # FIXME not used currently
+    #dsl_accessor :title
+    #dsl_property :title_attrib   # bold, reverse, normal
+    #dsl_accessor :border_attrib, :border_color # FIXME not used currently
 
     attr_reader :toprow
   #  attr_reader :prow
@@ -44,7 +45,7 @@ module RubyCurses
     dsl_accessor :selected_color, :selected_bgcolor, :selected_attr
     dsl_accessor :max_visible_items   # how many to display 2009-01-11 16:15 
     dsl_accessor :cell_editing_allowed # obsolete
-    dsl_accessor :suppress_borders
+    #dsl_accessor :suppress_borders
     dsl_property :show_selector
     dsl_property :row_selected_symbol # 2009-01-12 12:01 changed from selector to selected
     dsl_property :row_unselected_symbol # added 2009-01-12 12:00 
@@ -82,14 +83,15 @@ module RubyCurses
       @longest_line = 0
       
      
-      @win_left = 0
-      @win_top = 0
+      #@win_left = 0
+      #@win_top = 0
       @_events.push(*[:ENTER_ROW, :LEAVE_ROW, :TREE_COLLAPSED_EVENT, :TREE_EXPANDED_EVENT, :TREE_SELECTION_EVENT, :TREE_WILL_COLLAPSE_EVENT, :TREE_WILL_EXPAND_EVENT])
 
       
       bind(:PROPERTY_CHANGE){|e| @cell_renderer = nil } # will be recreated if anything changes 2011-09-28 V1.3.1  
       # FIXME the above is dangerous if user set his own renderer with some values XXX
       init_vars
+      bordertitle_init
 
       #if !@list.selected_index.nil? 
         #set_focus_on @list.selected_index # the new version
@@ -250,7 +252,7 @@ module RubyCurses
       toggle_row_selection
       @default_value = nil
     end
-    def print_borders
+    def OLDprint_borders
       width = @width
       height = @height-1 # 2010-01-04 15:30 BUFFERED HEIGHT
       window = @graphic  # 2010-01-04 12:37 BUFFERED
@@ -264,7 +266,7 @@ module RubyCurses
       window.print_border startrow, startcol, height, width, bordercolor, borderatt
       print_title
     end
-    def print_title
+    def OLDprint_title
       return unless @title
       _title = @title
       if @title.length > @width - 2
@@ -281,7 +283,7 @@ module RubyCurses
       @list
     end
     def get_window
-      @graphic # 2010-01-04 12:37 BUFFERED
+      @graphic 
     end
     ### END FOR scrollable ###
     # override widgets text
@@ -430,8 +432,8 @@ module RubyCurses
    
       raise " #{@name} neither form, nor target window given TV paint " unless my_win
       raise " #{@name} NO GRAPHIC set as yet                 TV paint " unless @graphic
-      @win_left = my_win.left
-      @win_top = my_win.top
+      #@win_left = my_win.left
+      #@win_top = my_win.top
 
       $log.debug "rtree repaint  #{@name} graphic #{@graphic}"
       print_borders unless @suppress_borders # do this once only, unless everything changes
