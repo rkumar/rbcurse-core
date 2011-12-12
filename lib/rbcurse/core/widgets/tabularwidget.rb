@@ -33,6 +33,7 @@ require 'rbcurse'
 require 'rbcurse/core/include/listscrollable'
 require 'rbcurse/core/widgets/tabular'
 require 'rbcurse/core/include/listselectable'
+require 'rbcurse/core/include/bordertitle'
 
 #include RubyCurses
 module RubyCurses
@@ -49,8 +50,8 @@ module RubyCurses
 
     include ListScrollable
     include NewListSelectable
-    dsl_accessor :title   # set this on top
-    dsl_accessor :title_attrib   # bold, reverse, normal
+    #dsl_accessor :title   # set this on top
+    #dsl_accessor :title_attrib   # bold, reverse, normal
     dsl_accessor :footer_attrib   # bold, reverse, normal
     dsl_accessor :list    # the array of arrays of data to be sent by user XXX RISKY bypasses set_content
     dsl_accessor :maxlen    # max len to be displayed
@@ -58,9 +59,9 @@ module RubyCurses
     ##attr_reader :winrow   # the row in the viewport/window
     # painting the footer does slow down cursor painting slightly if one is moving cursor fast
     dsl_accessor :print_footer
-    dsl_accessor :suppress_borders 
+    #dsl_accessor :suppress_borders 
     attr_accessor :current_index
-    dsl_accessor :border_attrib, :border_color #  color pair for border
+    #dsl_accessor :border_attrib, :border_color #  color pair for border
     dsl_accessor :header_attrib, :header_fgcolor, :header_bgcolor  #  2010-10-15 13:21 
 
     # boolean, whether lines should be cleaned (if containing tabs/newlines etc)
@@ -125,6 +126,7 @@ module RubyCurses
       install_keys # << almost jnuk now, clean off TODO
       init_vars
       map_keys
+      bordertitle_init
     end
     def init_vars #:nodoc:
       @curpos = @pcol = @toprow = @current_index = 0
@@ -135,8 +137,6 @@ module RubyCurses
       @internal_width = 2
       @internal_width = 0 if @suppress_borders
       # added 2010-02-11 15:11 RFED16 so we don't need a form.
-      @win_left = 0
-      @win_top = 0
       @current_column = 0
       # currently i scroll right only if  current line is longer than display width, i should use 
       # longest line on screen.
@@ -360,7 +360,7 @@ module RubyCurses
     end
     ## print a border
     ## Note that print_border clears the area too, so should be used sparingly.
-    def print_borders #:nodoc:
+    def OLDprint_borders #:nodoc:
       raise "#{self.class} needs width" unless @width
       raise "#{self.class} needs height" unless @height
 
@@ -371,7 +371,7 @@ module RubyCurses
       @graphic.print_border @row, @col, @height-1, @width, bordercolor, borderatt
       print_title
     end
-    def print_title #:nodoc:
+    def OLDprint_title #:nodoc:
       raise "#{self.class} needs width" unless @width
       $log.debug " print_title #{@row}, #{@col}, #{@width}  "
       @graphic.printstring( @row, @col+(@width-@title.length)/2, @title, $datacolor, @title_attrib) unless @title.nil?
@@ -616,8 +616,6 @@ module RubyCurses
         my_win = @target_window
       end
       @graphic = my_win unless @graphic
-      @win_left = my_win.left
-      @win_top = my_win.top
       tm = get_content
       rc = tm.length
       _estimate_column_widths if rc > 0  # will set preferred_width 2011-10-4 
