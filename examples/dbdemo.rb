@@ -126,8 +126,14 @@ App.new do
       :        -   Command mode
       Alt-z    -   Commands in TextArea
       
-                DB BROWSER KEYS
+                Sql Entry Area
+      C-x e        Edit in $EDITOR or vi
+      M-?          To see other key-bindings
+      F4           Execute SQL (there should be only one sql).
 
+
+                Result Set  (this is not present in this demo any longer - moved
+                to rbcurse-extras)
       ,            Prev row (mnemonic <)
       .            Next row (mnemonic >)
       <            First row
