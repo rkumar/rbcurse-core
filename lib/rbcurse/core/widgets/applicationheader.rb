@@ -4,7 +4,8 @@
 #               NOTE: on some terminal such as xterm-256color spaces do not print
 #               so you will see black or empty spaces between text.
 #               This does not happen on screen and xterm-color.
-#       Author: rkumar http://github.com/rkumar/rbcurse/
+#               I've done some roundabout stuff to circumvent that.
+#       Author: rkumar http://github.com/rkumar/rbcurse-core/
 #         Date: 
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
 #  Last update: 2011-11-16 - 00:07
