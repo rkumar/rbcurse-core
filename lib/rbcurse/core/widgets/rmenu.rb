@@ -685,6 +685,7 @@ module RubyCurses
     end
     def init_vars
       @active_index = 0
+      @repaint_required = true
     end
     def focusable
       false
@@ -745,6 +746,7 @@ module RubyCurses
     # menubar LEFT, RIGHT, DOWN 
     def handle_keys
       @selected = false
+      @repaint_required = true # added 2011-12-12 otherwise keeps repainting and you see a flicker
       @toggle_key ||= 27 # default switch off with ESC, if nothing else defined
       set_menu 0
       begin
@@ -804,6 +806,7 @@ module RubyCurses
         #ensure is required becos one can throw a :close
         $log.debug " DESTROY IN ENSURE"
         current_menu.clear_menus #@@menus = [] # added 2009-01-23 13:21 
+        @repaint_required = false
         destroy  # Note that we destroy the menu bar upon exit
       end
     end
@@ -843,12 +846,14 @@ module RubyCurses
     end
     ## menubar
     # TODO: check for menu to be flush right (only for last one).
+    # TODO: repaint only if needed
     def repaint
       return if !@visible
+      return unless @repaint_required
+      @repaint_required = false
       @color_pair = get_color($reversecolor, @color, @bgcolor)
       @window ||= create_window_menubar
-#      @window.printstring( 0, 0, "%-*s" % [@cols," "], $reversecolor) # changed 2011 2011-09-24   
-      @window.printstring( 0, 0, "%-*s" % [@cols," "], @color_pair)
+      #@window.printstring( 0, 0, "%-*s" % [@cols," "], @color_pair) # this becomes blank in some terms
       c = 1; r = 0;
       @items.each do |item|
         item.row = r; item.col = c; item.coffset = c; item.parent = self
@@ -871,15 +876,29 @@ module RubyCurses
       @layout = { :height => 1, :width => 0, :top => 0, :left => 0 } 
       @win = VER::Window.new(@layout)
       @window = @win
+      att = get_attrib @attr
       @win.bkgd(Ncurses.COLOR_PAIR(5)); # <---- FIXME
+      len = @window.width
+      len = Ncurses.COLS-0 if len == 0
+      # print a bar across the screen , which hopefully will not go blank in some terms
+      @window.attron(Ncurses.COLOR_PAIR(@color_pair) | att)
+      @window.mvhline(0, 0, 1, len)
+      @window.attroff(Ncurses.COLOR_PAIR(@color_pair) | att)
       @panel = @win.panel
       return @window
     end
     def destroy
       $log.debug "DESTRY menubar "
+
+      # when we close, but keep visible, we don't want menu to still be hightlighted
+      # added on 2011-12-12 
+      menu = @items[@active_index]
+      menu.on_leave # hide its window, if open
+
       @items.each do |item|
         item.destroy
       end
+      # TODO the current menu should not be highlighted
       return if @keep_visible
       @visible = false
       panel = @window.panel
