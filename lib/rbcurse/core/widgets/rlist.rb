@@ -16,6 +16,7 @@ CHANGES
 =end
 require 'rbcurse'
 require 'rbcurse/core/include/listcellrenderer'
+require 'rbcurse/core/include/bordertitle'
 #require 'rbcurse/extras/include/listkeys'
 require 'forwardable'
 
@@ -42,12 +43,12 @@ module RubyCurses
     include NewListSelectable                           # added 2011-10-8 
     extend Forwardable
     #dsl_accessor :height # << widget already has this
-    dsl_accessor :title
-    dsl_property :title_attrib   # bold, reverse, normal
+    #dsl_accessor :title
+    #dsl_property :title_attrib   # bold, reverse, normal
 #   dsl_accessor :list    # the array of data to be sent by user
     attr_reader :toprow
     #dsl_accessor :default_values  # array of default values
-    dsl_accessor :is_popup       # if it is in a popup and single select, selection closes
+    #dsl_accessor :is_popup       # if it is in a popup and single select, selection closes
     attr_accessor :current_index
     dsl_accessor :selection_mode
     dsl_accessor :selected_color, :selected_bgcolor, :selected_attr
@@ -60,13 +61,12 @@ module RubyCurses
     # please set these in he constructor block. Settin them later will have no effect
     # since i would have bound them to actions
     attr_accessor :one_key_selection # will pressing a single key select or not
-    dsl_accessor :border_attrib, :border_color # 
     # set to true if data could have newlines, tabs, and other stuff, def true
     dsl_accessor :sanitization_required
     # set to true if cell-renderer data can exceed width of listbox, default true
     # if you are absolutely sure that data is constant width, set to false.
     dsl_accessor :truncation_required
-    dsl_accessor :suppress_borders #to_print_borders
+    #dsl_accessor :suppress_borders #to_print_borders
     dsl_accessor :justify # will be picked up by renderer
     # index of selected row
     attr_accessor :selected_index
@@ -107,7 +107,8 @@ module RubyCurses
 
       init_vars
       @internal_width = 2
-      @internal_width = 0 if @suppress_borders
+      #@internal_width = 0 if @suppress_borders # NOTE it is 1 in bordertitle
+      bordertitle_init
 
       if @list && !@selected_index.nil?  # XXX
         set_focus_on @selected_index # the new version
@@ -233,24 +234,6 @@ module RubyCurses
     alias :current_row :current_value
     alias :text :current_value  # thanks to shoes, not sure how this will impact since widget has text.
 
-    def print_borders #:nodoc:
-      width = @width
-      height = @height-1 # 2010-01-04 15:30 BUFFERED HEIGHT
-      window = @graphic  # 2010-01-04 12:37 BUFFERED
-      startcol = @col 
-      startrow = @row 
-      #@color_pair = get_color($datacolor)
-      bordercolor = @border_color || $datacolor
-      borderatt = @border_attrib || Ncurses::A_NORMAL
-
-      window.print_border startrow, startcol, height, width, bordercolor, borderatt
-      print_title
-    end
-    def print_title #:nodoc:
-      @color_pair ||= get_color($datacolor)
-      # TODO check title.length and truncate if exceeds width
-      @graphic.printstring( @row, @col+(@width-@title.length)/2, @title, @color_pair, @title_attrib) unless @title.nil?
-    end
     ### START FOR scrollable ###
     def get_content
       @list 
