@@ -86,7 +86,7 @@ def view_sql stmt
 end
 
 App.new do 
-  header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Database Demo", :text_right =>"enabled"
+  #header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Database Demo", :text_right =>"enabled"
   form = @form
   mylabel = "a field"
   $catch_alt_digits = true # use M-1..9 in textarea
