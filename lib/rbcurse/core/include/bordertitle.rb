@@ -5,15 +5,18 @@ module BorderTitle
     dsl_accessor :border_attrib, :border_color
     dsl_accessor :title                       #set this on top
     dsl_accessor :title_attrib                #bold, reverse, normal
-    dsl_accessor :border_attrib, :border_color # 
 
     def bordertitle_init
+      @_bordertitle_init_called = true
       @row_offset = @col_offset = 0 if @suppress_borders 
-      @internal_width = 1 if @suppress_borders
+      @internal_width = 1 if @suppress_borders # the other programs have zero not 1 NOTE
     end
     # why the dash does it reduce height by one.
     def print_borders
+      bordertitle_init unless @_bordertitle_init_called
       raise ArgumentError, "Graphic not set" unless @graphic
+      raise "#{self} needs width" unless @width
+      raise "#{self} needs height" unless @height
       width = @width
       height = @height-1
       window = @graphic
@@ -26,6 +29,7 @@ module BorderTitle
       print_title
     end
     def print_title
+      bordertitle_init unless @_bordertitle_init_called
       return unless @title
       raise "#{self} needs width" unless @width
       @color_pair ||= get_color($datacolor) # should we not use this ??? XXX 
@@ -39,3 +43,4 @@ module BorderTitle
     end
 
 end
+include BorderTitle
