@@ -14,6 +14,7 @@ TODO
 require 'logger'
 require 'rbcurse'
 require 'rbcurse/core/include/listscrollable'
+require 'rbcurse/core/include/bordertitle'
 require 'forwardable'
 
 include RubyCurses
@@ -30,19 +31,15 @@ module RubyCurses
     include ListScrollable
     extend Forwardable
     #dsl_accessor :height  # height of viewport cmmented on 2010-01-09 19:29 since widget has method
-    dsl_accessor :title   # set this on top
-    dsl_accessor :title_attrib   # bold, reverse, normal
+    #dsl_accessor :title   # set this on top
+    #dsl_accessor :title_attrib   # bold, reverse, normal
     dsl_accessor :footer_attrib   # bold, reverse, normal
     dsl_accessor :list    # the array of data to be sent by user
     dsl_accessor :maxlen    # max len to be displayed
     attr_reader :toprow    # the toprow in the view (offsets are 0)
-#    attr_reader :prow     # the row on which cursor/focus is
-    #attr_reader :winrow   # the row in the viewport/window
     # painting the footer does slow down cursor painting slightly if one is moving cursor fast
     dsl_accessor :print_footer
-    dsl_accessor :suppress_borders # added 2010-02-10 20:05 values true or false
     attr_reader :current_index
-    dsl_accessor :border_attrib, :border_color # 
     dsl_accessor :sanitization_required
 
     def initialize form = nil, config={}, &block
@@ -65,6 +62,7 @@ module RubyCurses
       @_events << :PRESS # new, in case we want to use this for lists and allow ENTER
       @_events << :ENTER_ROW # new, should be there in listscrollable ??
       install_keys # do something about this nonsense FIXME
+      bordertitle_init
       init_vars
     end
     def init_vars #:nodoc:
@@ -81,7 +79,7 @@ module RubyCurses
       # longest line on screen.
       @longest_line = 0 # the longest line printed on this page, used to determine if scrolling shd work
       @internal_width = 2
-      @internal_width = 0 if @suppress_borders
+      @internal_width = 0 if @suppress_borders # NOTE bordertitle says 1
 
       @search_found_ix = nil # so old searches don't get highlighted
     end
@@ -207,33 +205,6 @@ module RubyCurses
       #$log.debug "inside wrap text for :#{txt}"
       txt.gsub(/(.{1,#{col}})( +|$\n?)|(.{1,#{col}})/,
                "\\1\\3\n") 
-    end
-    ## print a border
-    ## Note that print_border clears the area too, so should be used sparingly.
-    def print_borders #:nodoc:
-      raise "textview needs width" unless @width
-      raise "textview needs height" unless @height
-
-      $log.debug " #{@name} print_borders,  #{@graphic.name} "
-      
-      @color_pair = get_color($datacolor) # added 2011-09-28 as in rlistbox
-#      bordercolor = @border_color || $datacolor # changed 2011 dts  
-      bordercolor = @border_color || @color_pair # 2011-09-28 V1.3.1 
-      borderatt = @border_attrib || Ncurses::A_NORMAL
-      @graphic.print_border @row, @col, @height-1, @width, bordercolor, borderatt
-      print_title
-    end
-    def print_title #:nodoc:
-      return unless @title
-      raise "textview needs width" unless @width
-      @color_pair ||= get_color($datacolor) # should we not use this ??? XXX 
-
-      # check title.length and truncate if exceeds width
-      _title = @title
-      if @title.length > @width - 2
-        _title = @title[0..@width-2]
-      end
-      @graphic.printstring( @row, @col+(@width-_title.length)/2, _title, @color_pair, @title_attrib) unless @title.nil?
     end
     def print_foot #:nodoc:
       @footer_attrib ||= Ncurses::A_REVERSE
