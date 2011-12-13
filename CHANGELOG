@@ -1,3 +1,10 @@
+**2011-12-13**
+## 0.0.2 rbcurse-core
+Mostly refactoring of multi-row components
+
+## 0.0.1 rbcurse-core
+Added help system, and printing of key bindings
+
 **2011-12-05**
 ## 0.0.0 rbcurse-core
 
