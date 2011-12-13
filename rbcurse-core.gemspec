@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "rbcurse-core"
-  s.version = "0.0.1"
+  s.version = "0.0.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rahul Kumar"]
-  s.date = "2011-12-09"
+  s.date = "2011-12-13"
   s.description = "Ruby curses/ncurses widgets for easy application development on text terminals (ruby 1.9, 1.8)"
   s.email = "sentinel1879@gmail.com"
   s.extra_rdoc_files = [
@@ -58,6 +58,7 @@ Gem::Specification.new do |s|
     "lib/rbcurse/core/include/bordertitle.rb",
     "lib/rbcurse/core/include/chunk.rb",
     "lib/rbcurse/core/include/io.rb",
+    "lib/rbcurse/core/include/listbindings.rb",
     "lib/rbcurse/core/include/listcellrenderer.rb",
     "lib/rbcurse/core/include/listeditable.rb",
     "lib/rbcurse/core/include/listscrollable.rb",
