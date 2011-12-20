@@ -65,7 +65,8 @@ module RubyCurses
       @bgcolor ||= :white
       @maxrow = 3
 
-      instance_eval &block if block_given?
+      #instance_eval &block if block_given?
+      yield_or_eval &block if block_given?
 
     end
     def item widget
@@ -163,6 +164,7 @@ module RubyCurses
       @maxrow = 3
       yield message_label if block_given?
     end
+    alias :message= :message
 
     # This is for larger messages, or messages where the size is not known.
     # A textview object is created and yielded.
@@ -214,6 +216,8 @@ module RubyCurses
       yield message_label if block_given?
 
     end
+    alias :text= :text
+
     # returns button index (or in some cases, whatever value was thrown
     # if user did not specify any button_type but gave his own and did throw (:close, x)
     private
