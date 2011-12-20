@@ -166,7 +166,7 @@ module RubyCurses
               @form.handle_key ch
             rescue => err
               $log.debug( "handle_key rescue reached ")
-              $log.debug( err) 
+              $log.debug( err.to_s) 
               $log.debug(err.backtrace.join("\n")) 
               textdialog [err.to_s, *err.backtrace], :title => "Exception"
             end
