@@ -59,7 +59,9 @@ module VER
     # erase/kill character-processing (interrupt and flow control characters
     # are unaffected), making characters typed by the user immediately
     # available to the program.
-    Ncurses.cbreak
+    #Ncurses.cbreak
+    # I have removed cbreak and halfdelay since they were causing C-c
+    # to crash if i pressed it in succession
 
     # The echo and noecho routines control whether characters typed by the user
     # are echoed by getch as they are typed.
@@ -80,12 +82,17 @@ module VER
     # nothing has been typed.
     # The value of tenths must be a number between 1 and 255.
     # Use nocbreak to leave half-delay mode.
-    Ncurses::halfdelay(tenths = 10)
+    #Ncurses::halfdelay(tenths = 10)
+    # See above why switched off
 
     # The nodelay option causes getch to be a non-blocking call. If no input is
     # ready, getch returns ERR. If disabled (bf is FALSE), getch waits until a
     # key is pressed.
-    # Ncurses::nodelay(Ncurses::stdscr, bf = true)
+    # I am using the next line for the window when creating, this does not
+    # have any impact on window.
+    # For this to have any effect your getch should be Ncurses.getch and not
+    # wgetch(@window), For that do this with window.
+    Ncurses::nodelay(stdscr.pointer, bf = true)
   end
 
   # this should happen only in outermost program that started ncurses
