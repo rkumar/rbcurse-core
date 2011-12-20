@@ -57,22 +57,14 @@ class Module
           if val.empty?
             @#{sym}
           else
-            #if @frozen # 2011-10-1  prevent object from being changed # changed 2011 dts  
-               #return if @frozen && (@frozen_list.nil? || @frozen_list.include?(:#{sym}) )
-            #end
             @#{sym} = val.size == 1 ? val[0] : val
             # i am itching to deprecate next line XXX
-            @config["#{sym}"]=@#{sym}
+            # @config["#{sym}"]=@#{sym} # commented out 2011-12-18 to simplify
             self # 2011-10-2 
           end
         end
       # can the next bypass validations
-      # I don't think anyone will expect self to be returned if using = to assign
     attr_writer sym #2011-10-2 
-        #def #{sym}=(val)
-           ##{sym}(val)
-           # self
-        #end
       }
     }
   end
@@ -86,7 +78,6 @@ class Module
           if val.empty?
             @#{sym}
           else
-            #return(self) if @frozen && (@frozen_list.nil? || @frozen_list.include?(:#{sym}) )
             oldvalue = @#{sym}
             # @#{sym} = val.size == 1 ? val[0] : val
             tmp = val.size == 1 ? val[0] : val
@@ -94,7 +85,7 @@ class Module
             # i am itching to deprecate config setting
             if oldvalue.nil? || @_object_created.nil?
                @#{sym} = tmp
-               @config["#{sym}"]=@#{sym}
+               # @config["#{sym}"]=@#{sym} # 2011-12-18 
             end
             return(self) if oldvalue.nil? || @_object_created.nil?
 
@@ -364,7 +355,7 @@ module RubyCurses
       #  2010-02-24 12:43 trying to take in multiple key bindings, TODO unbind
       #  TODO add symbol so easy to map from config file or mapping file
       def bind_key keycode, *args, &blk
-        $log.debug " #{@name} bind_key received #{keycode} "
+        #$log.debug " #{@name} bind_key received #{keycode} "
         @key_handler ||= {}
         #
         # added on 2011-12-4 so we can pass a description for a key and print it
@@ -1735,7 +1726,7 @@ module RubyCurses
           field =  get_current_field
           if $log.debug?
             keycode = keycode_tos(ch)
-            $log.debug " form HK #{ch} #{self}, #{@name}, #{keycode}, field: giving to: #{field}, #{field.name}  " if field
+            #$log.debug " form HK #{ch} #{self}, #{@name}, #{keycode}, field: giving to: #{field}, #{field.name}  " if field
           end
           handled = :UNHANDLED 
           handled = field.handle_key ch unless field.nil? # no field focussable
