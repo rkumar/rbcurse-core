@@ -71,6 +71,7 @@ module VER
       $status_message ||= RubyCurses::Variable.new # in case not an App
 
       $key_map ||= :vim
+      $esc_esc = true; # gove me double esc as 2727 so i can map it.
       init_vars
 
 
@@ -78,6 +79,9 @@ module VER
     def init_vars
       @window_type = :WINDOW
       Ncurses::keypad(@window, true)
+      # Added this so we can get Esc, and also C-c pressed in succession does not crash system
+      #  2011-12-20 half-delay crashes system as does cbreak
+      Ncurses::nodelay(@window, bf = true)
       @stack = []
       @name ||="#{self}"
       @modified = true
@@ -327,11 +331,16 @@ module VER
 
     def getch
       #c = @window.getch
-      c = Ncurses.getch
+      #c = FFI::NCurses.wgetch(@window)
+      c = FFI::NCurses.getch # this will keep waiting, nodelay won't be used on it, since 
+      # we've put nodelay on window
       #if c == Ncurses::KEY_RESIZE
 
-    rescue Interrupt => ex
+    rescue SystemExit, Interrupt 
+      #FFI::NCurses.flushinp
       3 # is C-c
+    rescue StandardError
+      -1 # is C-c
     end
 
     #  2011-09-23 @since 1.3.1
@@ -352,8 +361,8 @@ module VER
     #  2 cases, so abandoned.
     def getchar 
       while 1 
-        ch = getch
-        $log.debug "window getchar() GOT: #{ch}" if ch != -1
+        ch = self.getch
+        #$log.debug "window getchar() GOT: #{ch}" if ch != -1
         sf = @stack.first
         if ch == -1
           # the returns escape 27 if no key followed it, so its SLOW if you want only esc
@@ -393,7 +402,8 @@ module VER
           # experimental. 2 escapes in quick succession to make exit faster
           if @stack.size == 1 && ch == 27
             @stack.clear
-            return ch
+            return 2727 if $esc_esc # this is double-esc if you wanna trap it, trying out
+            return 27
           end
           # possible F1..F3 on xterm-color
           if ch == 79 || ch == 91
