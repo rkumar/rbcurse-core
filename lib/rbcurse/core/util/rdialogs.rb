@@ -43,7 +43,12 @@ end
 # Alert user with a block of text. This will popup a textview in which the user can scroll
 # Use this if you are not sure of the size of the text, such as printing a stack trace,
 # exception
+#  2011-12-25 just pass in an exceptino object and we do the rest
 def textdialog mess, config={}
+  if mess.is_a? Exception
+    mess = [mess.to_s, *mess.backtrace]
+    config[:title] ||= "Exception"
+  end
   config[:title] ||= "Alert"
   tp = MessageBox.new config do
     button_type :ok
@@ -373,6 +378,7 @@ def popuplist list, config={}, &block
   end
   config.delete :relative_to
   width = config[:width] || longest_in_list(list)+2 # borders take 2
+  width = config[:title].size + 2 if width < config[:title].size
   height = config[:height]
   height ||= [max_visible_items || 10+2, list.length+2].min 
   #layout(1+height, width+4, row, col) 
