@@ -314,7 +314,7 @@ module Io
       @caller = caller
       @text = text
       @options = []
-      instance_eval &block if block_given?
+      yield_or_eval &block if block_given?
     end
     def add *menuitem
       item = nil
@@ -330,6 +330,14 @@ module Io
           # if user only sends key and symbol
           menuitem[3] = menuitem[1]
           item = CMenuItem.new(*menuitem.flatten)
+        when 1
+          if menuitem.first.is_a? Action
+            item = menuitem.first
+          else
+            raise ArgumentError, "Don't know how to handle #{menuitem.size} : #{menuitem} "
+          end
+        else
+          raise ArgumentError, "Don't know how to handle #{menuitem.size} : #{menuitem} "
         end
         @options << item
       end
@@ -337,6 +345,10 @@ module Io
     end
     alias :item :add
     def create_mitem *args
+      item = CMenuItem.new(*args.flatten)
+    end
+    # Added this, since actually it could have been like this 2011-12-22  
+    def self.create_menuitem *args
       item = CMenuItem.new(*args.flatten)
     end
     # create the whole thing using a MenuTree which has minimal information.
@@ -385,7 +397,11 @@ module Io
           valid = []
           labels = []
           menu.each{ |item|
-            hk = item.hotkey.to_s
+            if item.respond_to? :hotkey
+              hk = item.hotkey.to_s
+            else
+              raise ArgumentError, "Promptmenu needs hotkey or mnemonic"
+            end
             labels << "%c. %s " % [ hk, item.label ]
             h[hk] = item
             valid << hk
@@ -413,11 +429,14 @@ module Io
           end
           #$log.debug " index is #{index} "
           item = h[ch]
-          desc = item.desc
-          #desc ||= "Could not find desc for #{ch} "
-          desc ||= ""
-          clear_this w, r, c, color, len
-          print_this(w, desc, color, r,c)
+          # I don;t think this even shows now, its useless
+          if item.respond_to? :desc
+            desc = item.desc
+            #desc ||= "Could not find desc for #{ch} "
+            desc ||= ""
+            clear_this w, r, c, color, len
+            print_this(w, desc, color, r,c)
+          end
           action = item.action
           case action
             #when Array
