@@ -35,6 +35,23 @@ module RubyCurses
       fire_handler :FIRE, self
       super
     end
+    # the next 3 are to adapt this to CMenuitems
+    def hotkey
+      return @mnemonic if @mnemonic
+      ix = @name.index('&')
+      if ix
+        return @name[ix+1, 1].downcase
+      end
+    end
+    # to adapt this to CMenuitems
+    def label
+      @name.sub('&','')
+    end
+    # to adapt this to CMenuitems
+    def action
+      self
+    end
+
   end # class
 end # module
 
