@@ -224,7 +224,7 @@ module RubyCurses
     def handle_keys
       buttonindex = catch(:close) do 
         while((ch = @window.getchar()) != FFI::NCurses::KEY_F10 )
-          break if ch == ?\C-q.getbyte(0) 
+          break if ch == ?\C-q.getbyte(0) || ch == 2727 # added double esc
           begin
             @form.handle_key(ch)
             @window.wrefresh
