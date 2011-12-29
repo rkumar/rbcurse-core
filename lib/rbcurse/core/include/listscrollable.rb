@@ -271,12 +271,20 @@ module ListScrollable
     end
     def ask_search
       options = ["Search backwards", "case insensitive", "Wrap around"]
-      defaults = [@search_direction_prev,@search_case,@search_wrap]
+      defaults = [@search_direction_prev, @search_case, @search_wrap]
       regex = @last_regex || ""
+      # persist search history so one can popup and see
+      # How does user know that there is some history here.
+      $list_search_history ||= []
+      $list_search_history << @last_regex if @last_regex && !$list_search_history.include?(@last_regex)
 
       mb = MessageBox.new :title => "Search" , :width => 70 do
-        add Field.new :label => 'Enter regex to search', :name => "patt", :display_length => 30, 
-          :bgcolor => :cyan, :text => regex
+        fld =  Field.new :label => 'Enter regex to search', :name => "patt", :display_length => 30, 
+          :bgcolor => :cyan #, :text => regex
+        require 'rbcurse/core/include/rhistory'
+        fld.extend(FieldHistory)
+        fld.history($list_search_history)
+        add fld
         add CheckBox.new :text => options[0], :value => defaults[0], :name => "0"
         add CheckBox.new :text => options[1], :value => defaults[1], :name => "1"
         add CheckBox.new :text => options[2], :value => defaults[2], :name => "2"
@@ -285,7 +293,10 @@ module ListScrollable
       end
       index = mb.run
       return if index != 0
-      regex = mb.widget("patt").text
+      regex = mb.widget("patt").text || regex # if user enters nothing use existing regex
+      regex = @last_regex if regex == ""
+      return if regex.nil? || regex == ""
+      #$list_search_history << @last_regex if @last_regex
       @search_direction_prev =  mb.widget("0").value
       @search_case = mb.widget("1").value
       @search_wrap = mb.widget("2").value
@@ -391,7 +402,8 @@ module ListScrollable
     ##
     # find backwards
     # Using this to start a search or continue search
-    def _find_prev regex=@last_regex, start = @search_found_ix 
+    def _find_prev regex=@last_regex, start = @search_found_ix, first_time = false
+      #TODO the firsttime part, see find_next
       #raise "No previous search" if regex.nil?
       warn "No previous search" and return if regex.nil?
       #$log.debug " _find_prev #{@search_found_ix} : #{@current_index}"
