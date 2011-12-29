@@ -91,8 +91,8 @@ module RubyCurses
       bind_key(32, 'scroll forward'){ scroll_forward() }
       # have placedhere so multi-bufer can override BS to prev buffer
       bind_keys([KEY_BACKSPACE,KEY_BSPACE,KEY_DELETE], :cursor_backward)
-      bind_key(?r) { getstr("Enter a word: ") } if $log.debug?
-      bind_key(?m, :disp_menu)                  if $log.debug?
+      #bind_key(?r) { getstr("Enter a word: ") } if $log.debug?
+      #bind_key(?m, :disp_menu)                  if $log.debug?
     end
     ## 
     # send in a list
@@ -619,53 +619,6 @@ module RubyCurses
       return "" if ret != 0
       return str
     end
-    # this is just a test of the simple "most" menu
-    # How can application add to this, or override
-    # TODO: use another window at bottom, statuswindow
-    def disp_menu  #:nodoc:
-      # we need to put this into data-structure so that i can be manipulated by calling apps
-      # This should not be at the widget level, too many types of menus. It should be at the app
-      # level only if the user wants his app to use this kind of menu.
-
-      if false
-        #@menu = RubyCurses::MenuTree.new "Main", { s: :goto_start, r: :scroll_right, l: :scroll_left, m: :submenu }
-        #@menu.submenu :m, "submenu", {s: :noignorecase, t: :goto_last_position, f: :next3 }
-        #menu = PromptMenu.new self 
-        #menu.menu_tree @menu
-        #menu.display @form.window, $error_message_row, $error_message_col, $datacolor #, menu
-      end
-      # trying to find a more rubyesque way of doing
-      menu = PromptMenu.new self do
-        item :s, :goto_start
-        item :b, :goto_bottom
-        item :r, :scroll_backward
-        item :l, :scroll_forward
-        submenu :m, "submenu..." do
-          item :p, :goto_last_position
-          item :r, :scroll_right
-          item :l, :scroll_left
-        end
-      end
-      #menu.display @form.window, $error_message_row, $error_message_col, $datacolor #, menu
-      menu.display_new :title => "Menu"
-
-
-=begin
-      require 'rbcurse/extras/widgets/menutree'
-      menu = PromptMenu.new self 
-      menu.add( menu.create_mitem( 's', "Goto start ", "Going to start", Proc.new { goto_start} ))
-      menu.add(menu.create_mitem( 'r', "scroll right", "I have scrolled ", :scroll_right ))
-      menu.add(menu.create_mitem( 'l', "scroll left", "I have scrolled ", :scroll_left ))
-      item = menu.create_mitem( 'm', "submenu", "submenu options" )
-      menu1 = PromptMenu.new( self, "Submenu Options")
-      menu1.add(menu1.create_mitem( 's', "CASE sensitive", "Ignoring Case in search" ))
-      menu1.add(menu1.create_mitem( 't', "goto last position", "moved to previous position", Proc.new { goto_last_position} ))
-      item.action = menu1
-      menu.add(item)
-      # how do i know what's available. the application or window should know where to place
-      #menu.display @form.window, 23, 1, $datacolor #, menu
-=end
-    end
     ##
     # dynamically load a module and execute init method.
     # Hopefully, we can get behavior like this such as vieditable or multibuffers
@@ -767,6 +720,13 @@ module RubyCurses
         lines = File.open(f,'r').readlines
         set_content(lines, :content_type => @old_content_type)
       end
+    end
+    def init_menu
+      editor = ENV['EDITOR'] || 'vi'
+      require 'rbcurse/core/include/action'
+      @_menuitems ||= []
+      @_menuitems <<  Action.new("&Edit in #{editor} ") { edit_external }
+      @_menuitems << Action.new("&Saveas") { saveas() }
     end
 
 
