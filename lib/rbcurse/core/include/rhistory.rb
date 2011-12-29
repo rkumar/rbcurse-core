@@ -20,16 +20,29 @@
 module RubyCurses
   extend self
   module FieldHistory
+    def self.extended(obj)
+
+      obj.instance_exec {
+        @history ||= []
+        $history_key ||= ?\M-h
+        # ensure that the field is not overriding this in handle_key
+        bind_key($history_key) { _show_history }
+        # widget should have CHANGED event, or this will either give error, or just not work
+        # else please update history whenever you want a value to be retrieved
+        bind(:CHANGED) { @history << @text if @text && (!@history.include? @text) }
+      }
+    end
+
     # pass the array of history values
+    # Trying out a change where an item can also be sent in.
+    # I am lost, i want the initialization to happen once.
     def history arr
       return @history unless arr
-      @history = arr 
-      $history_key ||= ?\M-h
-      # ensure that the field is not overriding this in handle_key
-      bind_key($history_key) { _show_history }
-      # widget should have CHANGED event, or this will either give error, or just not work
-      # else please update history whenever you want a value to be retrieved
-      bind(:CHANGED) { @history << @text if @text && (!@history.include? @text) }
+      if arr.is_a? Array
+        @history = arr 
+      else
+        @history << arr unless @history.include? arr
+      end
     end
     def history=(x); history(x); end
     
