@@ -242,11 +242,11 @@ module RubyCurses
         when S_F9
           return "S_F9"
         else
-          others=[?\M--,?\M-+,?\M-=,?\M-',?\M-",?\M-;,?\M-:,?\M-\,, ?\M-.,?\M-<,?\M->,?\M-?,?\M-/]
+          others=[?\M--,?\M-+,?\M-=,?\M-',?\M-",?\M-;,?\M-:,?\M-\,, ?\M-.,?\M-<,?\M->,?\M-?,?\M-/,?\M-!]
           others.collect! {|x| x.getbyte(0)  }  ## added 2009-10-04 14:25 for 1.9
-          s_others=%w[M-- M-+ M-= M-' M-"   M-;   M-:   M-, M-. M-< M-> M-? M-/ ]
+          s_others=%w[M-- M-+ M-= M-' M-"   M-;   M-:   M-, M-. M-< M-> M-? M-/ M-!]
           if others.include? keycode
-            index =  others.index keycode
+            index = others.index keycode
             return s_others[index]
           end
           # all else failed
@@ -398,18 +398,22 @@ module RubyCurses
         @key_args[keycode] = args
 
       end
+      # Display key bindings for current widget and form in dialog
       def print_key_bindings *args
         f  = get_current_field
         #labels = [@key_label, f.key_label]
-        labels = [@key_label]
-        labels << f.key_label if f.key_label
+        #labels = [@key_label]
+        #labels << f.key_label if f.key_label
+        labels = []
+        labels << (f.key_label || {}) #if f.key_label
+        labels << @key_label
         arr = []
         labels.each_with_index { |h, i|  
           case i
           when 0
-            arr << "  ===  Form bindings ==="
+            arr << "  ===  Current widget bindings ==="
           when 1
-            arr << "  === Current field bindings ==="
+            arr << "  === Form bindings ==="
           end
 
           h.each_pair { |name, val| 
@@ -450,14 +454,22 @@ module RubyCurses
         blk = @key_handler[keycode]
         return :UNHANDLED if blk.nil?
         if blk.is_a? OrderedHash
+          #Ncurses::nodelay(window.get_window, bf = false)
+          # if you set nodelay in ncurses.rb then this will not
+          # wait for second key press, so you then must either make it blocking
+          # here, or set a wtimeout here.
           ch = window.getch
+          #Ncurses::nodelay(window.get_window, bf = true)
+
+          $log.debug " process_key: got #{keycode} , #{ch} "
           if ch < 0 || ch > 255
-            #next
             return nil
           end
-          $log.debug " process_key: got #{keycode} , #{ch} "
           yn = ch.chr
           blk1 = blk[ch]
+          # FIXME we are only returning the second key, what if form
+          # has mapped first and second combo. We should unget keycode and ch. 2011-12-23 
+          # check this out first.
           window.ungetch(ch) if blk1.nil? # trying  2011-09-27 
           return :UNHANDLED if blk1.nil? # changed nil to unhandled 2011-09-27 
           $log.debug " process_key: found block for #{keycode} , #{ch} "
@@ -1221,7 +1233,7 @@ module RubyCurses
       mb.toggle_key ||= Ncurses.KEY_F2
       if !mb.toggle_key.nil?
         ch = mb.toggle_key
-        bind_key(ch) do |_form| 
+        bind_key(ch, 'Menu Bar') do |_form| 
           if !@menu_bar.nil?
             @menu_bar.toggle
             @menu_bar.handle_keys
@@ -1681,6 +1693,13 @@ module RubyCurses
       end
     }
     bind_key(FFI::NCurses::KEY_F9, "Print keys", :print_key_bindings) # show bindings, tentative on F9
+    bind_key(?\M-:, 'show menu') {
+      fld = get_current_field
+      require 'rbcurse/core/include/widgetmenu'
+      fld.extend(WidgetMenu)
+      fld.init_menu if fld.respond_to?(:init_menu) && @_menuitems.nil?
+      fld._show_menu
+    }
     @keys_mapped = true
   end
   
@@ -2149,17 +2168,17 @@ module RubyCurses
   end
   def map_keys
     return if @keys_mapped
-    bind_key(FFI::NCurses::KEY_LEFT){ cursor_backward }
-    bind_key(FFI::NCurses::KEY_RIGHT){ cursor_forward }
-    bind_key(FFI::NCurses::KEY_BACKSPACE){ delete_prev_char }
-    bind_key(127){ delete_prev_char }
-    bind_key(330){ delete_curr_char }
-    bind_key(?\C-a){ cursor_home }
-    bind_key(?\C-e){ cursor_end }
-    bind_key(?\C-k){ delete_eol }
-    bind_key(?\C-_){ undo_delete_eol }
+    bind_key(FFI::NCurses::KEY_LEFT, :cursor_backward )
+    bind_key(FFI::NCurses::KEY_RIGHT, :cursor_forward )
+    bind_key(FFI::NCurses::KEY_BACKSPACE, :delete_prev_char )
+    bind_key(127, :delete_prev_char )
+    bind_key(330, :delete_curr_char )
+    bind_key(?\C-a, :cursor_home )
+    bind_key(?\C-e, :cursor_end )
+    bind_key(?\C-k, :delete_eol )
+    bind_key(?\C-_, :undo_delete_eol )
     #bind_key(27){ set_buffer @original_value }
-    bind_key(?\C-g){ set_buffer @original_value } # 2011-09-29 V1.3.1 ESC did not work
+    bind_key(?\C-g, 'revert'){ set_buffer @original_value } # 2011-09-29 V1.3.1 ESC did not work
     @keys_mapped = true
   end
 
@@ -2528,10 +2547,10 @@ module RubyCurses
         # meta key 
         mch = ?\M-a.getbyte(0) + (ch - ?a.getbyte(0))  ## 1.9
         if (@label_for.is_a? RubyCurses::Button ) && (@label_for.respond_to? :fire)
-          @form.bind_key(mch, @label_for) { |_form, _butt| _butt.fire }
+          @form.bind_key(mch, "hotkey for button #{@label_for.text} ") { |_form, _butt| @label_for.fire }
         else
           $log.debug " bind_hotkey label for: #{@label_for}"
-          @form.bind_key(mch, @label_for) { |_form, _field| _field.focus }
+          @form.bind_key(mch, "hotkey for label #{text} ") { |_form, _field| @label_for.focus }
         end
       end
     end
@@ -2640,6 +2659,7 @@ module RubyCurses
           s.slice!(ix,1)
           # 2011-10-20 NOTE XXX I have removed form check since bindkey is called conditionally
           @underline = ix #unless @form.nil? # this setting a fake underline in messageboxes
+          @text = s # mnemo needs this for setting description
           mnemonic s[ix,1]
         end
         @text = s
@@ -2667,7 +2687,8 @@ module RubyCurses
       # meta key 
       ch = ?\M-a.getbyte(0) + (ch - ?a.getbyte(0)) unless @hotkey
       $log.debug " #{self} setting MNEMO to #{char} #{ch}, #{@hotkey} "
-      @form.bind_key(ch, self) { |_form, _butt| _butt.fire }
+      _t = self.text || self.name || "Unnamed #{self.class} "
+      @form.bind_key(ch, "hotkey for button #{_t} ") { |_form, _butt| self.fire }
     end
 
     ##
@@ -2688,7 +2709,7 @@ module RubyCurses
       @mnemonic = _value[@underline,1]
       # meta key 
       mch = ?\M-a.getbyte(0) + (ch - ?a.getbyte(0))
-      @form.bind_key(mch, self) { |_form, _butt| _butt.fire }
+      @form.bind_key(mch, "hotkey for button #{self.text}" ) { |_form, _butt| self.fire }
     end
     def default_button tf=nil
       return @default_button unless tf
@@ -2697,7 +2718,7 @@ module RubyCurses
       @default_button = tf
       if tf
         @surround_chars = @default_chars
-        @form.bind_key(13, self) { |_form, _butt| _butt.fire }
+        @form.bind_key(13, "fire #{self.text} ") { |_form, _butt| self.fire }
       else
         # i have no way of reversing the above
       end
@@ -2958,7 +2979,6 @@ module RubyCurses
 
   ##
   # A checkbox, may be selected or unselected
-  # TODO hotkey should work here too.
   #
   class CheckBox < ToggleButton
     dsl_accessor :align_right    # the button will be on the right 2008-12-09 23:41 
