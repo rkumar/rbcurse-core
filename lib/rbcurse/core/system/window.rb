@@ -81,7 +81,9 @@ module VER
       Ncurses::keypad(@window, true)
       # Added this so we can get Esc, and also C-c pressed in succession does not crash system
       #  2011-12-20 half-delay crashes system as does cbreak
-      Ncurses::nodelay(@window, bf = true)
+      #This causes us to be unable to process gg qq since getch won't wait.
+      #Ncurses::nodelay(@window, bf = true)
+      Ncurses::wtimeout(@window, $ncurses_timeout || 500) # will wait a second on wgetch so we can get gg and qq
       @stack = []
       @name ||="#{self}"
       @modified = true
@@ -331,8 +333,9 @@ module VER
 
     def getch
       #c = @window.getch
-      #c = FFI::NCurses.wgetch(@window)
-      c = FFI::NCurses.getch # this will keep waiting, nodelay won't be used on it, since 
+      c = FFI::NCurses.wgetch(@window)
+      # 2011-12-20 - i am trying setting a timer on wgetch, see timeout
+      #c = FFI::NCurses.getch # this will keep waiting, nodelay won't be used on it, since 
       # we've put nodelay on window
       #if c == Ncurses::KEY_RESIZE
 
