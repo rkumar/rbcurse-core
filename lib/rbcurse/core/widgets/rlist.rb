@@ -50,6 +50,7 @@ module RubyCurses
     #dsl_accessor :default_values  # array of default values
     #dsl_accessor :is_popup       # if it is in a popup and single select, selection closes
     attr_accessor :current_index
+    # selection mode multiple, single and none (none added 2011-12-26)
     dsl_accessor :selection_mode
     dsl_accessor :selected_color, :selected_bgcolor, :selected_attr
     dsl_accessor :max_visible_items   # how many to display 2009-01-11 16:15 
@@ -96,11 +97,11 @@ module RubyCurses
       @row_offset = @col_offset = 1
       @should_show_focus = true # Here's its on since the cellrenderer will show it on repaint
       @one_key_selection = false # use vim keys
+      @selection_mode = :multiple # default is multiple, anything else given becomes single
       super
       @_events.push(*[:ENTER_ROW, :LEAVE_ROW, :LIST_SELECTION_EVENT, :PRESS])
       # I have moved this here so user can override keys.
       map_keys unless @keys_mapped
-      @selection_mode ||= :multiple # default is multiple, anything else given becomes single
       @win = @graphic    # 2010-01-04 12:36 BUFFERED  replace form.window with graphic
       @win_left = 0
       @win_top = 0
@@ -113,6 +114,7 @@ module RubyCurses
       if @list && !@selected_index.nil?  # XXX
         set_focus_on @selected_index # the new version
       end
+      init_menu
     end
     # this is called several times, from constructor
     # and when list data changed, so only put relevant resets here.
@@ -138,7 +140,7 @@ module RubyCurses
       bind_key(?f, 'next row starting with char'){ ask_selection_for_char() }
       bind_key(?\M-v, 'toggle one_key_selection'){ @one_key_selection = !@one_key_selection }
       bind_key(13, 'fire action event'){ fire_action_event }
-      list_bindings # listselectable
+      list_bindings unless @selection_mode == :none  # listselectable
       @keys_mapped = true
 
     end
@@ -670,6 +672,14 @@ module RubyCurses
     end
     alias :selected_values :get_selected_values
  
+    # Define actions that can be popped up by PromptMenu or other menubar
+    # Currently, only PromptMenu, but we can start contextually appending to Menubar or others
+    def init_menu
+      require 'rbcurse/core/include/action'
+      @_menuitems ||= []
+      @_menuitems <<  Action.new("&Disable selection") { @selection_mode = :none; unbind_key(32); bind_key(32, :scroll_forward); }
+      @_menuitems << Action.new("&Edit Toggle") { @edit_toggle = !@edit_toggle; $status_message.value = "Edit toggle is #{@edit_toggle}" }
+    end
 
 
     # ADD HERE
