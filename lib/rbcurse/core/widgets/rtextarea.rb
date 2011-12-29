@@ -945,6 +945,14 @@ module RubyCurses
       }
       rb_puts "#{name} written."
     end
+    
+    def init_menu
+      editor = ENV['EDITOR'] || 'vi'
+      require 'rbcurse/core/include/action'
+      @_menuitems ||= []
+      @_menuitems <<  Action.new("&Edit in #{editor} ") { edit_external }
+      @_menuitems << Action.new("&Saveas") { saveas() }
+    end
   end # class textarea
   ##
 end # modul
