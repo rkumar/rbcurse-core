@@ -78,7 +78,7 @@ module RubyCurses
     # prompts user for unix command and displays output in viewer
     # 
     def shell_output
-      cmd = get_string("Enter shell command:", 50)
+      cmd = get_string("Enter shell command:", :maxlen => 50)
       if cmd && !cmd.empty?
         run_command cmd
       end
