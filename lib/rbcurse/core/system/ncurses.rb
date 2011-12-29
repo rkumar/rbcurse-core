@@ -7,6 +7,11 @@ module VER
   def start_ncurses
     return if $ncurses_started
     $ncurses_started = true
+    # in case we want a blocking getch, you may want to first
+    # set wtimeout to -1, and then reset it to this value.
+    # Please first check that we are using this.
+    $ncurses_wtimeout = 500 # used by windows for timeout of wgetch
+
     # The initscr code determines the terminal type and initializes all curses
     # data structures.
     # initscr also causes the first call to refresh to clear the screen.
@@ -92,7 +97,9 @@ module VER
     # have any impact on window.
     # For this to have any effect your getch should be Ncurses.getch and not
     # wgetch(@window), For that do this with window.
-    Ncurses::nodelay(stdscr.pointer, bf = true)
+    # I am disableing this 2011-12-20 since it does not work with combinations
+    # such as gg. Any routine that does a getch will just immediatelt return an ERR.
+    #Ncurses::nodelay(stdscr.pointer, bf = true)
   end
 
   # this should happen only in outermost program that started ncurses
