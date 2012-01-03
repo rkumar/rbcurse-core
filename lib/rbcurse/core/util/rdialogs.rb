@@ -378,7 +378,9 @@ def popuplist list, config={}, &block
   end
   config.delete :relative_to
   width = config[:width] || longest_in_list(list)+2 # borders take 2
-  width = config[:title].size + 2 if width < config[:title].size
+  if config[:title]
+    width = config[:title].size + 2 if width < config[:title].size
+  end
   height = config[:height]
   height ||= [max_visible_items || 10+2, list.length+2].min 
   #layout(1+height, width+4, row, col) 
