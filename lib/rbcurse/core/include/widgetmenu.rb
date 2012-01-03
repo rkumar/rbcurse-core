@@ -21,14 +21,21 @@ module RubyCurses
     #        key, symbol
     #        Action
     #        Action[] (maybe)
+    def self.extended(obj)
+      obj.instance_exec {
+        @_menuitems ||= []
+        obj.init_menu if obj.respond_to? :init_menu
+      }
+
+    end
     def add_menu_item *val
-      @_menuitems ||= []
+      #@_menuitems ||= []
       @_menuitems << val
     end
     #
     # insert an item at given position (index)
     def insert_menu_item pos, *val
-      @_menuitems ||= []
+      #@_menuitems ||= []
       @_menuitems[pos] = val
     end
     def create_menuitem *args
