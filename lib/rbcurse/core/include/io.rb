@@ -381,7 +381,7 @@ module Io
     def display_columns config={}
       prompt = config[:prompt] || "Choose: "
       require 'rbcurse/core/util/rcommandwindow'
-      layout = { :height => 5, :width => Ncurses.COLS-1, :top => Ncurses.LINES-6, :left => 0 }
+      layout = { :height => 5, :width => Ncurses.COLS-0, :top => Ncurses.LINES-6, :left => 0 }
       rc = CommandWindow.new nil, :layout => layout, :box => true, :title => config[:title] || "Menu"
       w = rc.window
       r = 4
