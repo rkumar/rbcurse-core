@@ -1697,7 +1697,8 @@ module RubyCurses
       fld = get_current_field
       require 'rbcurse/core/include/widgetmenu'
       fld.extend(WidgetMenu)
-      fld.init_menu if fld.respond_to?(:init_menu) && @_menuitems.nil?
+      # extending W will execut init_menu auto
+      #fld.init_menu if fld.respond_to?(:init_menu) 
       fld._show_menu
     }
     @keys_mapped = true
