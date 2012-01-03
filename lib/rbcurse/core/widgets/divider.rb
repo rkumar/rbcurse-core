@@ -129,7 +129,7 @@ module RubyCurses
 
       # first print a right side vertical line
       #bc = $bottomcolor  # dark blue
-      bc = $datacolor
+      bc = get_color($datacolor, :cyan, :black)
       bordercolor = @border_color || bc
       borderatt = @border_attrib || Ncurses::A_REVERSE
       if @focussed 
