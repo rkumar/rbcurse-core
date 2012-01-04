@@ -11,6 +11,7 @@
 # Maintains actions for a widget
 module RubyCurses
   class ActionManager
+    include Io
     attr_reader :actions
 
     def initialize #form, config={}, &block
