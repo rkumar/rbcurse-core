@@ -78,9 +78,15 @@ module RubyCurses
     # prompts user for unix command and displays output in viewer
     # 
     def shell_output
-      cmd = get_string("Enter shell command:", :maxlen => 50)
+      $shell_history ||= []
+      cmd = get_string("Enter shell command:", :maxlen => 50) do |f|
+        require 'rbcurse/core/include/rhistory'
+        f.extend(FieldHistory)
+        f.history($shell_history)
+      end
       if cmd && !cmd.empty?
         run_command cmd
+        $shell_history.push(cmd) unless $shell_history.include? cmd
       end
     end
 
