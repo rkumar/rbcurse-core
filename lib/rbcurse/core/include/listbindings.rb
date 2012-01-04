@@ -17,7 +17,8 @@ module RubyCurses
     $log.debug "XXX:  INSIDE LISTBINDING FOR #{self.class} "
       bind_key(Ncurses::KEY_LEFT, 'cursor backward'){ cursor_backward } if respond_to? :cursor_backward
       bind_key(Ncurses::KEY_RIGHT, 'cursor_forward'){ cursor_forward } if respond_to? :cursor_forward
-      bind_key(Ncurses::KEY_UP, 'previous row'){ ret = up;  get_window.ungetch(KEY_BTAB) if ret == :NO_PREVIOUS_ROW }
+      # very irritating when user pressed up arrow, commented off 2012-01-4  can be made optional
+      bind_key(Ncurses::KEY_UP, 'previous row'){ ret = up;  } #get_window.ungetch(KEY_BTAB) if ret == :NO_PREVIOUS_ROW }
       # the next was irritating if user wanted to add a row ! 2011-10-10 
       #bind_key(Ncurses::KEY_DOWN){ ret = down ; get_window.ungetch(KEY_TAB) if ret == :NO_NEXT_ROW }
       bind_key(Ncurses::KEY_DOWN, 'next row'){ ret = down ; }
