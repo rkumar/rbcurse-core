@@ -1132,21 +1132,13 @@ module RubyCurses
          bind :CHANGED, *args, &block
        end
      end
+     # return an object of actionmanager class, creating if required
+     # Widgets and apps may add_action and show_menu using the same
      def action_manager
        require 'rbcurse/core/include/actionmanager'
        @action_manager ||= ActionManager.new
      end
      #
-     # add an action to this widget
-     # This will mostly be customization actions, and will be added to by the application
-     # for popping up using : / M-: or even used by menubar etc
-     # Added 2012-01-3 @since 1.5.x
-     # @param [Action]
-     def XXXadd_action act
-       @_menuitems ||= []
-       @_menuitems << act
-     end
-     ##
     ## ADD HERE WIDGET
   end
 
