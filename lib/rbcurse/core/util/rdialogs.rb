@@ -86,8 +86,8 @@ def get_string label, config={} # yield Field
   defwid = config[:default].nil? ? 30 : config[:default].size + 13
   w = [label.size + 8, defwid, field_config[:width]+13 ].max
   config[:width] ||= w
-  $log.debug "XXX:  FIELD SIZE #{w} "
-  $log.debug "XXX:  FIELD CONFIG #{field_config} "
+  #$log.debug "XXX:  FIELD SIZE #{w} "
+  #$log.debug "XXX:  FIELD CONFIG #{field_config} "
   tp = MessageBox.new config do
     button_type :ok_cancel
     default_button 0
