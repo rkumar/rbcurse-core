@@ -671,6 +671,7 @@ module RubyCurses
   
  
   class Widget
+    require 'rbcurse/core/include/action'          # added 2012-01-3 for add_action
     include EventHandler
     include ConfigSetup
     include RubyCurses::Utils
@@ -1130,6 +1131,20 @@ module RubyCurses
        else
          bind :CHANGED, *args, &block
        end
+     end
+     def action_manager
+       require 'rbcurse/core/include/actionmanager'
+       @action_manager ||= ActionManager.new
+     end
+     #
+     # add an action to this widget
+     # This will mostly be customization actions, and will be added to by the application
+     # for popping up using : / M-: or even used by menubar etc
+     # Added 2012-01-3 @since 1.5.x
+     # @param [Action]
+     def XXXadd_action act
+       @_menuitems ||= []
+       @_menuitems << act
      end
      ##
     ## ADD HERE WIDGET
@@ -1695,11 +1710,9 @@ module RubyCurses
     bind_key(FFI::NCurses::KEY_F9, "Print keys", :print_key_bindings) # show bindings, tentative on F9
     bind_key(?\M-:, 'show menu') {
       fld = get_current_field
-      require 'rbcurse/core/include/widgetmenu'
-      fld.extend(WidgetMenu)
-      # extending W will execut init_menu auto
-      #fld.init_menu if fld.respond_to?(:init_menu) 
-      fld._show_menu
+      am = fld.action_manager()
+      #fld.init_menu
+      am.show_actions
     }
     @keys_mapped = true
   end
