@@ -63,7 +63,9 @@ module RubyCurses
       raise ArgumentError, "show_history got nil list" unless list
       # calculate r and c
       # col if fine, except for when there's a label.
-      c = @_history_config[:col] || @field_col || @col # this is also dependent on window coords, as in a status_window or messagebox
+      wcol = 0 # taking care of when dialog uses history 2012-01-4 
+      wcol = self.form.window.left if self.form
+      c = wcol + ( @field_col || @col) # this is also dependent on window coords, as in a status_window or messagebox
       sz = @history.size
       wrow = 0
       wrow = self.form.window.top if self.form
@@ -80,6 +82,7 @@ module RubyCurses
         #r = @row + 1
       #end
       r = @_history_config[:row] || r
+      c = @_history_config[:col] || c
       ret = popuplist(list, :row => r, :col => c, :title  => " History ")
       if ret
         self.text = list[ret] 
