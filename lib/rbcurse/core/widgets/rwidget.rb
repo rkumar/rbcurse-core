@@ -408,6 +408,9 @@ module RubyCurses
         labels << (f.key_label || {}) #if f.key_label
         labels << @key_label
         arr = []
+        if get_current_field.help_text 
+          arr << get_current_field.help_text 
+        end
         labels.each_with_index { |h, i|  
           case i
           when 0
@@ -1693,11 +1696,11 @@ module RubyCurses
   def map_keys
     return if @keys_mapped
     bind_keys([?\M-?,?\?], 'show field help') { 
-      if get_current_field.help_text 
-        textdialog(get_current_field.help_text, 'title' => 'Help Text', :bgcolor => 'green', :color => :white) 
-      else
+      #if get_current_field.help_text 
+        #textdialog(get_current_field.help_text, 'title' => 'Help Text', :bgcolor => 'green', :color => :white) 
+      #else
         print_key_bindings
-      end
+      #end
     }
     bind_key(FFI::NCurses::KEY_F9, "Print keys", :print_key_bindings) # show bindings, tentative on F9
     bind_key(?\M-:, 'show menu') {
