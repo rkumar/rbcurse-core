@@ -1,5 +1,21 @@
+# ----------------------------------------------------------------------------- #
+#         File: action.rb
+#  Description: A common action class which can be used with buttons, popupmenu
+#               and anythign else that takes an action or command
+#       Author: rkumar http://github.com/rkumar/rbcurse/
+#         Date: been around since the beginning
+#      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
+#  Last update: use ,,L
+#  NOTE: I don't like the dependence on rwidget and EventHandler. Seems it needs
+#   that only for fire_handler and not sure if that's used. I've not bound :FIRE
+#   ever.
+#
+#   Darn, do i really need to have dsl_accessors and property This is not a 
+#   widget and there's no repaint. Do button's and popups really repaint
+#   themselves when a dsl_property is modified ?
+# ----------------------------------------------------------------------------- #
+#
 require 'rbcurse/core/widgets/rwidget'
-#include Ncurses # FFI 2011-09-8 
 include RubyCurses
 module RubyCurses
   ## encapsulates behaviour allowing centralization
@@ -12,8 +28,8 @@ module RubyCurses
   #      ...
   #    end
   class Action < Proc
-    include EventHandler
-    include ConfigSetup
+    include EventHandler # removed 2012-01-3 maybe you can bind FIRE
+    #include ConfigSetup # removed 2012-01-3 
     # name used on button or menu
     dsl_property :name
     dsl_property :enabled
@@ -27,12 +43,19 @@ module RubyCurses
       @name = name
       @name.freeze
       @enabled = true
-      config_setup config # @config.each_pair { |k,v| variable_set(k,v) }
+      # removing dependency from config
+      #config_setup config # @config.each_pair { |k,v| variable_set(k,v) }
+      @config = config
+      keys = @config.keys
+      keys.each do |e| 
+        variable_set(e, @config[e])
+      end
       @_events = [:FIRE]
     end
     def call
       return unless @enabled
-      fire_handler :FIRE, self
+      # seems to be here, if you've bound :FIRE no this, not on any widget
+      fire_handler :FIRE, self  
       super
     end
     # the next 3 are to adapt this to CMenuitems
