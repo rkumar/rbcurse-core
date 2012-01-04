@@ -22,8 +22,16 @@ module RubyCurses
     #        Action
     #        Action[] (maybe)
     def self.extended(obj)
+      # don't want this executed each time
+      @objects ||= []
+      return if @objects.include? obj
+      @objects << obj
+
       obj.instance_exec {
         @_menuitems ||= []
+        # callign this method means that no other programs can use those actions else
+        # that method will be called more than once, so it must either be called in the constructor
+        # or else have a check that it is only called once.
         obj.init_menu if obj.respond_to? :init_menu
       }
 
