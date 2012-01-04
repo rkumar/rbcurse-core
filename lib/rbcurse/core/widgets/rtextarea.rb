@@ -74,6 +74,7 @@ module RubyCurses
       install_keys
       init_vars
       bordertitle_init
+      init_actions
     end
     def init_vars
       @repaint_required = true
@@ -946,12 +947,11 @@ module RubyCurses
       rb_puts "#{name} written."
     end
     
-    def init_menu
+    def init_actions
       editor = ENV['EDITOR'] || 'vi'
-      require 'rbcurse/core/include/action'
-      @_menuitems ||= []
-      @_menuitems <<  Action.new("&Edit in #{editor} ") { edit_external }
-      @_menuitems << Action.new("&Saveas") { saveas() }
+      am = action_manager()
+      am.add_action(Action.new("&Edit in #{editor} ") { edit_external })
+      am.add_action(Action.new("&Saveas") { saveas() } )
     end
   end # class textarea
   ##
