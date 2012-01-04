@@ -114,7 +114,7 @@ module RubyCurses
       if @list && !@selected_index.nil?  # XXX
         set_focus_on @selected_index # the new version
       end
-      init_menu
+      init_actions
     end
     # this is called several times, from constructor
     # and when list data changed, so only put relevant resets here.
