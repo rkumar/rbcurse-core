@@ -674,11 +674,10 @@ module RubyCurses
  
     # Define actions that can be popped up by PromptMenu or other menubar
     # Currently, only PromptMenu, but we can start contextually appending to Menubar or others
-    def init_menu
-      require 'rbcurse/core/include/action'
-      @_menuitems ||= []
-      @_menuitems <<  Action.new("&Disable selection") { @selection_mode = :none; unbind_key(32); bind_key(32, :scroll_forward); }
-      @_menuitems << Action.new("&Edit Toggle") { @edit_toggle = !@edit_toggle; $status_message.value = "Edit toggle is #{@edit_toggle}" }
+    def init_actions
+      am = action_manager()
+      am.add_action(Action.new("&Disable selection") { @selection_mode = :none; unbind_key(32); bind_key(32, :scroll_forward); } )
+      am.add_action(Action.new("&Edit Toggle") { @edit_toggle = !@edit_toggle; $status_message.value = "Edit toggle is #{@edit_toggle}" })
     end
 
 
