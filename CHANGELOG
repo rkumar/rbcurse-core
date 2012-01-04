@@ -1,3 +1,11 @@
+**2012-01-04**
+## 0.0.3 rbcurse-core
+   * ActionManager added to widgets so actions can be 
+used from multiple places
+   * changes in ncurses setting cbreak and halfdelay etc 
+	 since C-c was crashing program out
+	 * Added history to field
+
 **2011-12-13**
 ## 0.0.2 rbcurse-core
 Mostly refactoring of multi-row components
