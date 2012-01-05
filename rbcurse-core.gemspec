@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "rbcurse-core"
-  s.version = "0.0.2"
+  s.version = "0.0.3"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rahul Kumar"]
-  s.date = "2011-12-13"
+  s.date = "2012-01-05"
   s.description = "Ruby curses/ncurses widgets for easy application development on text terminals (ruby 1.9, 1.8)"
   s.email = "sentinel1879@gmail.com"
   s.extra_rdoc_files = [
@@ -54,6 +54,7 @@ Gem::Specification.new do |s|
     "lib/rbcurse.rb",
     "lib/rbcurse/core/docs/index.txt",
     "lib/rbcurse/core/include/action.rb",
+    "lib/rbcurse/core/include/actionmanager.rb",
     "lib/rbcurse/core/include/appmethods.rb",
     "lib/rbcurse/core/include/bordertitle.rb",
     "lib/rbcurse/core/include/chunk.rb",
@@ -70,6 +71,7 @@ Gem::Specification.new do |s|
     "lib/rbcurse/core/include/rhistory.rb",
     "lib/rbcurse/core/include/rinputdataevent.rb",
     "lib/rbcurse/core/include/vieditable.rb",
+    "lib/rbcurse/core/include/widgetmenu.rb",
     "lib/rbcurse/core/system/colormap.rb",
     "lib/rbcurse/core/system/keyboard.rb",
     "lib/rbcurse/core/system/keydefs.rb",
