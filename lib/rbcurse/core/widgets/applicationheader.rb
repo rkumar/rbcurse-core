@@ -28,6 +28,7 @@ module RubyCurses
 
     def initialize form, text1, config={}, &block
 
+      @name = "header"
       @text1 = text1
       # setting default first or else Widget will place its BW default
       @color, @bgcolor = ColorMap.get_colors_for_pair $bottomcolor
@@ -82,18 +83,17 @@ module RubyCurses
     end
     def print_center(htext, r = 0, c = 0)
       win = @window
-      len = win.width
-      len = Ncurses.COLS-0 if len == 0
+      len = win.getmaxx
+      len = Ncurses.COLS-0 if len == 0 || len > Ncurses.COLS
       #
       #@form.window.printstring r, c, "%-*s" % [len, htext], @color_pair, @attr
       win.printstring r, ((len-htext.length)/2).floor, htext, @color_pair, @attr
     end
     def print_top_right(htext)
-    $log.debug " def print_top_right(#{htext})"
       hlen = htext.length
-      len = Ncurses.COLS-0
-      len = @window.width
-      len = Ncurses.COLS-0 if len == 0
+      len = @window.getmaxx # width was not changing when resize happens
+      len = Ncurses.COLS-0 if len == 0 || len > Ncurses.COLS
+      $log.debug " def print_top_right(#{htext}) #{len} #{Ncurses.COLS} "
       @form.window.printstring 0, len-hlen, htext, @color_pair, @attr
     end
     ##
