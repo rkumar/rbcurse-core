@@ -16,6 +16,7 @@ module RubyCurses
       end
        # in root windows FIXME
       @col = 0
+      @name = "sl"
       super
       @focusable = false
       @editable  = false
@@ -47,8 +48,8 @@ module RubyCurses
     #   rather whenever form.repaint is called.
     def repaint
       @color_pair ||= get_color($datacolor, @color, @bgcolor) 
-      len = @form.window.width
-      len = Ncurses.COLS if len == 0
+      len = @form.window.getmaxx # width does not change upon resizing so useless, fix or do something
+      len = Ncurses.COLS if len == 0 || len > Ncurses.COLS
 
       # first print dashes through
       @form.window.printstring @row, @col, "%s" % "-" * len, @color_pair, Ncurses::A_REVERSE
@@ -80,6 +81,7 @@ module RubyCurses
       else
         t = Time.now
         tt = t.strftime "%F %H:%M:%S"
+        r = Ncurses.LINES
         ftext = "#[fg=green,bg=blue] %-20s" % [tt] # print a default
         @form.window.printstring_formatted_right @row, nil, ftext, $datacolor, Ncurses::A_REVERSE
       end
