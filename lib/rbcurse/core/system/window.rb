@@ -248,7 +248,7 @@ module VER
     #  is 0
     def print_empty_line
       return unless visible?
-      w = width == 0? Ncurses.COLS : width
+      w = getmaxx == 0? Ncurses.COLS : getmaxx
       printw(' ' * w)
     end
 
