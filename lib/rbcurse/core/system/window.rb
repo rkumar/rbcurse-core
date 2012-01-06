@@ -83,7 +83,8 @@ module VER
       #  2011-12-20 half-delay crashes system as does cbreak
       #This causes us to be unable to process gg qq since getch won't wait.
       #Ncurses::nodelay(@window, bf = true)
-      Ncurses::wtimeout(@window, $ncurses_timeout || 500) # will wait a second on wgetch so we can get gg and qq
+      # wtimeout was causing RESIZE sigwinch to only happen after pressing a key
+      #Ncurses::wtimeout(@window, $ncurses_timeout || 500) # will wait a second on wgetch so we can get gg and qq
       @stack = []
       @name ||="#{self}"
       @modified = true
@@ -260,6 +261,7 @@ module VER
 
     # returns the actual width in case you've used a root window
     # which returns a 0 for wid and ht
+    # NOTE: this does not work when resize , use getmaxx instead
     #
     def actual_width
       width == 0? Ncurses.COLS : width
@@ -662,7 +664,8 @@ module VER
     #
     def printstring_formatted_right(r,c,content, color, att = Ncurses::A_NORMAL)
       clean = content.gsub /#\[[^\]]*\]/,''  # clean out all markup
-      c = actual_width() - clean.length
+      #c = actual_width() - clean.length # actual width not working if resize
+      c = getmaxx() - clean.length
       printstring_formatted(r,c,content, color, att )
     end
 
