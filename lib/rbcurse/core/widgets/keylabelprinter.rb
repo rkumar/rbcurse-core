@@ -23,9 +23,11 @@ module RubyCurses
     dsl_accessor :footer_color_pair
     # set the color of the mnemonic, overriding the defaults
     dsl_accessor :footer_mnemonic_color_pair
+    #attr_accessor :row_relative # lets only advertise this when we've tested it out
 
     def initialize form, key_labels, config={}, &block
 
+      @name = "dock"
       case key_labels
       when Hash
         raise "KeyLabelPrinter: KeyLabels cannot be a hash, Array of key labels required. Perhaps you did not pass labels"
@@ -40,9 +42,17 @@ module RubyCurses
       @key_hash[@mode] = key_labels
       @editable = false
       @focusable = false
-      @cols ||= Ncurses.COLS-1
-      @row ||= Ncurses.LINES-2
+      unless @row
+        @row_relative = -2
+        @row = Ncurses.LINES + @row_relative
+      end
       @col ||= 0
+      # if negativ row passed we store as relative to bottom, so we can maintain that.
+      if @row < 0
+        @row_relative = @row
+        @row = Ncurses.LINES - @row
+      end
+      @cols ||= Ncurses.COLS-1
       @repaint_required = true
       @footer_color_pair ||= $bottomcolor
       @footer_mnemonic_color_pair ||= $reversecolor #2
@@ -71,6 +81,10 @@ module RubyCurses
     def repaint
       return unless @repaint_required
       r,c = rowcol
+      # this should only happen if there's a change in window
+      if @row_relative
+        @row = Ncurses.LINES+@row_relative
+      end
       arr = key_labels()
       print_key_labels(arr, mode=@mode)
       @repaint_required = false
@@ -85,7 +99,7 @@ module RubyCurses
     def print_key_labels(arr = key_labels(), mode=@mode)
       #return if !@show_key_labels # XXX
       @win ||= @form.window
-      $log.debug "XXX: PKL #{arr.length}, #{arr}"
+      #$log.debug "XXX: PKL #{arr.length}, #{arr}"
       @padding = @cols / (arr.length/2)
       posx = 0
       even = []
