@@ -593,8 +593,8 @@ module RubyCurses
       # Need to inform listeners - done 2010-02-25 23:09 
       # Can throw a FieldValidationException or PropertyVetoException
     def fire_property_change text, oldvalue, newvalue
-      #$log.debug " FPC #{self}: #{text} #{oldvalue}, #{newvalue}"
       return if oldvalue.nil? || @_object_created.nil? # added 2010-09-16 so if called by methods it is still effective
+      $log.debug " FPC #{self}: #{text} #{oldvalue}, #{newvalue}"
       if @pce.nil?
         @pce = PropertyChangeEvent.new(self, text, oldvalue, newvalue)
       else
@@ -1208,7 +1208,7 @@ module RubyCurses
       @modified = false
       @focusable = true
       @navigation_policy ||= :CYCLICAL
-      @_events = [:ENTER, :LEAVE]
+      @_events = [:ENTER, :LEAVE, :RESIZE]
       instance_eval &block if block_given?
       ## I need some counter so a widget knows it has been panned and can send a correct
       ##+ cursor coordinate to system.
@@ -1746,10 +1746,13 @@ module RubyCurses
           cols = Ncurses.COLS
           x = Ncurses.stdscr.getmaxy
           y = Ncurses.stdscr.getmaxx
-          $log.debug " form RESIZE HK #{ch} #{self}, #{@name}, #{ch}  "
-          alert "SIGWINCH WE NEED TO RECALC AND REPAINT resize #{lines}, #{cols}: #{x}, #{y} "
+          $log.debug " form RESIZE HK #{ch} #{self}, #{@name}, #{ch}, x #{x} y #{y}  "
+          #alert "SIGWINCH WE NEED TO RECALC AND REPAINT resize #{lines}, #{cols}: #{x}, #{y} "
           Ncurses.endwin
           @window.wrefresh
+          ## added RESIZE on 2012-01-5 
+          ## stuff that relies on last line such as statusline dock etc will need to be redrawn.
+          fire_handler :RESIZE, self 
         else
           field =  get_current_field
           if $log.debug?
