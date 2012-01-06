@@ -7,8 +7,10 @@ module RubyCurses
   #  at the bottom, typically above the dock (3rd line from last).
   #
   class StatusLine < Widget
+    #attr_accessor :row_relative # lets only advertise this when we've tested it out
 
     def initialize form, config={}, &block
+      @row_relative = -3
       if form.window.height == 0
         @row = Ncurses.LINES-3 # fix, what about smaller windows, use window dimensions and watch out for 0,0
       else
@@ -18,6 +20,11 @@ module RubyCurses
       @col = 0
       @name = "sl"
       super
+      # if negativ row passed we store as relative to bottom, so we can maintain that.
+      if @row < 0
+        @row_relative = @row
+        @row = Ncurses.LINES - @row
+      end
       @focusable = false
       @editable  = false
       @command = nil
@@ -50,6 +57,10 @@ module RubyCurses
       @color_pair ||= get_color($datacolor, @color, @bgcolor) 
       len = @form.window.getmaxx # width does not change upon resizing so useless, fix or do something
       len = Ncurses.COLS if len == 0 || len > Ncurses.COLS
+      # this should only happen if there's a change in window
+      if @row_relative
+        @row = Ncurses.LINES+@row_relative
+      end
 
       # first print dashes through
       @form.window.printstring @row, @col, "%s" % "-" * len, @color_pair, Ncurses::A_REVERSE
