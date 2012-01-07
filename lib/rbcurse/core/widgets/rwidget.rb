@@ -1232,6 +1232,8 @@ module RubyCurses
 
       # what kind of key-bindings do you want, :vim or :emacs
       $key_map ||= :vim ## :emacs or :vim, keys to be defined accordingly. TODO
+
+      bind_key(KEY_F1, 'help') { hm = help_manager(); hm.display_help }
     end
     ##
     # set this menubar as the form's menu bar.
@@ -1860,9 +1862,79 @@ module RubyCurses
     col = w.col
     return row, col
   end
+  #
+  # returns in instance of help_manager with which one may install help_text and call help.
+  # user apps will only supply help_text, form would already have mapped F1 to help.
+  def help_manager
+    @help_manager ||= HelpManager.new self
+  end
 
     ## ADD HERE FORM
   end
+
+
+  class HelpManager
+    def initialize form, config={}, &block
+      @form = form
+       #super
+       #instance_eval &block if block_given?
+    end
+    def help_text text=nil
+      if text
+        @help_text = text
+      end
+      return @help_text
+    end
+    def help_text=(text); help_text(text); end
+    def display_help
+      filename = File.dirname(__FILE__) + "/../docs/index.txt"
+      # defarr contains default help
+      if File.exists?(filename)
+        defarr = File.open(filename,'r').readlines
+      else
+        arr = []
+        arr << "    NO HELP SPECIFIED FOR APP "
+        arr << "    "
+        arr << "     --- General help ---          "
+        arr << "    F10         -  exit application "
+        arr << "    Alt-x       -  select commands  "
+        arr << "    : (or M-:)  -  select commands  "
+        arr << "    ? (or M-?)  -  current widget key bindings  "
+        arr << "    "
+        defarr = arr
+      end
+      defhelp = true
+      if @help_text
+        defhelp = false
+        arr = @help_text
+      else
+        arr = defarr
+      end
+      case arr
+      when String
+        arr = arr.split("\n")
+      when Array
+      end
+      #w = arr.max_by(&:length).length
+      h = FFI::NCurses.LINES - 4
+      w = FFI::NCurses.COLS - 10
+
+      require 'rbcurse/core/util/viewer'
+      RubyCurses::Viewer.view(arr, :layout => [2, 4, h, w],:close_key => KEY_F10, :title => "[ Help ]", :print_footer => true) do |t|
+        # you may configure textview further here.
+        #t.suppress_borders true
+        #t.color = :black
+        #t.bgcolor = :white
+        # or
+        #t.attr = :reverse
+
+        # help was provided, so default help is provided in second buffer
+        unless defhelp
+          t.add_content defarr, :title => ' General Help '
+        end
+      end
+    end
+  end # class
   ## Created and sent to all listeners whenever a property is changed
   # @see fire_property_change
   # @see fire_handler 
