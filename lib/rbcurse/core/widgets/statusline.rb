@@ -24,6 +24,8 @@ module RubyCurses
       if @row < 0
         @row_relative = @row
         @row = Ncurses.LINES - @row
+      else
+        @row_relative = (Ncurses.LINES - @row) * -1
       end
       @focusable = false
       @editable  = false
