@@ -1008,7 +1008,7 @@ module RubyCurses
               end
             end
           }
-          @form.bind_key(KEY_F1, 'help'){ display_app_help }
+          #@form.bind_key(KEY_F1, 'help'){ display_app_help } # NOT REQUIRED NOW 2012-01-7 since form does it
           @form.bind_key([?q,?q], 'quit' ){ throw :close } if $log.debug?
 
           #@message = Variable.new
