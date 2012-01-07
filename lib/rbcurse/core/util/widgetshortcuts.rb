@@ -264,18 +264,19 @@ module RubyCurses
       return w
     end
     alias :table :tabular_widget
+    # NOTE UNTESTED
     def vimsplit config={}, &block
       require 'rbcurse/extras/widgets/rvimsplit'
       #TODO check these
       events = [:PROPERTY_CHANGE, :LEAVE, :ENTER ]
       block_event = nil
       config[:height] ||= 10
-      _position(w)
       # if no width given, expand to flows width
       #config.delete :title
       useform = nil
 
       w = VimSplit.new useform, config # NO BLOCK GIVEN
+      _position(w)
       if block_given?
         #@current_object << w
         #instance_eval &block if block_given?
