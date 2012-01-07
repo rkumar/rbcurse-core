@@ -1,3 +1,9 @@
+**2012-01-  **
+## 0.0.4 rbcurse-core
+   * added RESIZE event to form, so resizing app components is possible
+	 when window/terminal is resized
+	 * changes to ncurses setting as a result of above (wtimeout commented off)
+
 **2012-01-04**
 ## 0.0.3 rbcurse-core
    * ActionManager added to widgets so actions can be 
