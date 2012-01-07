@@ -445,8 +445,15 @@ def longest_in_list list  #:nodoc:
   end    
   longest
 end    
+# would like to deprecate this and use 
+# @form.help_manager.help_text = text
 def install_help_text text
   @_help_text = text
+  if @form
+    $log.debug "XXX:  HELPTEXT going into form"
+    hm = @form.help_manager
+    hm.help_text = text
+  end
 end
 # this routine prints help_text for an application
 # If help_text has been set using install_help_text
@@ -455,7 +462,24 @@ end
 # user may use <next> to see general help.
 #
 # earlier in app.rb
-def display_app_help
+def display_app_help form=@form
+  if form
+    hm = form.help_manager
+    if !hm.help_text 
+      arr = nil
+      if respond_to? :help_text
+        arr = help_text
+      elsif @_help_text
+        arr = @_help_text
+      end
+      hm.help_text(arr) if arr
+    end
+    form.help_manager.display_help
+  else
+    raise "Form needed by display_app_help. Use form.help_manager instead"
+  end
+end
+def ORIGdisplay_app_help
   filename = File.dirname(__FILE__) + "/../docs/index.txt"
   # defarr contains default help
   if File.exists?(filename)
@@ -467,7 +491,8 @@ def display_app_help
     arr << "     --- General help ---          "
     arr << "    F10         -  exit application "
     arr << "    Alt-x       -  select commands  "
-    arr << "    :           -  select commands  "
+    arr << "    : (or M-:)  -  select commands  "
+    arr << "    ? (or M-?)  -  current widget key bindings  "
     arr << "    "
     defarr = arr
   end
