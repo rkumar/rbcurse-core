@@ -70,4 +70,4 @@ the core a bit more. The code lies on github.
 
   Same as ruby license.
 
-  (c) copyright rkumar, 2008-2011.
+  (c) copyright rkumar, 2008-2012.
