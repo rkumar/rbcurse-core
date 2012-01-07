@@ -119,6 +119,20 @@ App.new do
     res ||= "Error in command [#{cmd}] [#{name}] "
     textdialog( res, :title => cmd ) if res
   end
+  # handle resizing, sadly I am not sure flow and stack can do a resize, i am sure the xperimental one can.
+  def resize
+    lb1 = @form.by_name["lb1"]
+    lb2 = @form.by_name["lb2"]
+    maxc = Ncurses.COLS
+    maxr = Ncurses.LINES
+    lb1.height = maxr-2
+    lb2.height = maxr-2
+    lb1.width = ((lb1.width_pc * maxc) / 100).floor
+    lb2.width = ((lb2.width_pc * maxc) / 100).floor
+    lb2.col   = lb1.col + lb1.width
+    lab = @form.by_name["lab"]
+    lab.row = maxr-1
+  end
 
   colors = Ncurses.COLORS
   back = :blue
@@ -141,8 +155,9 @@ App.new do
     end
   
  
-  label({:text => "F1 Help, F10 Quit. : for menu. Press F4 and F5 to test popup, space or enter to select", :row => Ncurses.LINES-1, :col => 0})
+  label({:text => "F1 Help, F10 Quit. : for menu. Press F4 and F5 to test popup, space or enter to select", :row => Ncurses.LINES-1, :col => 0, :name => 'lab'})
 
+  @form.bind(:RESIZE) { resize() }
   @form.bind_key(FFI::NCurses::KEY_F4) { row = lb.current_index+lb.row; col=lb.col+lb.current_value.length+1;  ret = popuplist(%w[ andy berlioz strauss tchaiko matz beethoven], :row => row, :col => col, :title => "Names", :bgcolor => :blue, :color => :white) ; alert "got #{ret} "}
 
   @form.bind_key(FFI::NCurses::KEY_F5) {  list = %x[ls].split("\n");ret = popuplist(list, :title => "Files"); alert "Got #{ret} #{list[ret]} " }
