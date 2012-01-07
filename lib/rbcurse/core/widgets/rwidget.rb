@@ -1750,6 +1750,7 @@ module RubyCurses
           #alert "SIGWINCH WE NEED TO RECALC AND REPAINT resize #{lines}, #{cols}: #{x}, #{y} "
           Ncurses.endwin
           @window.wrefresh
+          @widgets.each { |e| e.repaint_all(true) } # trying out
           ## added RESIZE on 2012-01-5 
           ## stuff that relies on last line such as statusline dock etc will need to be redrawn.
           fire_handler :RESIZE, self 
@@ -1828,6 +1829,7 @@ module RubyCurses
   # place given widget below given one, or last added one
   # Does not check for availability or overlap
   def place_below me, other=nil
+    $log.warn "WARN deprecated form place_below"
     w = widgets
     if other.nil?
       other = w[-1]
@@ -1847,6 +1849,7 @@ module RubyCurses
   # return location to place next widget (below)
   # Does not check for availability or overlap
   def next_position
+    $log.warn "WARN  deprecated form next_position"
     w = widgets.last
     if w.height.nil? || w.height == 0
       h = 1
