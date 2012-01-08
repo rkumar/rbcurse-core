@@ -1,6 +1,7 @@
 require 'rbcurse/core/util/app'
 
 App.new do 
+  # TODO: combine this with widget menu
   def app_menu
       menu = PromptMenu.new self do
         item :e, :edit
@@ -108,17 +109,29 @@ def _edit h, row, title
   }
   row
 end
+def resize
+  tab = @form.by_name["tab"]
+  cols = Ncurses.COLS
+  rows = Ncurses.LINES
+  tab.width_pc ||= (1.0*tab.width / $orig_cols)
+  tab.height_pc ||= (1.0*tab.height / $orig_rows)
+  tab.height = (tab.height_pc * rows).floor
+  tab.width = (tab.width_pc * cols).floor
+end
   header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Tabular Demo", :text_right =>"Fat-free !", 
       :color => :black, :bgcolor => :green #, :attr => :bold 
   message "Press F10 to exit, F1 for help, : for menu"
+  @form.help_manager.help_text = help_text()
+  $orig_cols = Ncurses.COLS
+  $orig_rows = Ncurses.LINES
 
   h = %w[ Id Title Priority Status]
   file = "data/table.txt"
   lines = File.open(file,'r').readlines 
   arr = []
   lines.each { |l| arr << l.split("|") }
-  flow :margin_top => 1, :height => FFI::NCurses.LINES-3 do
-    tw = tabular_widget :print_footer => true
+  flow :margin_top => 1, :height => FFI::NCurses.LINES-2 do
+    tw = tabular_widget :print_footer => true, :name => "tab"
     tw.columns = h
     tw.column_align 0, :right
     tw.set_content arr
@@ -129,4 +142,5 @@ end
   end # stack
   status_line :row => FFI::NCurses.LINES-1
   @form.bind_key(?:, 'menu') {  app_menu }
+  @form.bind(:RESIZE) {  resize }
 end # app
