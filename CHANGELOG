@@ -3,6 +3,7 @@
    * added RESIZE event to form, so resizing app components is possible
 	 when window/terminal is resized
 	 * changes to ncurses setting as a result of above (wtimeout commented off)
+	 * Moving help system to Form
 
 **2012-01-04**
 ## 0.0.3 rbcurse-core
