@@ -161,6 +161,7 @@ App.new do
         alert "Can't find a .db or .sqlite file"
       end
   end
+  @form.help_manager.help_text = help_text()
   # TODO accelerators and 
   # getting a handle for later use
   mb = menubar do
