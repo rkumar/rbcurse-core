@@ -461,7 +461,12 @@ module RubyCurses
           # if you set nodelay in ncurses.rb then this will not
           # wait for second key press, so you then must either make it blocking
           # here, or set a wtimeout here.
+          #
+          # This is since i have removed timeout globally since resize was happeing
+          # after a keypress. maybe we can revert to timeout and not worry about resize so much
+          Ncurses::wtimeout(window.get_window, $ncurses_timeout || 500) # will wait a second on wgetch so we can get gg and qq
           ch = window.getch
+          Ncurses::nowtimeout(window.get_window, true)
           #Ncurses::nodelay(window.get_window, bf = true)
 
           $log.debug " process_key: got #{keycode} , #{ch} "
