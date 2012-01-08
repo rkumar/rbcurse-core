@@ -450,7 +450,6 @@ end
 def install_help_text text
   @_help_text = text
   if @form
-    $log.debug "XXX:  HELPTEXT going into form"
     hm = @form.help_manager
     hm.help_text = text
   end
@@ -467,6 +466,7 @@ def display_app_help form=@form
     hm = form.help_manager
     if !hm.help_text 
       arr = nil
+      # these 2 only made sense from app.rb and should be removed, too implicit
       if respond_to? :help_text
         arr = help_text
       elsif @_help_text
@@ -498,7 +498,7 @@ def ORIGdisplay_app_help
   end
   defhelp = true
   if respond_to? :help_text
-    arr = help_text
+    arr = help_text()
     defhelp = false
   elsif @_help_text
     arr = @_help_text
