@@ -139,7 +139,8 @@ App.new do
   back = 234 if colors >= 256
   header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Basic List Demo", :text_right =>"New Improved!", :color => :white, :bgcolor => back #, :attr => :bold 
   message "Press F10 to escape from here"
-  install_help_text my_help_text
+  #install_help_text my_help_text
+  @form.help_manager.help_text = my_help_text
 
   alist = File.open("data/brew.txt",'r').readlines
   list2 = File.open("data/gemlist.txt",'r').readlines
