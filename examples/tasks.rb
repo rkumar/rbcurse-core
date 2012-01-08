@@ -23,15 +23,25 @@ class CellRenderer
   end
 end
 App.new do 
+def resize
+  tab = @form.by_name["tasklist"]
+  cols = Ncurses.COLS
+  rows = Ncurses.LINES
+  tab.width_pc ||= (1.0*tab.width / $orig_cols)
+  tab.height_pc ||= (1.0*tab.height / $orig_rows)
+  tab.height = (tab.height_pc * rows).floor
+  tab.width = (tab.width_pc * cols).floor
+  #$log.debug "XXX:  RESIZE h w #{tab.height} , #{tab.width} "
+end
   @default_prefix = " "
   header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "Task List", :text_right =>"New Improved!"
 
-  message "Press F10 or qq to escape from here"
+  message "Press F10 or qq to quit "
 
   file = "data/todo.txt"
   alist = File.open(file,'r').readlines if File.exists? file
   #flow :margin_top => 1, :item_width => 50 , :height => FFI::NCurses.LINES-2 do
-  stack :margin_top => 1, :width => :expand, :height => FFI::NCurses.LINES-4 do
+  #stack :margin_top => 1, :width => :expand, :height => FFI::NCurses.LINES-4 do
 
     #task = field :label => "    Task:", :display_length => 50, :maxlen => 80, :bgcolor => :cyan, :color => :black
     #pri = field :label => "Priority:", :display_length => 1, :maxlen => 1, :type => :integer, 
@@ -39,7 +49,7 @@ App.new do
     #pri.overwrite_mode = true
     # u,se voerwrite mode for this TODO and catch exception
 
-    lb = listbox :list => alist.sort, :title => "[ todos ]", :height_pc => 100, :name => "tasklist"
+    lb = listbox :list => alist.sort, :title => "[ todos ]", :name => "tasklist", :row => 1, :height => Ncurses.LINES-4, :width => Ncurses.COLS-1
     lb.should_show_focus = false
     lb.cell_renderer CellRenderer.new
     lb.bind_key(?d, "Delete Row"){ 
@@ -132,8 +142,9 @@ App.new do
         lb.list(lb.list.sort)
       end
     }
-  end # stack
+  #end # stack
   s = status_line
+  @form.bind(:RESIZE) {  resize }
 
     keyarray = [
       ["F1" , "Help"], ["F10" , "Exit"], 
