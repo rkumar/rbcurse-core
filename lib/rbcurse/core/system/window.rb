@@ -255,7 +255,7 @@ module VER
     # NOTE: many of these methods using width will not work since root windows width 
     #  is 0
     def print_line(string)
-      w = width == 0? Ncurses.COLS : width
+      w = getmaxx == 0? Ncurses.COLS : getmaxx
       print(string.ljust(w))
     end
 
@@ -336,6 +336,15 @@ module VER
     def getch
       #c = @window.getch
       c = FFI::NCurses.wgetch(@window)
+      # the only reason i am doing this is so ESC can be returned if no key is pressed
+      # after that, not sure how this effects everything. most likely I should just
+      # go back to using a wtimeout, and not worry about resize requiring a keystroke
+      if c == 27
+        Ncurses::wtimeout(@window, $ncurses_timeout || 500) # will wait a second on wgetch so we can get gg and qq
+      else
+        Ncurses::nowtimeout(@window, true)
+      end
+      c
       # 2011-12-20 - i am trying setting a timer on wgetch, see timeout
       #c = FFI::NCurses.getch # this will keep waiting, nodelay won't be used on it, since 
       # we've put nodelay on window
