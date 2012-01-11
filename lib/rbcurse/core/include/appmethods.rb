@@ -116,5 +116,99 @@ module RubyCurses
       return ret
     end
   end # utils
+  class PrefixCommand
+    attr_accessor :object
+    def initialize _symbol, calling, config={}, &block
+      @object = calling
+      @symbol = _symbol
+      @descriptions = {}
+      define_prefix_command _symbol
+      yield self if block_given?
+    end
+    def define_prefix_command _name, config={}
+      $rb_prefix_map ||= {}
+      #h = {}
+      #@map = h
+      _name = _name.to_sym unless _name.is_a? Symbol
+      # TODO it may already exist, so retrieve it
+      $rb_prefix_map[_name] ||= {}
+      @map = $rb_prefix_map[_name]
+      # create a variable by name _name
+      # create a method by same name to use
+      @object.instance_eval %{
+        def #{_name.to_s} *args
+           h = $rb_prefix_map["#{_name}".to_sym]
+           raise "No prefix_map named #{_name}, #{$rb_prefix_map.keys} " unless h
+           ch = @window.getchar
+           if ch
+              res =  h[ch]
+              if res.is_a? Proc
+                res.call
+              else
+                 send(res) if res
+              end
+           else
+              0
+           end
+        end
+      }
+      return _name
+    end
+    def call
+      h = @map
+      ch = @object.window.getch # dicey.
+        $log.debug "XXX:  CALLED #{ch} "
+      if ch
+        if ch == KEY_F1
+          text =  ["Options are: "]
+          h.keys.each { |e| c = keycode_tos(e); text << " #{c} #{@descriptions[e]} " }
+          textdialog text, :title => " #{@symbol} key bindings "
+          return
+        end
+        res =  h[ch]
+        if res.is_a? Proc
+          res.call
+        elsif res.is_a? Symbol
+          @object.send(res) if res
+        else
+          Ncurses.beep
+          @object.window.ungetch(ch)
+
+          :UNHANDLED
+        end
+      else
+        raise "got nothing"
+      end
+    end
+
+    # define a key within a prefix key map such as C-x
+    # Now that i am moving this from global, how will describe bindings get hold of the bindings
+    # and descriptions
+    def define_key _keycode, *args, &blk
+      _symbol = @symbol
+      h = $rb_prefix_map[_symbol]
+      raise ArgumentError, "No such keymap #{_symbol} defined. Use define_prefix_command." unless h
+      _keycode = _keycode[0].getbyte(0) if _keycode[0].class == String
+      arg = args.shift
+      if arg.is_a? String
+        desc = arg
+        arg = args.shift
+      elsif arg.is_a? Symbol
+        # its a symbol
+        desc = arg.to_s
+      elsif arg.nil?
+        desc = "unknown"
+      else
+        raise ArgumentError, "Don't know how to handle #{arg.class} in PrefixManager"
+      end
+      @descriptions[_keycode] = desc
+
+      if !block_given?
+        blk = arg
+      end
+      h[_keycode] = blk
+    end
+    alias :key :define_key
+  end
 end # module RubyC
 include RubyCurses::Utils
