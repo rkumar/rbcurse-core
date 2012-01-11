@@ -383,7 +383,8 @@ module RubyCurses
     # Actually, this is naive, you would want to pass some values in like current data value
     # or lines ??
     # Also may want command completion, or help so all commands can be displayed
-    def get_command_from_user choices=["quit","help"]
+    # NOTE: This is gonna change very soon - 2012-01-8 
+    def get_command_from_user choices=["quit","help", "suspend", "shell_output"]
       @_command_history ||= Array.new
       str = rb_gets("Cmd: ", choices) { |q| q.default = @_previous_command; q.history = @_command_history }
               @_command_history << str unless @_command_history.include? str
@@ -966,9 +967,14 @@ module RubyCurses
           # this is a very rudimentary default command executer, it does not 
           # allow tab completion. App should use M-x with names of commands
           # as in appgmail
+          # NOTE: This is gonna change very soon - 2012-01-8 
           @form.bind_key(?:, 'prompt') { 
             str = get_command_from_user
           }
+
+          # this M-x stuff has to be moved out so it can be used by all. One should be able
+          # to add_commands properly to this, and to C-x. I am thinking how to go about this,
+          # and what function M-x actually serves.
 
           @form.bind_key(?\M-x, 'M-x commands'){
             # TODO previous command to be default
