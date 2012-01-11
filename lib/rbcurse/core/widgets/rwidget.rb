@@ -375,11 +375,13 @@ module RubyCurses
         end
         case keycode
         when String
+          # single assignment
           keycode = keycode.getbyte(0) #if keycode.class==String ##    1.9 2009-10-05 19:40 
           #$log.debug " #{name} Widg String called bind_key BIND #{keycode}, #{keycode_tos(keycode)}  "
-          $log.debug " assigning #{keycode}  " if $log.debug? 
+          #$log.debug " assigning #{keycode}  " if $log.debug? 
           @key_handler[keycode] = blk
         when Array
+          # double assignment
           # for starters lets try with 2 keys only
           raise "A one key array will not work. Pass without array" if keycode.size == 1
           a0 = keycode[0]
@@ -387,7 +389,7 @@ module RubyCurses
           a1 = keycode[1]
           a1 = keycode[1].getbyte(0) if keycode[1].class == String
           @key_handler[a0] ||= OrderedHash.new
-          $log.debug " assigning #{keycode} , A0 #{a0} , A1 #{a1} " if $log.debug? 
+          #$log.debug " assigning #{keycode} , A0 #{a0} , A1 #{a1} " if $log.debug? 
           @key_handler[a0][a1] = blk
           #$log.debug " XX assigning #{keycode} to  key_handler " if $log.debug? 
         else
@@ -397,6 +399,85 @@ module RubyCurses
         @key_args ||= {}
         @key_args[keycode] = args
 
+      end
+
+      def define_prefix_command _name, config={} #_mapvar=nil, _prompt=nil
+        $rb_prefix_map ||= {}
+        _name = _name.to_sym unless _name.is_a? Symbol
+        $rb_prefix_map[_name] ||= {}
+        scope = config[:scope] || self
+        $rb_prefix_map[_name][:scope] = scope
+
+
+        # create a variable by name _name
+        # create a method by same name to use
+        # Don;t let this happen more than once
+      instance_eval %{
+        def #{_name.to_s} *args
+           #$log.debug "XXX:  came inside #{_name} "
+           h = $rb_prefix_map["#{_name}".to_sym]
+           raise "No prefix_map named #{_name}, #{$rb_prefix_map.keys} " unless h
+           ch = @window.getchar
+           if ch
+            if ch == KEY_F1
+              text =  ["Options are: "]
+              h.keys.each { |e| c = keycode_tos(e); text << c + " " + @descriptions[e]  }
+              textdialog text, :title => "#{_name} key bindings"
+              return
+            end
+              res =  h[ch]
+              if res.is_a? Proc
+                res.call
+              elsif res.is_a? Symbol
+                 scope = h[:scope]
+                 scope.send(res)
+              elsif res.nil?
+                Ncurses.beep
+                 return :UNHANDLED
+              end
+           else
+                 #@window.ungetch(ch)
+                 :UNHANDLED
+           end
+        end
+      }
+        return _name
+      end
+
+    def define_key _symbol, _keycode, *args, &blk
+      #_symbol = @symbol
+      h = $rb_prefix_map[_symbol]
+      raise ArgumentError, "No such keymap #{_symbol} defined. Use define_prefix_command." unless h
+      _keycode = _keycode[0].getbyte(0) if _keycode[0].class == String
+      arg = args.shift
+      if arg.is_a? String
+        desc = arg
+        arg = args.shift
+      elsif arg.is_a? Symbol
+        # its a symbol
+        desc = arg.to_s
+      elsif arg.nil?
+        desc = "unknown"
+      else
+        raise ArgumentError, "Don't know how to handle #{arg.class} in PrefixManager"
+      end
+      @descriptions ||= []
+      @descriptions[_keycode] = desc
+
+      if !block_given?
+        blk = arg
+      end
+      h[_keycode] = blk
+    end
+      # define a key within a prefix key map such as C-x
+      def OLDdefine_key _symbol, _keycode, _method=nil, &blk
+        h = $rb_prefix_map[_symbol]
+        raise ArgumentError, "No such keymap #{_symbol} defined. Use define_prefix_command." unless h
+        _keycode = _keycode[0].getbyte(0) if _keycode[0].class == String
+        if !block_given?
+          blk = _method
+        end
+        h[_keycode] = blk
       end
       # Display key bindings for current widget and form in dialog
       def print_key_bindings *args
@@ -455,8 +536,9 @@ module RubyCurses
       def _process_key keycode, object, window
         return :UNHANDLED if @key_handler.nil?
         blk = @key_handler[keycode]
+        $log.debug "XXX:  _process key keycode #{keycode} #{blk.class}, #{self.class} "
         return :UNHANDLED if blk.nil?
-        if blk.is_a? OrderedHash
+        if blk.is_a? OrderedHash 
           #Ncurses::nodelay(window.get_window, bf = false)
           # if you set nodelay in ncurses.rb then this will not
           # wait for second key press, so you then must either make it blocking
@@ -470,10 +552,11 @@ module RubyCurses
           #Ncurses::nodelay(window.get_window, bf = true)
 
           $log.debug " process_key: got #{keycode} , #{ch} "
-          if ch < 0 || ch > 255
+          # next line ignores function keys etc. C-x F1, thus commented 255 2012-01-11 
+          if ch < 0 #|| ch > 255
             return nil
           end
-          yn = ch.chr
+          #yn = ch.chr
           blk1 = blk[ch]
           # FIXME we are only returning the second key, what if form
           # has mapped first and second combo. We should unget keycode and ch. 2011-12-23 
@@ -485,8 +568,9 @@ module RubyCurses
         end
         #$log.debug "called process_key #{object}, kc: #{keycode}, args  #{@key_args[keycode]}"
         if blk.is_a? Symbol
-          $log.debug "SYMBOL " if $log.debug? 
+          #$log.debug "SYMBOL #{blk.to_s}  " if $log.debug? 
           if respond_to? blk
+          #$log.debug "SYMBOL calling #{blk.to_s}  " if $log.debug? 
             return send(blk, *@key_args[keycode])
           else
             alert "This ( #{self.class} ) does not respond to #{blk.to_s} "
