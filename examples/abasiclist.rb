@@ -142,6 +142,17 @@ App.new do
   #install_help_text my_help_text
   @form.help_manager.help_text = my_help_text
 
+  @form.define_prefix_command :csmap, :scope => self
+  #@form.define_key(:csmap, "r", 'refresh') { refresh }
+  @form.define_key(:csmap, "r", 'refresh', :refresh )
+  @form.define_key(:csmap, "s", 'specification') { specification }
+  @form.bind_key ?\C-s, :csmap
+  #pm = PrefixCommand.new :csmap, self do |p|
+    #p.key("r", 'refresh', :refresh )
+    #p.key("s", 'specification'){ specification }
+  #end
+  #@form.bind_key(?\C-x){ pm.call }
+
   alist = File.open("data/brew.txt",'r').readlines
   list2 = File.open("data/gemlist.txt",'r').readlines
   lb = nil
