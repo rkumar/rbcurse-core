@@ -383,7 +383,7 @@ module RubyCurses
         @ctr -= 1
     end
     # module level
-    private
+    #private
     # given an widget, return the item, so we can change weight or some other config
     def item_for widget
       each do |e|
