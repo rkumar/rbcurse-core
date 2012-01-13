@@ -322,7 +322,6 @@ module RubyCurses
     end
     # module level
     private
-    private
     def _add s
       if @active.empty?
         $log.debug "XXX:  ADDING TO components #{s} "
@@ -337,7 +336,6 @@ module RubyCurses
     end
 
     # module level
-    private
     public
     def stack config={}, &block
       _stack :stack, config, &block
@@ -384,6 +382,7 @@ module RubyCurses
     end
     # module level
     #private
+    public
     # given an widget, return the item, so we can change weight or some other config
     def item_for widget
       each do |e|
