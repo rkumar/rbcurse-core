@@ -8,24 +8,24 @@ require 'rbcurse/core/util/app'
     stack :margin_top => 10, :margin_left => 15 do
       #w = "Messages".length + 1
       w = 60
-      menulink :text => "&View Todo", :width => w, :description => "View TODO in sqlite"  do |s|
+      menulink :text => "&View Dirs", :width => w, :description => "View Dirs in tree"  do |s|
         message "Pressed #{s.text} "
         load './dirtree.rb'
         #require './viewtodo'; todo = ViewTodo::TodoApp.new; todo.run
       end
       blank
-      menulink :text => "&Edit Todo", :width => w, :description => "Edit TODO in CSV"  do |s|
+      menulink :text => "&Tabular", :width => w, :description => "Tabula Rasa"  do |s|
         message "Pressed #{s.text} "
         load './tabular.rb'
         #require './testtodo'; todo = TestTodo::TodoApp.new; todo.run
       end
       blank
-      menulink :text => "&Messages", :width => w, :description => "View messages in current folder"  do |s|
+      menulink :text => "&Messages", :width => w, :description => "View Tasks"  do |s|
         message "Pressed #{s.text} "
         load './tasks.rb'
       end
       blank
-      menulink :text => "&Compose", :width => w, :description => "Compose a mail"  do |s|
+      menulink :text => "&Database", :width => w, :description => "Database Demo"  do |s|
         message "Pressed #{s.getvalue} "
         load './dbdemo.rb'
       end
