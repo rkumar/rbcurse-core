@@ -1,5 +1,7 @@
 # rbcurse-core
 
+** Working on 1.9.3 **
+
 Contains core widgets and infrastructure of rbcurse ncurses toolkit. rbcurse helps to easily build
 ncurses application for text terminals.
 
@@ -37,6 +39,12 @@ Core intends to be :
 
    * simple, maintainable code
 
+## Testing Status
+
+   * Working on 1.9.3-p392  (environment is zsh 5.0.x, tmux, TERM=screen-256color, OSX ML)
+
+## Other 
+
 I shall be standardizing core over the next one or two minor versions. I shall also be simplifying code as much as possible to make it maintainable and more bug-free.
 
 Method names in some classes may change, and one or two widget names will change. rbasiclistbox will become listbox while the old listbox that has moved to extras will become something like editlistbox. Similarly the old table will become edittable in extras, whereas tabularwidget will becoming table in core.
@@ -58,6 +66,14 @@ the core a bit more. The code lies on github.
 
    `gem install rbcurse`             # the core, extra and experimental stuff
 
+## Examples
+
+   Some examples have dependencies.
+
+   * dbdemo requires sqlite3 gem (and sqlite).
+   * testlistbox require ri documentation 
+      `rvm docs generate-ri`
+
 ## See also
 
 * rbcurse - <http://github.com/rkumar/rbcurse/>
@@ -70,4 +86,4 @@ the core a bit more. The code lies on github.
 
   Same as ruby license.
 
-  (c) copyright rkumar, 2008-2012.
+  (c) copyright rkumar, 2008-2013.
