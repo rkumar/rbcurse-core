@@ -1,3 +1,10 @@
+# NOTE: If the listbox is empty, that could mean that you have not generated
+#  ri documentation for this version of ruby. You can do so by doing:
+#    rvm docs generate-ri 
+#    or 
+#    rvm docs generate
+#  (This assumes you are using rvm)
+#
 # WARNING : IF THIS PROGRAM HANGS check the ri command 
 # Maybe your version of ri has different options and is going interactive.
 # ruby 1.9.3's ri requires a -l option or else if becomes interactive.
