@@ -455,7 +455,9 @@ module ListScrollable
       return unless buff
       pos = @curpos || 0 # list does not have curpos
       $multiplier.times {
-        found = buff.index(/[[:punct:][:space:]]/, pos)
+        #found = buff.index(/[[:punct:][:space:]]+/, pos)
+        # 2013-03-04 - 17:35 modified so it skips spaces and puncts
+        found = buff.index(/[[:punct:][:space:]]\w/, pos)
         if !found
           # if not found, we've lost a counter
           if line+1 < @list.length
