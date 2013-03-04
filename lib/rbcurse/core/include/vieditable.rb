@@ -34,7 +34,7 @@ module ViEditable
     bind_key( [?y, ?y] , :kill_ring_save ) 
     bind_key( ?p, :yank ) # paste after this line
     bind_key( ?P ) { yank(@current_index - 1) } # should be before this line
-    bind_key(?\w, :forward_word)
+    bind_key(?w, :forward_word)
     bind_key(?f, :forward_char)
     bind_key(?\M-y, :yank_pop)
     bind_key(?\M-w, :kill_ring_save)
@@ -61,7 +61,7 @@ module ViEditable
     #bind_key( ?P ) { yank(@current_index - 1) } # should be before this line
     # seems -1 was pasting 2 lines before
     bind_key( ?P ) { yank(@current_index - 0) } # should be before this line
-    bind_key(?\w, :forward_word)
+    bind_key(?w, :forward_word)
     bind_key(?\M-y, :yank_pop)
     bind_key(?\C-y, :yank)
     bind_key(?\M-w, :kill_ring_save)
