@@ -4,7 +4,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: Around for a long time
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: use ,,L
+#  Last update: 2013-03-05 20:56
 #
 #  == CHANGED
 #     removed Pad and Subwin to lib/ver/rpad.rb - hopefully I've seen the last of both
@@ -600,7 +600,7 @@ module VER
     def destroy
       # typically the ensure block should have this
 
-      $log.debug "win destroy start"
+      #$log.debug "win destroy start"
 
       Ncurses::Panel.del_panel(@panel.pointer) if @panel
       delwin() if @window 
@@ -611,7 +611,7 @@ module VER
         FFI::NCurses.delwin(pad) if pad 
         pad = nil
       } if @pads
-      $log.debug "win destroy end"
+      #$log.debug "win destroy end"
     end
 
     # 
@@ -619,10 +619,12 @@ module VER
     # Widgets can get window to create a pad for them. This way when the window
     #  is destroyed, it will delete all the pads. A widget wold not be able to do this.
     # The destroy method of the widget will be called.
-    def get_pad content_row, content_cols
+    def get_pad content_rows, content_cols
       pad = FFI::NCurses.newpad(content_rows, content_cols)
       @pads ||= []
       @pads << pad
+      ## added 2013-03-05 - 19:21 without next line how was pad being returned
+      return pad
     end
 
     #
@@ -790,7 +792,7 @@ module VER
       raise "width needs to be supplied." if width.nil?
       att ||= Ncurses::A_NORMAL
 
-      $log.debug " inside window print_border r #{row} c #{col} h #{height} w #{width} "
+      #$log.debug " inside window print_border r #{row} c #{col} h #{height} w #{width} "
 
       # 2009-11-02 00:45 made att nil for blanking out
       # FIXME - in tabbedpanes this clears one previous line ??? XXX when using a textarea/view
