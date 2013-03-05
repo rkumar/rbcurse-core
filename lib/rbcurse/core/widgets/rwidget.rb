@@ -9,7 +9,7 @@
   * Author: rkumar (arunachalesha)
   * Date: 2008-11-19 12:49 
   * License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-  * Last update: 2011-11-08 - 16:55
+  * Last update: 2013-03-05 19:50
 
   == CHANGES
   * 2011-10-2 Added PropertyVetoException to rollback changes to property
@@ -566,14 +566,14 @@ module RubyCurses
           $log.debug " process_key: found block for #{keycode} , #{ch} "
           blk = blk1
         end
-        #$log.debug "called process_key #{object}, kc: #{keycode}, args  #{@key_args[keycode]}"
         if blk.is_a? Symbol
-          #$log.debug "SYMBOL #{blk.to_s}  " if $log.debug? 
           if respond_to? blk
-          #$log.debug "SYMBOL calling #{blk.to_s}  " if $log.debug? 
             return send(blk, *@key_args[keycode])
           else
+            ## 2013-03-05 - 19:50 why the hell is there an alert here, nowhere else
             alert "This ( #{self.class} ) does not respond to #{blk.to_s} "
+            # added 2013-03-05 - 19:50 so called can know
+            return :UNHANDLED 
           end
         else
           $log.debug "rwidget BLOCK called _process_key " if $log.debug? 
