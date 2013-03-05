@@ -548,13 +548,17 @@ module RubyCurses
         return
       end
       if !content.nil? 
-        if content.length > maxlen # only show maxlen
-          @longest_line = content.length if content.length > @longest_line
+        cl = content.length
+        if cl > maxlen # only show maxlen
+          @longest_line = cl if cl > @longest_line
           #content = content[@pcol..@pcol+maxlen-1] 
-          content.replace content[@pcol..@pcol+maxlen-1] 
+          ## taking care of when scrolling is needed but longest_line is misreported
+          # So we scroll always and need to check 2013-03-06 - 00:09 
+          content.replace(content[@pcol..@pcol+maxlen-1] || " ")
         else
-          # can this be avoided if pcol is 0 XXX
-          content.replace content[@pcol..-1] if @pcol > 0
+          ## taking care of when scrolling is needed but longest_line is misreported
+          # So we scroll always and need to check 2013-03-06 - 00:09 
+          content.replace(content[@pcol..-1]||" ") if @pcol > 0 
         end
       end
       content
