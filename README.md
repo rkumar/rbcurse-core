@@ -73,14 +73,15 @@ the core a bit more. The code lies on github.
    * dbdemo requires sqlite3 gem (and sqlite).
    * testlistbox require ri documentation 
       `rvm docs generate-ri`
+     I have improved this demo and released it as the gem 'ribhu' (ri browser).
 
 ## See also
-
-* rbcurse - <http://github.com/rkumar/rbcurse/>
 
 * rbcurse-extras - <http://github.com/rkumar/rbcurse-extras/>
 
 * rbcurse-experimental - <http://github.com/rkumar/rbcurse-experimental/>
+
+* rbcurse - <http://github.com/rkumar/rbcurse/>
 
 ## License
 
