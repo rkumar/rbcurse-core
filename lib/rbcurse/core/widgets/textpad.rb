@@ -7,7 +7,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 2011-11-09 - 16:59
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2011-11-10 - 12:39
+#  Last update: 2013-03-05 19:55
 #
 #  == CHANGES
 #  == TODO 
@@ -224,9 +224,10 @@ module RubyCurses
         @formatted_text = nil
       end
 
+      ## moved this line up or else create_p was crashing
+      @window ||= @graphic
       populate_pad if @_populate_needed
       #HERE we need to populate once so user can pass a renderer
-      @window ||= @graphic
       unless @suppress_border
         if @repaint_all
           @window.print_border_only @top, @left, @height-1, @width, $datacolor
@@ -252,7 +253,7 @@ module RubyCurses
       bind_keys([?j,KEY_DOWN]){ down } 
       bind_key(?\C-e){ scroll_window_down } 
       bind_key(?\C-y){ scroll_window_up } 
-      bind_keys([32,338]){ scroll_forward } 
+      bind_keys([32,338, ?\C-d]){ scroll_forward } 
       bind_keys([?\C-b,339]){ scroll_backward } 
       bind_key([?',?']){ goto_last_position } # vim , goto last row position (not column)
       #bind_key(?/, :ask_search)
@@ -363,10 +364,12 @@ module RubyCurses
       begin
         case ch
         when key(?l)
+          # TODO take multipler
           @pcol += 1
         when key(?$)
           @pcol = @maxcol - 1
         when key(?h)
+          # TODO take multipler
           if @pcol > 0
             @pcol -= 1
           end
@@ -389,8 +392,11 @@ module RubyCurses
           # check for bindings, these cannot override above keys since placed at end
           begin
             ret = process_key ch, self
+            ## If i press C-x > i get an alert from rwidgets which blacks the screen
+            # if i put a padrefresh here it becomes okay but only for one pad,
+            # i still need to do it for all pads.
           rescue => err
-            $log.error " TEXTPAD ERROR #{err} "
+            $log.error " TEXTPAD ERROR INS #{err} "
             $log.debug(err.backtrace.join("\n"))
             textdialog ["Error in TextPad: #{err} ", *err.backtrace], :title => "Exception"
             # FIXME why does this result in a blank spot on screen till its refreshed again
@@ -400,6 +406,7 @@ module RubyCurses
         end
         bounds_check
       rescue => err
+        $log.error " TEXTPAD ERROR 111 #{err} "
         $log.debug( err) if err
         $log.debug(err.backtrace.join("\n")) if err
         textdialog ["Error in TextPad: #{err} ", *err.backtrace], :title => "Exception"
@@ -505,8 +512,9 @@ if __FILE__ == $PROGRAM_NAME
   App.new do
     w = 50
     w2 = FFI::NCurses.COLS-w-1
+    ## create two side by side pads on for ansi and one for ruby
     p = RubyCurses::TextPad.new @form, :height => FFI::NCurses.LINES, :width => w, :row => 0, :col => 0 , :title => " ansi "
-    fn = "../../../examples/color.2"
+    fn = "../../../../examples/data/color.2"
     text = File.open(fn,"r").readlines
     p.formatted_text(text, :ansi)
     RubyCurses::TextPad.new @form, :filename => "textpad.rb", :height => FFI::NCurses.LINES, :width => w2, :row => 0, :col => w+1 , :title => " ruby "
