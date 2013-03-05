@@ -862,9 +862,11 @@ module RubyCurses
             if !content.nil? 
               if content.length > _maxlen # only show _maxlen
                 @longest_line = content.length if content.length > @longest_line
-                content = content[@pcol..@pcol+_maxlen-1] 
+                ## added nil check since we are allowing scrolling in listscrollable anyway 2013-03-06 - 00:14 
+                content = content[@pcol..@pcol+_maxlen-1] || " "
               else
-                content = content[@pcol..-1]
+                ## added nil check since we are allowing scrolling in listscrollable anyway
+                content = content[@pcol..-1] || " "
               end
             end
             #renderer = get_default_cell_renderer_for_class content.class.to_s
