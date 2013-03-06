@@ -1,0 +1,2151 @@
+NOTES
+=====
+/// vim:ts=4:sw=4:tw=80:ai:formatoptions=tcqnl:
+/// this was posted with appenddiary.sh
+
+Subject: Update rubyforge
+-------------------------
+
+To update the file named index.html on rubyforge use this. password is in  
+rubyforge config file.
+
+      scp index.html rkumar@rubyforge.org:/var/www/gforge-projects/rbcurse
+
+* * *
+
+Subject: subwin benefit
+-----------------------
+Date: 2009-10-09 23:32 
+
+Just found out after playing with subwins that they don't let you write onto  
+the window below. Perfect for us for components that overwrite!!  However, no  
+way to hide a subwin for later display
+
+* * *
+
+Subject: Upgrading widgets
+--------------------------
+Date: 2009-11-02 14:45
+
+1. We need to use `create_buffer` either in constructor or repaint  or whenever
+   you are likely to have a width and height.  Recommended in beginning of
+   repaint().
+Use `safe_create_buffer`
+
+2. Use `@buffer_modified = true` in repaint
+
+3. Ensure `print_border` and `printstring` are getting correct coordinates.  Most
+   errors happen here.
+
+4. Replace @form.window with @graphic
+
+5. `set_form_col` needs to call `setrowcol` as in rtextarea.
+   Also, you need to add cols_panned and rows_panned so the widget knows
+   how much it as been panned, and keeps the cursor in correct place.
+
+6. `set_form_row` needs to call setrowcol as in rtextarea. See above entry
+   for details.
+
+7. Need to add the following in initialization of container such as rscrollpane
+   or rsplitpane:
+   `should_create_buffer true`
+
+   Also when creating a widget to put inside a container, use this line (see
+   samples below), as this needs to happen at construction time.
+   (This is in the application file when creating an instance, not the widget class).
+
+8. Remove any `dsl_accessor` on height or width since this will override widget.
+   If you create a method, call `super()`. You need to create a method called
+   height and width in order to pass delta down to children components if
+   applicable, also call `super`.
+
+9. You may have to `print_borders()` in `repaint()`, checking for `@repaint_all` (see
+   rtextview.rb). i.e, don't print just once in constructor, since when the
+   object is placed inside a splitpane, its size can change.
+
+      if @should_create_buffer
+        $log.debug " overriding editors comp with GRAPHIC #{@graphic} "                                                   editor.component.override_graphic(@graphic) #  2010-01-05 00:36 TRYING OUT BUFFERED
+      end
+ 
+See testscrollp.rb or testscrollta.rb for working sample.
+
+* * *
+
+
+Subject: Scrollpane's form
+--------------------------
+Date: 2009-12-27 20:08
+
+Since scrollpane's child object has no form, scrollpane needs to have its own form 
+and hand it to child object. However, set_form was overwriting the existing @graphic
+so nothing was printed.
+Had to put a check so graphic (buffer) not overwritten. Now the child object does
+print correctly with a form object. No crashing regarding nil form.
+
+1. Container objects such as scrollpane and splitpane which have widgets
+   with nil forms require to create a form using existing graphic object
+   as window and hand that to the child objects.
+
+* * * * * * * *
+
+Subject: Moving cursor in ScrollPane's child
+--------------------------------------------
+Date: 2009-12-28 23:19
+
+Since child has its own form, had to hack an if clause in child object
+(ListScrollable in the case of Textarea) to modify parent forms row and col.
+Also added a parent_form in form.
+
+However, this needs to be done in scrollpane or other higher up place, so i
+don't have to keep doing it.
+
+ALso what if there are multiple objects in a heirarchy. Splitpane contains
+another Splitpane which contains some object. The setting must bubble up all the
+way.
+
+* * * * * * * *
+
+Subject: class Form - set_form_rowcol
+-------------------------------------
+Date: 2009-12-29 15:28
+
+Form should have a method rather than allow direct setting.
+This method can percolate up to a parent form if not the same as current.
+
+* * * * * * * *
+
+Subject: More on scrollpane and other widgets
+---------------------------------------------
+Date: 2009-12-30 18:03
+
+I have added a Form.rows_panned and cols_panned, so that a form know 
+how much its objects have been panned by. Otherwise there was no way
+of Textarea knowing it had been panned. It would keep resetting the
+cursor to the wrong value. rows_panned allows it to account for panning
+so the cursor can flash at where insertion is happening.
+See Scrollpane, handle_keys, around line 224.
+
+* * * * * * * *
+
+Subject: Scrollpane's cursor out of bounds - known bug
+------------------------------------------------------
+Date: 2009-12-31 09:42
+
+I've tried various ways to handle this - currently a variable named
+outofbounds. However, some little logic error causes the cursor
+to lose synch with the caret (insertion point).
+
+So until I can sort that out, we live with the cursor going cruising
+across the screen, although it does remain very true to the insertion
+point so no data can get mucked up.
+
+* * * * * * * *
+
+Subject: more thoughts on cursor display
+----------------------------------------
+Date: 2009-12-31 17:14
+
+I deleted the todo item regarding widgets maintain cursor display
+themselves, but now i think the insertion point is specfic to some
+widgets not all, and that the widget should perhaps maintain it
+themselves.
+
+Most widgets highlight a line or item within. There is no editing
+happening. On a GUI there really is no cursor. However, textfields and
+textareas do have an insertion point (caret?). If they maitain their own
+insertion points, then when they are hidden or panned, the cursor would
+get hidden automatically since i assume its painted onto the buffer or
+pad.
+
+For example, tabbedpanes work just fine in these widgets since they take
+care fo their ownfocssing and selection.
+
+* * * * * * * *
+
+Subject: Textarea overwrite problem
+-----------------------------------
+Date: 2010-01-03 17:54
+
+I think it's like this.. (reference test2.rb sample program)
+
+Textarea uses a pad, which does a `prefresh` onto screen.
+All the other widgets (unbuffered) write to a window which does a
+`wrefresh`. This refresh overwrites the write that `prefresh` did.
+
+Acco to the manpage, certain optimizations are done with what is
+already there on the screen. My guess is that a window wrefresh does not
+disturb what is on the right, but it does overwrite what's on the left.
+
+Now, scrollpane and splitpane use a `buffer_to_screen` passing their own
+graphic object, so the main window is written onto. I need to confirm
+this by placing something on the right. Here, since textarea was not a
+child or embedded object, a `pad.refresh` was done.
+
+I think i need to ensure that a `copy_pad_to_win` is done in these cases,
+by passing a graphic object. At least the source of this bug is now
+clear to me now.
+
+* * * * * * * *
+
+Subject: Thoughts on the buffered (pad) approach
+------------------------------------------------
+Date: 2010-01-05 12:03
+
+Buffering all widgets means that there will be a huge number of pads
+beign created for a screen that has a lot of fields. Lots of copying and
+possibilities of errors.
+
+In ordinary cases, there should be only one window, as in the old
+version. The buffered approach is only required if a scrollpane or
+splitpane is being used, even there only what is embedded will create its
+own buffer. That simplifies the whole thing. The usual execution path
+will be the old simple one.
+
+It may make more sense for the container to pass a buffer to the child
+and so on, rather than each level creating a buffer and copying to the
+higher level. That may totally eliminate having to create buffered
+objects, just have scrollpane and splitpane create a buffer and hand it
+down. I need to think this over, why did i not think of this before.
+
+The reason for this is that each level does not know what will be
+displayed and what will be truncated. So it writes things out full, 
+or as much is the widget coordinates. The next level does the relevant
+truncation. So the current approach is correct, however, when it can be
+avoided and one window used, only one should be. This will be in 99%
+cases. In anycase, listbox, textarea and textview and table implement
+their own scrolling, so one really does not need scrollpane for them.
+Scrollpane may be needed when we create a scrollable form. 
+
+So we can have a `should_buffer(boolean)`, which goes the buffer route (if
+set true by parent), else things continue with a form.window as before.
+
+added later 2010-01-05 13:24 :
+Regarding conditional buffering, what if some component containing components,
+such as a listbox or table containing editor components is place in a form which
+is placed in a scrollpane. The scrollpane can set `should_buffer` for the child,
+but what of all the lower components ? Should this be passed down ?
+
+* * * * * * * *
+
+Subject: Implementing a scrollable form
+---------------------------------------
+Date: 2010-01-05 12:34
+
+Two approaches come to mind:
+
+1.  Create a form using a pad (i/o of a window). Form will have to
+    handle scroll keys if child does not handle them.
+    Ensure that pad writes onto physical screen, not a window (like it
+    used to).
+
+2.  Create the usual window and scrollpane.
+    Make the child a form-widget -- a widget that contains a form, sends
+    messages to form. However, the form should be based on a pad.
+
+    In both cases, a form is based on a pad, so objects can be placed in
+    a larger area than the physical screen.
+
+* * * * * * * *
+
+Subject: form.setrowcol and rowcol
+----------------------------------
+Date: 2010-01-05 21:11
+
+i began setting both row and col from `set_form_row`, but it does not know
+the current col. `rowcol` seems to return the position where printing
+should start, or the cursor should be positioned on entry first time.
+
+So i am now passing nil for c, so col is not disturbed.
+test2.rb's listbox is now editing fine, cursor is moving when editing.
+However, in scrollpane with pads etc, the cursor is not moving.
+
+* * * * * * * *
+
+Subject: embedded splitpanes
+----------------------------
+Date: 2010-01-07 19:19
+
+*Case*: splitpane within another splitpane. 
+
+*Examples*: ruby doc or java doc. Now think text mode, no mouse, no
+dragging. Open ruby docs or java docs in `links`.
+
+Lets take a realistic scenario of a splitpane which contains a splitpane
+as one (or both) components. We've defined some key/s to resize a
+splitpane, but now which splitpane gets the key. How does the user
+specify which level the key pertains to. 
+
+In textual browsers such as links, "frames" have been used. So you are
+inside a frame. Your key pertains to that frame and you tab between
+frames. Using splitpanes, when you are in a component you are inside a
+splitpane too. So in the case of a splitpane within another, you are in
+2 splitpanes. 
+
+When you tab into a splitpane, I'd like to make it easy and put the
+focus inside the first component. You can switch between components. But
+you are never really focussed on the splitpane. Any keys not processed
+by the child components are passed up to the splitpane. Thats how it
+does resizing, or changing orientation.
+
+The other option is that you first focus on the splitpane, and then tab
+once more to the first component. Ugh ! But it allows you use simple
+keys like plus and minus to resize. Thus in a multilevel scrollpane,
+you'd need many tabs to get to the actual component.
+
+There's a third option, i do as before, but give a special key to go to
+outer splitpane, so conditionally focus can go onto splitpane.
+
+* * * * * * * *
+
+Subject: repaint_all
+--------------------
+Date: 2010-01-08 20:29
+
+I have added repaint_all and repaint_required in class Widget.
+Sometime a parent wants to tell its child to repaint, and there's no
+way. The only way was to fire a handler.
+
+Also added a repaint_all, so if some widgets want to print a border or
+clear area only on a major change (like dimension change), they can use
+this flag. Calling repaint_all, sets repaint_required also. The latter
+is for usual data changes.
+
+* * * * * * * *
+
+Subject: Splitpane and cascading dimension changes to child
+-----------------------------------------------------------
+Date: 2010-01-09 20:37
+
+**Splitpane**, moving divider.
+
+Now by default, changes to width and height are *not* cascaded to child
+components.
+However, as and when the divider is increased beyond size of first
+component, the first component will enlarge and automatically its buffer
+is resized.
+
+I've also worked on preventing the crash. Essentially, the screen_buffer
+should not become less than the components pane. This can happen in 2
+ways, one is the buffer is resized whenever component increases. I was
+(by oversight) overriding widget's height having defined a dsl_accessor
+in textview.
+
+However, if you don't want to resize the buffer, then one should not
+call `set_screen_max_row_col` if it exceeds the warning condition. This
+warning is if one is creating a new widget, if it crashes on `copywin`
+and Height is more than `smaxrow()` then you'll have a crash. So resize
+at that time by simply increasing the widgets height, or else put a
+check in widget so that the method is not called for this condition.
+
+* * * * * * * *
+
+Subject: maxlen in rtextview
+----------------------------
+Date: 2010-01-10 19:28
+
+Made a change in rtextview.
+In the constructor, maxlen if nil was set to width-2.
+So, if width was changed later maxlen would remain the same. And maxlen
+is used as the length (width) of the content to print.
+
+I've never changed the width at runtime, till today, from splitpane, and
+this came out. So now unless you explicitly set maxlen, it must remain
+nil and be set locally in each method as width-2.
+
+I supposed the same has to be done in rtextarea.
+
+* * * * * * * *
+
+Subject: copy_pad_to_win
+------------------------
+Date: 2010-01-11 23:47
+
+More and more scenarios are coming up when copy_pad_to_win can either
+return a -1 and do nothing, or print less that it should be.
+
+I can't correct more of these in the method, since that would break some
+other situation. I have added warnings, though. One will have to check
+the log file and see what warnings have been printed. If none, then we
+have a new scenario, and the data has to be inspected to figure out.
+
+* * * * * * * *
+
+Subject: regarding create_buffer in repaint
+-------------------------------------------
+Date: 2010-01-12 12:54
+
+If a widget calls `create_buffer` in repaint, it uses some default values
+such as for top and left (0,0). To change these values, from a parent
+component such as splitpane, means i change after `repaint()` so the first
+paint is off by one row and col. The subsequent paint is okay.
+
+I need to be able to pass values to a widget prior to `repaint()`, so its
+`create_buffer` can be influenced.
+
+* * * * * * * *
+
+Subject: cursor positioning form#setrowcol
+------------------------------------------
+Date: 2010-01-12 22:53
+
+Since i currently go up a heirarchy of forms, passing up the row and col
+to be set, i cannot add the col and row offsets of the parent
+(enclosing) widgets.
+Had i gone up a heirarchy of widgets, I could have added their offsets.
+
+In any case, i think I need to add them as parents, in methods like 
+`child()` or `first_component`. Then a method will be needed to pass values
+up, and when no parent then set in its form. Each level adds its offset.
+
+OTOH, another option would be when setting a child component, to once and for
+all pass down cumulative offsets. Thus, one will not have to keep adding.
+However, it is inefficient, is it not to propogate each cursor move up. Won't
+that be slow ?
+For that matter, won't this copying buffer be slow. Is there no faster way out?
+
+
+In the case of multiple embedded components, can we not pass down the offsets
+and boundaries when setting or moving so that each component writes directly,
+and the cursor can be set easily without passing up ? There is a one time
+passing down on creation, and moving or resizing. Each component knows its own
+absolute position on the form, and there's basically only one form (except maybe
+for tabbed panes).
+
+Buffers means that scrollpanes for example only scroll a buffer, the widget does
+not have to redraw repeatedly. Repainting is higher level code with many type
+conversions, slicing, formatting etc, scrolling is merely a low-level copywin()
+call. however, copywin() seems a lot more prone to error (new situations).
+
+Direct painting without a buffer means constant repainting on scrolling, like
+happens when we use TextViews and listboxes inbuilt scrolling.
+Otoh, it means each component has to implement scrolling. With a scrollpane, we
+can have scrollpane do the job, although the child has to write onto a pad.
+* * * * * * * *
+
+Subject: update to cursor positioning
+-------------------------------------
+Date: 2010-01-13 18:26
+
+Just studied the code to see how each textview knows where to print
+inside splitpanes. Each component's `@col` is set to where printing has to
+start, that's all. I was mistakenly using `@orig_col` which is never
+updated. 
+Now its fine, which means I don't need `widget#setformrowcol`, the earlier
+`form#setrowcol` is fine. Don;t use orig_col in setting cursor,
+applies to rtextarea.rb, too.
+
+* * * * * * * *
+
+Subject: speed of splitpane, copying buffers
+--------------------------------------------
+Date: 2010-01-14 15:44
+
+One can type fast in a textarea as is and see updates immediately. But
+when the textarea is inside a splitpane, due to the buffer copying
+happening, fast typing updates take time to show up.
+
+Sequence would be as follows:
+1. textarea buffer copies onto splitpane buffer
+2. Splitpane buffer copies to main form window (earlier it would copy to
+   screen directly)
+3. form.window does a wrefresh.
+
+Each time you type a character, it goes through the above. We need to
+get the innermost widget buffer to write directly to the form.window
+somehow.
+
+Also a quick cursor movement, shows the cursor flashing on row below now
+and then, although when you move the cursor slowly, it move fine.
+
+* * * * * * * *
+
+Subject: slitpanes in a mouseless CUI environment
+-------------------------------------------------
+Date: 2010-01-15 13:02
+
+The issue here is navigating between panes, if you have splitpanes
+embedded between splitpanes. Typically, control goes to the first
+component, and switching happens between the 2 panes of the first
+component.
+I've defined TAB to do a switch on the outer component, but that only
+delays or reduces the problem.
+
+We need another component, more like vim's splits. You can split it as
+many times. Each split returns 2 handles. You can split the handle. You
+can place a component in the handle. Once it is all in one component,
+one can reorder and exchange positions too.
+
+Expanding contracting can de done with current split in focus. With
+embedded splitpanes, we don't know which level the user is intending the
+resize (or motion) key for.
+
+* * * * * * * *
+
+Subject: cursor positioning in mult splitpanes
+----------------------------------------------
+Date: 2010-01-15 23:26
+
+When placing textviews inside 2 splitpanes, a funny thing happened, i found that
+the cursor was always on 5,5, no matter where the outer split was placed. Appa,
+we need to add the outer windows left and top offsets.
+
+I have done that, and now the cursor is in the right place regardless of whether
+there are 2 or 1 splitpanes.
+
+Now both setformrowcol and setrowcol are correct. However, i think the form
+route of setrowcol is better since a form's offset won't get duplicated.
+
+* * * * * * * *
+
+Subject: container widgets
+--------------------------
+Date: 2010-01-16 23:57
+
+Widgets such as splitpane, scrollpane, viewport and any future widgets should be
+able to pass changes to dimensions down to their children.
+
+So they should have a `height` and `width` method that adds the delta to the
+child, or relevant children. and calls `super`, so that buffers can be
+rebuilt.
+
+* * * * * * * *
+
+Subject: scrolling and wrefresh
+-------------------------------
+Date: 2010-01-19 12:26
+
+Suggested optimizations to pad and `wclear.`
+Currently, i have to do a `wclear` everytime i scroll a pad or else
+previously displayed data if often not cleared off and remains.
+**Can this extra clearing be avoided**. i once tried `clr_to_bot` but
+did not seem to work.
+
+This happens when we scroll past last row (or last col in horizontal
+scrolling).
+
+Options to reduce or obviate `wclear:`
+
+1. Get scroll exactly so that no empty rows or columns shown. Very
+   dicey.
+
+2. `wclear` only after a point when reaching the end. Setting some flag.
+   e.g. when `number of rows < scrollatrow().`
+
+3. Don't clear entire window, but only the region you don't paint over.
+   Try clear to bottom again.
+
+4. Define pad larger (extra rows by size of widget) so that there's
+   alway that much blank rows there. Same for width.
+   If displaying 100 rows in a 10 row widget, define pad as 110, so when
+   scrolling last page, there's always blank space ahead. This should
+   totally obviate `wclear`.
+
+* * * * * * * *
+
+Subject: scrollpane updates
+---------------------------
+Date: 2010-01-19 19:40
+
+A scrollpane only clears and repaints the entire area if its size is
+changed or it is scrolled. In such cases, the `repaint_all` variable is set
+to true. 
+
+In all other cases, it only copies the child's buffer up. This is
+required otherwise changes to the child will not show up at all. Thus,
+changes to `rviewport` and `rscrollpane` have been made. 
+
+The awful flashing has stopped, however all test programs that use
+Scrollpane have to be retested -- YAY !
+
+Isn't testing over and over again such fun.
+
+* * * * * * * *
+
+Subject: cursor display by widget itself
+----------------------------------------
+Date: 2010-01-20 22:21
+
+Would be so cool if widgets could display cursor themselves as a mark or
+attribute.
+That has pros and cons:
+
+- At a terminal level, one cannot change cursor color or attributes. It
+  would be programmed.
+
++ OTOH, we would not have to test and ensure that cursor is being set
+  when an object is embedded and does not have access to the top form
+  that is setting the cursor.
+
+- But, when the cursor moves, we would have to erase the cursor and add
+  it elsewhere.  that could resul in a cursor left behind in one widget
+  when we jump to another.
+
++ In scrolling the mark would just move along. No programming required.
+
+- if a widget forgets to erase or set cursor on events like on_enter
+  on_leave, we could have multiple cursors.
+
+Perhaps editable widgets such as textarea or ones that allow cursor
+movement like listbox and textview could at least show an insertion
+point or caret of some sort. So even if cursor always hangs around at
+top left corner of active widget, the insertion point can be shown as an
+underline or something. (UL's don't work in all TERMS).
+
+Let's think about some kind of mark that is independent of the cursor.
+One huge headache for scrollpanes, textareas etc would be taken care
+off. Issue is, does TA or TV really know where the insertion point is.
+Yes, @current_index and @curpos (i think).
+
+* * * * * * * *
+
+Subject: cursor positioning
+---------------------------
+Date: 2010-01-20 23:06
+
+If a listbox can paint the row with selection, then surely it can paint
+hte curpos position with a red background for cursor (this can be
+defined at the widget level and overridden per widget if need be).
+
+Similarly, textareas have a search highlighting. And i do have
+current_index and curpos. That can be used for setting a cursor upon
+repaint. Worth a try. Should help in the long run.
+
+In any case, its high time a widget is informed of its exact coordinates
+no matter how deep it is. Parents can inform children of row and col
+changes. Then the child can itself call wmove and not have to set
+attributes. Also for that the form that is painting, its value should be
+sent (but btw, if the embedded component sets wmove, that will be erased
+when the buffer copying happens).
+
+* * * * * * * *
+
+Subject: tabbedpanes vs other containers
+----------------------------------------
+Date: 2010-01-21 18:49
+
+Other containers contain an object, so they call its on_enter or
+set_form_row so that cursor is correctly set no matter how deep the
+level of containment.
+
+However, `TabbedPane` contains a form. The caller can set what he wants on
+that form. Thus, i am finding that the usual technique that `SplitPanes`
+used for setting the cursor is failing here.
+
+This does mean that tabbedpanes can have complete forms inside them with
+multiple buttons, checkboxes etc -- that is absolutely necessary.
+
+* * * * * * * *
+
+Subject: vim like splitpanes
+----------------------------
+Date: 2010-01-22 19:39
+
+Don't know if I've put this down already. Splitpanes within splitpanes
+is a bit slow if you intend doing very fast typing within a textarea, for
+example.
+
+Also since there is no mouse, which split do you intend widening or
+resizing -- a bit of a pain. Setting up sizes of the splits can also be
+dicey at present. For a mouseless environment, perhaps vim editor like
+splits are better. There is only one level for starters.
+
+To create splits, take the first pane, split it. You get 2 objects
+(panes). Split them any way you want. You have handles to each split or
+buffer. Place any object you want in each window. Whichever window the
+cursor is on is the one that resizing commands apply to. There is only
+one level so its easy. Again using TAB to cycle between splits will
+work. Similarly, it should be possible to rearrange, kill, add etc at
+will. Or to move to the left or right or top tab.
+
+The splits could have scrolling built in, so we don't lose 2 rows and
+cols showing the scrollbars. Scrollbars could be fitted into the split
+itself.
+
+* * * * * * * *
+
+Subject: form parameter in widget creation
+------------------------------------------
+Date: 2010-01-22 19:50
+
+I am wondering whether the **form parameter** in `Widget` is clunky. Since
+it's often set to nil, in embedded objects, or if you wish to create a
+widget first and hand it off to some other form or list or tabbedpane.
+
+The way of creating objects in a DSL'ish way is a bit goofy since I had
+problems putting my head around not being able to overload constructors
+in ruby.
+
+This (removing form) would be a major change since it would break
+everything but for future users it could be neater. A form may be added
+to, rather than widgets take the form param and add themselves.
+
+This internally breaks code too, since many objects just expect a form
+to be present when created of when some methods are called. 
+
+This means that the constructor params can have what's actually needed to
+work. Currently even I don't know what's absolutely needed for an object
+to work. What are the minimal requirements ? "Just run it and if it
+crashes with a null pointer assignment, then you know something has to
+be set." That sucks, and embarasses me since I've done *a lot* better in
+the past (in other languages).
+
+However, i think that's the way to go.
+
+* * * * * * * *
+
+Subject: cursor handling internally
+-----------------------------------
+Date: 2010-01-23 20:23
+
+I've got textarea to handle cursor painting by itself, BUT ...
+that means each time the widget will have to be copied (for all cursor
+motion) even when the screen does not scroll. Currently, when we use
+window's `wmove`, we do not need to repaint or copy_pad at all.
+
+Any write to the graphic object (when in buffered mode) requires the
+buffer to be copied, and that means setting buffer_modified to true.
+
+Also note that all cursor motion requires the footer to be painted.
+Currently, some movements are forgetting to do that, and some are - but
+they are repainting the whole textarea just to paint the footer (row and
+col in footer).
+
+We should set another flag for updating the footer only. (see `addcol`
+and `addrowcol`).
+
+I am thinking of making this method paint_internal_cursor conditional.
+
+* * * * * * * *
+
+Subject: aah the tabbedpane cursor offset issue
+-----------------------------------------------
+Date: 2010-01-26 20:10
+
+How daft of me! The tabbedpane's own row and col were resulting in the
+textarea not being able to calculate the correct cursor offset.
+So we do have to look at parent objects and their own row and col, do
+we? But what of scrollpanes and splitpanes ?
+
+So basically while setting cursor, i need to add parent's row and col,
+too.
+
+* * * * * * * *
+
+Subject: microemacs user setup tabbedpane
+-----------------------------------------
+Date: 2010-01-30 00:06
+
+Micremacs has user setup tabbedpanes. (Use F1)
+Left and right keys are used to move from one tab to another.
+
+Tab jumps to form associated with a tab. Tab does not cycle between
+tabs. IN some fields, where there are selectable values (combos) a "v"
+is shown but i am not clear how to access that list. Pressing Enter
+opens up the config file. (Use spacebar)
+
+* * * * * * * *
+
+Subject: tabbedpanes and scrollpanes
+------------------------------------
+Date: 2010-02-02 23:04
+
+I've spent more than 2 days battling a scrollpane inside a tabbedpane.
+It wont print anything. I know what's going on, but unable to fix it.
+Its simple but i am unable to catch it.
+
+When i place a textarea directly in a tabbedpane (TP), it takes TP's
+tab form. It does not create its own buffer. It writes to TP's form/pad
+which is then copied to TP's own window. This works.
+
+But when i place a textview inside a scrollpane and place that inside a
+TP, it takes the TPs form, but then creates a form and pad, required for
+the child. The TV writes to its own pad, which is then copied to
+Viewport, to Scrollpane, to TP. But at this point, the tab form which
+was given to Scrollpane and not used, kicks in and writes to TP.
+
+So whatever was written to TP is overwritten by the unused TP tab
+form/pad. Scrollpane should use this, but it creates its own buffer. If
+i mess with this, all those other programs could go for a toss.
+
+* * * * * * * *
+
+Subject: scrollpane tabbedpane update
+-------------------------------------
+Date: 2010-02-03 19:06
+
+I've finally got something displaying and working .. textview inside a
+scrollpane inside a tabbedpane.
+If the form given to a scrollpane has a pad as a window, then we use the
+pad, if its a window, we do the usual create_buffer crap.
+
+However, sadly the positioning is slightly off, the borders and not
+printing fully (left and top not there). I've played around with the
+`row` and `col`, but seems scrollpanes row and col have no impact. Its a
+tricky situation since I have created a second form on the same pad.
+
+I cannot set the same form as that passed in since then the mainform
+would own the child inside scrollpane. So its very hackish really - not
+clean. Getting messy -- we need to overhaul this whole new buffered
+stuff - too much copying of buffers and breaking my nut over `copywin`.
+
+Need to simplify.
+
+* * * * * * * *
+
+Subject: return values for form: false vs UNHANDLED
+---------------------------------------------------
+Date: 2010-02-04 19:12
+
+Sometimes some methods like `down`, `up` etc return a `false` if they cannot go
+down or up or scroll. However, when the `ret` is returned up, repainting
+still happens. A form typically won't repaint if the return of
+`handle_key` is `:UNHANDLED`. So, in scrollpane, I've had to convert
+`ret` to `:UNHANDLED` if false, so no useless repainting happens.
+
+* * * * * * * *
+
+Subject: scrollpane inside tabbepanes PROBLEMS
+----------------------------------------------
+Date: 2010-02-04 20:52
+
+Okay, I've got an idea what's happening.
+This largely is since I've put in an ugly hack to take the PAD of a
+parent form, if its a PAD (not a window). Otherwise, what I was
+printing on Scrollpane's pad was getting overwritten by the TAB's pad
+which was never written to.
+
+1) `ScrollPane` does a `wclear` of the pad. This erases everything earlier
+   put on the pad, including the border.
+
+2) Since Scrollpane does not know its picked up some other pad, its
+   border height and width are not correct. They would be fine if it had
+   created its own pad.
+
+The options are:
+
+1. Hack further so that this case is taken care of. 
+2. Do the sensible thing. Create own pad, and somehow copy scrollpane's
+   pad onto it at the end.
+
+Even though i could not get #2 done, I think I should look into that now,
+so the code is not mysterious and impossible to understand or maintain.
+
+Also, I've got to simplify ScrollPane *completely*.
+
+* * * * * * * *
+
+Subject: maintaining logs and keystrokes
+----------------------------------------
+Date: 2010-02-07 11:48
+
+Maybe one way of my tracking down when something breaks, which is
+happening and is nerve-wrackig since its all UI stuff...
+
+Maintain the log file. Also somehow mark what keystrokes we run.
+That way when things break, i can run the same program with same keys
+and compare. Keystrokes actually are already mentioned in file, but it
+would be easier to put them separately.
+
+Maybe i could just mail the log files to myself with a comment.
+
+* * * * * * * *
+
+Subject: reworking cursor positioning
+-------------------------------------
+Date: 2010-02-07 20:44
+
+Two approaches:
+
+1. Pass absolute coordinates down all the way, so widget can set abs
+   coords for cursor.
+   This still needs to go all the way up. Also any changes need to be
+   cascaded all the way down.
+
+   I am trying this.
+
+2. A window or pad should print its own cursor. Why pass it to higher
+   forms. That way only absolute position within a pad or window is
+   required which is quite simple.
+   Also changes can be passed down quite easily.
+   However, when a pad prints cursor, control will come back to setpos
+   of main form, and it will move the cursor.
+   So it an inner pad or window is setting cursor, the main should not.
+
+   Somehow, mainform should know whether it should set cursor or not.
+
+   Actually this sounds simpler than option 1.
+
+   The danger of allowing widgets to set the cursor is that if multiple
+   are being updated in a loop, they will all set the cursor, and only
+   the last will show up.
+   Maybe the selected field can have an attrib, manages_cursor - if yes,
+   main form does nothig, assuming either a cursor is not needed, or
+   that widget has a form and is handling cursors. Containers will have
+   a true value.
+
+* * * * * * * *
+
+Subject: Major change: buffered version, splitpane, scrollpane NOW
+------------------------------------------------------------------
+Date: 2010-02-10 11:09
+
+Too much breakage, too much debugging -- I need to redo the buffered
+approach largely meaning that:
+
+1. `SplitPane` and `ScrollPane` will have an almost complete rewrite.
+
+2. Window and Widget will be touched, in terms of repainting - only the
+   buffered portion, so the classic version of rbcurse should not be
+   affected.
+
+3. Yesterday, looking at the show_caret routine (carelessly tacked on
+   recently) in `Listscrollable`, I saw some glaring flaws, fixed it and
+   now Textviews and Textareas show their own caret (cursor) correctly,
+   no matter where they are placed. However, what one needs to do when
+   using this, is display it only on_enter, and hide it when on_exit.
+
+   Also, do remember that using this forces a `repaint` even when you move
+   the cursor inside the textarea. The original cursor routine does not
+   involve repainting unless scrolling happens due to movement.
+
+   However, it does solve a HUGE headache regarding cursor display in
+   complex setups like scrollpanes within a splitpane within another
+   splitpane.
+
+To detail point 1. 
+
+### Current approach to using buffers (ncurses' Pad):
+
+1. Too many pads which results in slow response, too much copying which
+   is very prone to bugs, too much impact of change.
+   Its too complex.
+
+2. Copying pads from inner to outer widgets is too messy, very hard to
+   debug errors, slow.
+
+3. Need to avoid or minimize pad usage.
+
+### Alternatives:
+
+1. **No pad** 
+   - This means that we `repaint` each time scrolling happens
+   - Widget takes care of cropping and can make errors. Responsibility
+     is on each widget to crop. Cropping has to be from both sides, not
+     just right.
+     Typically, this cropping will happen for each line of a multi-line
+     widget. In the `copywin()` case, the widget writes without checking
+     len or cropping. The lower level `copywin()` takes care of cropping
+     so that's more efficient.
+
+     This does obviate the recreating of pads that happens due to
+     resizing or even setting the parent object's dimensions.
+
+2. Use only **one pad** for the widget that's actually writing such as
+   `Textarea` or `Listbox`.
+
+   This widget is passed the coordinates to crop and the target window
+   (typically `form.window`).
+   It uses `prefresh()` to write onto form.window using coordinates.
+   Most likely this code can be put in superclass `Widget` so there are no
+   errors.
+   The container such as `Splitpane` and `Scrollpane` merely pass down
+   their bounds, so it doesn't matter how many levels there are. Only
+   bounds are being passed down and calculated. 
+
+   Now its possibly that the container *suggests* to inner object to use a
+   pad. The inner object can if its programmed to, use a pad and use the
+   cropping, or it can just paint to the target. In the case of optional
+   pads, the widget will have code to crop each line, so that code will
+   exist even with a pad.
+
+   After that, the `Scrollpane` will put its border or scrollbars directly
+   onto `form.window` using the bounds it has. Similarly the higher level
+   `Splitpane` will paint its own border or divider etc onto the
+   `form.window` and so on.
+
+
+### Tasks:
+
+1. push all existing code to rbcurse19 branch
+
+2. create a new branch for this change
+
+3. Have `SplitPane` and `ScrollPane` push their dimensions down and paint onto
+   `@form.window` directly.
+
+4. Have final widget (`TextArea`, `TextView`, `Listbox`) respect the
+   dimensions passed in, and refresh `Pad` onto actual target
+   (`@form.window`).
+
+* * * * * * * *
+
+Subject: method rowcol and offset fields
+----------------------------------------
+Date: 2010-02-11 21:56
+
+method rowcol() is supposed to return the location where form would
+place the cursor by default. So it takes row + row_offset.
+row_offset usually is 1 by default, if you have a border.
+
+However, there's some issue with placing an item inside a Scrollpane and
+perhaps others. The buffer is copied with an offset of 1. So rowcol by
+itself does not yield the correct cursor position.
+
+If i add 1 to this, many other routines start printing one off. rowcol
+has been used rather extensively because somewhere down the line, i
+forgot its purpose (not having thought it necessary to document it).
+
+So i've added a pad_offset in textview, for the pad cases. I know i am
+redoing it and already started hacking.
+
+* * * * * * * *
+
+Subject: changes to buffered objects
+------------------------------------
+Date: 2010-02-11 23:21
+
+Based on what I've done to TextView, to be done to TextArea, ListBox.
+
+1. No references to @form. 
+   win_left and win_top store window's offsets.
+
+2. target_window passed if form not passed.
+
+3. move create_buffer to paint.
+   Also, paint buffer here only, no passing up.
+
+4. accept buffering_params hash and use for copywin
+
+
+5. For textarea, suppress borders.
+
+-----
+
+Containers should set should_buffer and pass bounds.
+Containers themselves do not create buffers. Just pass down.
+Containers only draw their borders etc. 
+Move this drawing to after the inner object has painted. Paint onto
+window. Pass down ext_offset + col_offset.o
+
+Since container are writing to window, add row and col to print-border
+and other print statements.
+
+* * * * * * * *
+
+Subject: ext_offsets explanation
+--------------------------------
+Date: 2010-02-13 10:33
+
+`ext_row_offset` and `ext_col_offset` are essentially for a widget to be
+able to place the cursor. This is exactly how to set this variable.
+
+A form, when adding a widget puts its `window.top` and `window.left` as row
+and col offset respectively.
+
+In cases, where an object contains another object such as `ScrollPane` or
+`SplitPane`, ext_row_offset is set to row + ext_row_offset of parent
+class.
+
+    child.ext_row_offset = @row + @ext_row_offset.
+
+Thus, this contains the starting point of the widget in absolute terms.
+This should not be used by any other programs as this is only to cater
+to `set_form_row` and `set_form_col` and could change to accomodate these 2
+methods.
+
+However, the above assignment is at present the correct assignment.
+
+* * * * * * * *
+
+Subject: vimsplits or splitpane with subwins
+--------------------------------------------
+Date: 2010-02-13 20:14
+
+I was just checking out `subwins` today and one thing led to another. I
+basically have a very barebones vim-splitty thing which has subwins for
+each split - `VimSplit`.
+It splits in half, yes, i need to allow moving. I've been wasting time
+putting text in each split.
+So each split returns 2 subwins. You can either attach a component to a
+split, so all keys go to it.
+Or else create a form with that window.
+Or create a widget with the window, and send keys to it. Attaching a
+widget to the window is best since it takes care of everything after
+that.
+
+We still have to deal with setting the cursor, not sure if set_form_col
+is meant to deal witha subwin. Also its easy to use subwins.wmove but in
+our real application, the subwins wmove will get erased by the later
+windows that refresh.
+
+* * * * * * * *
+
+Subject: subwin does not resize and move
+----------------------------------------
+Date: 2010-02-13 23:05
+
+subwins were working great for my splitpane (vimsplit) till i needed to
+implement the pane movement. That requires moving and resizing subwins.
+This was not happening since the coords are relative to the parent
+window, and somehow this link is lost. The moved window lands up with
+its relative coordinates as absolute coords now.
+
+The man page says that subwindows resizing and movement should be
+avoided. Another page says:
+
+>    The subwindow functions (subwin, derwin, mvderwin, wsyncup, wsyncdown,
+>    wcursyncup, syncok) are flaky, incompletely implemented, and not well
+>    tested. 
+
+I could delete and recreate 2 new windows when a split pane's split is
+moved, but the reference to the window would change, and programs using
+that ref would keep referring a destroyed window.
+
+It was too good to be true. I guess I have to go back to `pads` and `copywin` which
+I've learned to hate.
+
+* * * * * * * *
+
+Subject: subwins > derwin
+-------------------------
+Date: 2010-02-14 12:06
+
+Okay, i've got ncurses subwins to resize and move, since they have absolute
+coordinates (unlike derwins) which lose their orientation. However, my
+scrollbar repainting is sucking since i need to paint it on the
+underlying window/subwin.
+
+Somehow it prints a line 2 times - duh. Will have to see how far i can
+go with approach.
+
+* * * * * * * *
+
+Subject: splitpane nonbuffer change
+-----------------------------------
+Date: 2010-02-14 18:34
+
+Due to removing buffers, now some methods that had relative coords such
+as hline and vline need absolute coordinate, by adding row and col
+respectively.
+
+* * * * * * * *
+
+Subject: giving up on splitpanes without buffers
+------------------------------------------------
+Date: 2010-02-15 00:17
+
+Okay, i am not having fun with subwindows. Too much existing code it has
+to work with.
+
+Not having buffers at all is tough, since one can easily print outside
+the widget while moving it. Especially the boundaries.
+
+So i might have to just go back to the dreaded buffered version. Only
+problem is going back to that version that worked perfectly except for
+the one condition in which a scrollpane was inside a splitpane, and only
+the cursor was a tad off.
+
+Have to find that version!
+
+* * * * * * * *
+
+Subject: changed to SplitPane (rfed16 version)
+----------------------------------------------
+Date: 2010-02-16 09:27
+
+Currently, Splitpane was in a sorry state meaning mostly the values
+passed by higher functions for locating both the comps and their cursor
+values. Parameters passed were based on how things were working inside
+and it made no sense.
+
+I've tried to make the parameters logical and sensible, and the inside
+functioning should work with those parameters rather than the other way
+round.
+
+Similarly, width and height should also make sense in all cases.
+Somewhere values of row and col were relative, some places absolute. 
+
+Now in setrowcol of widget, i do not add ext_offsets. programs can add
+it. 
+
+RULE: All widgets should maintain absolute coordinates for row and col, even
+for internal objects. It is upto the Pad to remove @top and @left.
+
+* * * * * * * *
+
+Subject: changing width and height
+----------------------------------
+Date: 2010-02-16 20:49
+
+Wherever an object changes its childs dimensions, it should now also
+call `set_buffering` to update `:bottom` and `:right` (or :top and :left),
+since we are now using `buffer_to_window` in `Widget` which takes explicit
+values from this hash.
+
+Earlier, `Pad` picked up values from the pad, and otherwin and then tried
+to make sense of what to use. Thus coincidentally some things worked,
+some did not. 
+
+Now that our wrapper for `copywin` does no magic, callers are forced to
+pass correct values, which means there is complete clarity into waht is
+happening at the callers end, the rules for printing a widget in complex
+circumstances is becoming clear and less random or coincidental.
+
+* * * * * * * *
+
+Subject: cursor positioning
+---------------------------
+Date: 2010-02-17 00:25
+
+I  can't believe this. It seems I am not longer using ext_offsets any
+longer??
+I am setting the absolute coords of child components in scrollpane and
+splitpanes, which is kinda good, because its simple and no magic
+involved. No having 2 sets of coordinates around.
+
+Also, it seems widgtes are using buffer_to_window, which also uses
+absolute coordinates for the screen.
+
+Lastly, textview and textarea in set_form_row, don't use ext_offsets.
+They were earlier added in widget, later commented out to be added in
+indvidial programs. But everythings working without it, so i am free of
+one more hassle to look after.
+
+* * * * * * * *
+
+Subject: scrollpanes inside splitpanes
+--------------------------------------
+Date: 2010-02-17 10:14
+
+The issue with placing a scrollpane a splitpane, esp in the second pane
+of a split.
+Currently, a SPLP sets its second components (C2's) row and col and
+other buffer parameters only after its divider has been set. 
+Thus, when there is SPLP inside another SPLP, even the inner SPLP is
+able to inform its child of location when its divider is recomputed.
+
+However, scrollpane informs its child of its location at the point of
+assignment. When the SCRP is the 2nd component in a SPLP, it doesn't yet
+have any row and col etc. When that is later updated, it currently has
+no means to update its child.
+
+When SCRP's row and col are updated, or its set_buffering is called, it
+must further update the same for its child. Earlier that was not
+required since each pad was printing to a relative location.
+
+* * * * * * * *
+
+Subject: Now quite some success with splits and scrolls combined
+----------------------------------------------------------------
+Date: 2010-02-17 14:38
+
+with testsplit3a.rb working (**rfed16** branch), resizing etc is working fine,
+finally splitpanes and scrollpanes are in decent shape.
+There are still some programs not displaying okay .. 3b 3_1 -- have to
+see what's there.
+
+Were those 2 ever working ? or was it only a cursor issue in them that
+wrecked everything and made me abandon rbcurse19 branch. I wonder how
+that branch is doing.
+
+I think i need to start git tagging. Anyway, i am also taking snapshots.
+I need to start releasing gems or atleast tgz's on github.
+
+* * * * * * * *
+
+Subject: broken status
+----------------------
+Date: 2010-02-17 22:23
+
+Please note that consequent to the simplified buffering, and the way of
+calling it from containers the following are broken:
+
+1. listbox (e.g. testscrolllb.rb, testsplit3b.rb)
+2. table
+3. tabbedpane (container) (e.g. testtpane.rb)
+
+Any program calling buffer_to_screen for a child is broken. The child
+now does a buffer_to_window using absolute coordinates.
+
+Containers such as SplitPane and ScrollPane are now passing absolute row
+and col to child, and updating exact top, left, bottom and right.
+
+I don't think children should be using ext_col_offset or ext_row_offset.
+
+* * * * * * * *
+
+Subject: splitpane = cascade changes is on (rfed16 branch)
+----------------------------------------------------------
+Date: 2010-02-18 09:43
+
+In RFED16, i've cut down on `Pad` usage, splitpanes and scrollpanes do not
+use pads themselves. Only the final object inserted in it such as a text
+are uses a Pad.
+
+Thus there can be cropping issues when a splitpane or scrollpane writes
+outside the box. Thus, i switched on `cascade_changes` (which i had
+switched off). That's why there's no printing out of the boundary. That means
+that any change in the splitpane dimensions or resizing the split,
+causes the internal object to resize. Earlier they would not reduce,
+since cropping was happening. 
+
+Since there is no pad now, it is necessary that splitpane and scrollpane
+are never bigger than the splitpane they are on. I had earlier noted
+that `cascade_changes` defeats the purpose of a splitpane, however do not
+that the internal object is Pad based and can still exceed the
+`Splitpane` boundary.
+
+Or rather. If you place a textarea in a splitpane, splitpane will resize
+the textarea (since `cascade_changes` in on). However, if you place a
+`Textarea` in a scrollpane, and the scrollpane inside a splitpane, then
+the `Textarea` is not resized. Only the object directly inside a splitpane
+is.
+
+* * * * * * * *
+
+Subject: More on splitpanes
+---------------------------
+Date: 2010-02-18 20:08
+
+Great news. I've got sample testsplit3_1.rb working which is an example
+with 2 splitpanes inside an outer splitpane.
+This exposed an issue, that since the second component's (right or
+bottom) coordinates are determined not when attached but only when the
+divider is set, therefore its too late for it to coomunicate that to
+some inner components.
+
+Basically, if your second component is something other than another
+Splitpane, its okay. However, in this example, the second is a SplitPane
+for the first time, and it seems to get its parameters a bit too late.
+
+
+So before it repaints the children i update the locations. This is
+required even for the first since the first could be the first of the
+second - lol. Otherwise, both components on the right were printing at
+0th column.
+
+So there could be some more such missing cases, when i put the outer
+splitpane as horizontal. But hopefully earlier programs will not break
+since i am not touching existing paths.
+
+I've still gotta fix TabbedPanes which are broken, I fixed Listboxes
+last night, but only lightly tested - surely there must be breaks
+somewhere. 
+Also, gotta fix Tables. Things looking upbeat with the new "simpler
+approach" (see branch RFED16 of rbcurse).
+
+* * * * * * * *
+
+Subject: Fixed breakage in Table. Check testscrolltable.rb
+----------------------------------------------------------
+Date: 2010-02-19 12:32
+
+Done the tiny changes to `Table`. Working now.
+Also, `Scrollpane` increases size of child if child is smaller.
+
+Now to fix `TabbedPanes`, more work involved here since each situation has
+to be taken care of in terms of sizing of child. However, hopefully will
+be simpler than `Splitpane`.
+
+* * * * * * * *
+
+Subject: scrollpane relevance in terminal apps
+----------------------------------------------
+Date: 2010-02-22 20:38
+
+Just wondering if scrollpanes have any meaning in a mouseless
+environment. The scrollbars have 3 functions:
+
+ 1. used to drag down. But for  that they have to get focus.
+ I don't make scrollbars focussable since that puts focus on too many
+ objects. I've seen demos of some curses toolkits that did, besides
+ being very low quality and buggy, focus was going to too many objects,
+ it was irritating.
+
+ 2. show how much more of a document there is.
+
+ 3. presence of scrollbars indicates to user that he can scroll
+ vertically or horizontally.
+
+In a mouseless environment, no focus to scrollbar. Keys are used to
+scroll. However, we still need to indicate to user that he can scroll.
+Also user may want to know percentage of screen.
+On a terminal, scrollpanes are taking valuable rows and cols due to
+boundary and bars.
+
+Since scrollbars result in added complexity especially wrt placement and
+cursor location, can we do away with scrollpanes as a widget and have
+them added onto other widgets.
+They would just place themselves where the object allows, on the objects
+own border. That eliminates a lot of testing.
+
+scrolling can be an option to widgets. they then include this
+capability. Needs to be thought out, since Scrollpanes result in insdie
+object creating a buffer.
+
+* * * * * * * *
+
+Subject: double key mapping like vim
+------------------------------------
+Date: 2010-02-24 15:17
+
+The earlier Mapper than i had written was quite good, but integrating that to
+get multiple keys into rbcurse would have meant a lot of rework, and perhaps not have
+fitted in, with control going to multiple objects and heirarchies of
+objects, whereas Mapper takes over control.
+
+So i've got a simple thing going, you can test out "gg" in any textview
+and it takes you to the start of the document.
+
+Usually, we check for bindings after going through a case statement.
+This means if i've got a binding to "gg" on a listbox but listbox moves
+focus to first element with "g", my binding is never invoked.
+
+One could do as follows:
+Make a call to process_key first, outside the case structure. If
+:UNHANDLED is returned, we go into case.
+
+If the user presses, g once, but not a second time, return :UNHANDLED.
+if getch returns a -1, return UNHANDLED, not nil.
+
+That way a double key binding can work, even with a single key binding.
+e.g. currently I have "jj" bound to ESC in Vim, but if i type any
+character other than j after a j or wait, then a j is typed.
+
+So its a thought. In anycase, if the user wishes to override a binding,
+we should evaluate bindings first.
+
+* * * * * * * *
+
+Subject: regarding multiplier in embedded components
+----------------------------------------------------
+Date: 2010-02-26 13:40
+
+When i have a textarea inside a scrollpane, and i do C-u, who gets the
+numeric argument of 4 or 16, the scrollpane or textarea. Currently,
+since the scrollpane passes the key to textarea, so textarea increments
+multiplier.
+Then i press scroll (M-n), but the scrollpanes multiplier is still
+unset.
+This means that we cannot have a multiplier at an object level -- it
+must be a global app level thing. Each object uses the global arguments
+and resets after usage.
+But where do i trap the C-u key ?? 
+
+* * * * * * * *
+
+Subject: Undo in text widgets
+-----------------------------
+Date: 2010-03-06 10:09
+
+1. trap insert and delete events
+2. keep a list of 
+  * row
+  * curpos
+  * string/char added or deleted
+  * action: ADD or DEL
+
+  @current_position in list
+
+3. Undo() - moves up the list and does the opposite
+4. Redo() - moves down the list and does the same action
+
+* * * * * * * *
+
+Subject: entry of string
+------------------------
+Date: 2010-03-06 20:57
+
+I've brought back entry of a string inside an application.
+Until now if one wanted to adhoc ask the user for a string (such as a
+search string), one used the dialogs. However, if one wishes to keep the
+"gui" to a minimum, `rbgetstr` (from module Io, io.rb) does the job.
+
+It allows user to abort using `C-c`, or get specific help using `C-g`. Or
+use the arrow keys or backtab. However, i need to work in
+tab-completion, as well as perhaps history. 
+
+The main issue is coordinates to prompt. The widget often will not know
+where on the screen it should prompt. Dialog boxes solve this by opening
+their own window and then erasing it. Here to keep things simple, i just
+write on the form.window. The app should define the coordinates perhaps.
+
+In the test, textview writes on its own lower border.
+
+Perhaps, I'll bring back askyesno etc == for which currently the dialog
+box options exist.
+
+* * * * * * * *
+
+Subject: "most"-like menus
+--------------------------
+Date: 2010-03-06 21:03
+
+For menu's we already have 2 ways:
+
+1. a menu bar just like the **Links** browser with sub options, hotkeys, actions etc.
+   To see this press F2 in test2.rb.
+
+2. Popup-menus - Similar to the above, popup over a component to show
+   its options. to see this, iirc the todo app example, if it still
+   works.
+
+3. "Pine"-like option labels at the bottom of the screen. Absolutely
+   identical -- check the rfe.rb example. This is usually for options
+   that stay around forever. One can always superimpose another set when
+   one wants, as moving into a component. This menu shows what's
+   available, so usually in a data entry app, only control and alt-keys
+   would be shown.
+   This is only a display, and does not take over control or focus. It's
+   like having a cheat-sheet of key-bindings at the bottom of the
+   screen.
+
+4.  I recently have been using most as a pager. It has a simple menu
+    system available on pressing ":". I've copied it shamefully, so one
+    can quickly set up multi-level menus with actions (procs or symbols)
+    attached. The API may need work on. Since the location of this menu
+    needs to be provided by application and not a widget. Currently,
+    textview provides a location at 23,0. 
+    Unlike the pine-like labels, this prompts and takes control, so any
+    letter can be defined per level.
+    To see this, try any example with a textview and press "m" for menu.
+    Try testsplit3.rb. I may change the mapping "m" shortly ?
+
+So depending on the kind of application we have, we can choose the kind
+of menu system we want.
+
+* * * * * * * *
+
+Subject: undo facility - more on it
+-----------------------------------
+Date: 2010-03-08 18:09
+
+currently the undo is independent of the textarea and uses the event
+object. however, it hardcodes access to the data structures of textarea.
+
+Textarea should make an undo object and pass that. this object would
+have an undo and redo method which it has implemented. Also the object
+will maintain state of whether it can undo or redo. the undo object may
+have an array not just one value.
+
+this way undo's can be clubbed. perhaps a block delete using a number
+can create an array of actions rather than separate actions. Hopefully,
+typing several chars can also be clubbed into one object to reduce
+memory.
+
+* * * * * * * *
+
+Subject: making rbcurse friendlier
+----------------------------------
+Date: 2010-08-26 19:45
+
+I am wondering whether creating rbcurse widgets or apps requires too
+much boiler plate code.
+
+Can I make it simpler. The problem i faced (coming from Java) was
+inability to have multiple constructors. So the user, and even I, don't
+know for sure what all a widget requires to run.
+
+Can widget creation be made simpler.
+
+I have an idea also for generating widgets and an app through a command
+line interface. Later i can also write a ncurses app in rbcurse that can
+generate apps. User can select and place widgets, he can see them as he
+creates them. He can move them around etc. Finally, he can generate the
+code for the widgets on screen.
+
+* * * * * * * *
+
+Subject: other screen patterns
+------------------------------
+Date: 2010-08-27 21:39
+
+List entry view: Show a simple entry form directly above the total list of items
+http://welie.com/patterns/showPattern.php?patternID=list-entry-view
+
+View: much like Hotmail.
+http://welie.com/patterns/showPattern.php?patternID=list-entry-view
+
+Product Comparison: Sort of pivot table like, perhaps color columns
+http://welie.com/patterns/showPattern.php?patternID=comparison
+
+Directory Navigation
+http://welie.com/patterns/showPattern.php?patternID=directory
+
+http://welie.com/patterns/showPattern.php?patternID=doormat
+http://welie.com/patterns/showPattern.php?patternID=paging
+
+* * * * * * * *
+
+Subject: some fresh ideas for widgets
+-------------------------------------
+Date: 2010-08-27 21:45
+
+I was glancing at this
+[article](http://designingwebinterfaces.com/designing-web-interfaces-12-screen-patterns)
+from reddit about Screen Patterns, and the 3 list widget was mentioned
+as Column Browse. Also Master Detail. 
+
+## Column Browse
+
+So I think why not create widgets out of this so that users don't have
+to mess around with multiple SplitPanes to do this. (Note that the
+problem in multiple embedded SplitPanes is that the user does not know
+how to traverse to a specific one. In an environment with a mouse, user
+can click on some area. Here, if there's no mouse this becomes a
+problem.
+
+If I create a widget with 2/3 lists, it will be easier to
+programmatically refer to them, and to traverse them.
+
+## Spreadsheet widget
+
+Someone also wrote to me about needing to write a Spreadsheet using
+ncurses. And the Table widget is close to that. It can be configured (or
+extended) to give quite a bit of functionality of a SS. However,
+everytime someone wishes to reuse a SS, he would have to copy the code
+-- if he has it.
+
+So why not create a separate Spreadsheet class with just code for SS.
+
+* * * * * * * *
+
+Subject: another take on Vimsplit widget
+----------------------------------------
+Date: 2010-08-27 23:23
+
+Remember the vimsplit widget. Lets do another take in which we keep one
+level of components only. Perhaps i can tile them in one orientation,
+and allow user to expand/contract -- should be easy since only one
+level. We can find some way to have multiple orientations.
+This will be easy to code for user, and also to modify
+programmatically at run time.
+
+One can even take the MultiContainer and put a tiling feature in it.
+**Convert to tiles**.
+
+Which makes me wonder, if i can use Multicontainer to rewrite
+TabbedPane ? Tabbedpane had become very complex. But oh wait, TabbedPane
+can have forms in it, which MC cannot have. That's where the complexity
+came in.
+
+So in the new vimsplit, splitting while sitting on a split, will not
+create a child split, but only an outer split, but half the size of the
+current split, or share out the sizes. Traversal will be easy.
+
+If we allow splits to be defined with abso coords then we can have
+complex splits. Or perhaps a way of giving preferred size, so it can
+expand fully in one direction.
+
+* * * * * * * *
+
+Subject: ffi-ncurses ?
+----------------------
+Date: 2010-08-30 12:37
+
+there is some talk of ncurses installation which is hindering people
+from using rbcurse.
+
+Perhaps we should try moving to ffi-ncurses after all. I heard it was
+slow. Is there some way of making it optional, whether a user wishes to
+use ffi or ruby-ncurses. For example, i read that mutt can be compiled
+for ncurses or slang.
+
+* * * * * * * *
+
+Subject: on_enter
+-----------------
+Date: 2010-09-02 12:12
+
+i think Form calls `on_enter` of a widget and also fires its `:ENTER`.
+However, looking at the on_enter of some widget;s looks like they also
+fire :ENTER. So things could get fired 2 times.
+
+* * * * * * * *
+
+Subject: making rbcurse easier
+------------------------------
+Date: 2010-09-05 10:57
+
+Currently making an application in rbcurse, requires a lot of boiler
+plate code. Various methods to be called to setup ... heck even I can't
+remember them! 
+
+I am trying out a wrapper for rbcurse. Much like a file.open block which
+does the dirty work of opening and closing a file while the user only
+supplies a block. 
+
+Then i need to make wrappers for fields and other widgets so they can be
+made easily. This way basic screens can be developed rather easily.
+
+The wrapper is called app.rb and it currently resides in examples since
+it is very much in progress and trial. it will keep changing, so its
+going to remain in examples till it grows up. If you use it, rename it
+first, let me know of any improvements or fixes or changes or ideas.
+
+* * * * * * * *
+
+Subject: shoes changed
+----------------------
+Date: 2010-09-05 15:08
+
+In rbcurse, we use the block to initialize... shoes uses the block as a
+changed action. Is that not better, since there is already a config for
+doing the setting. Why 2 ways of setting ?
+
+Is it too late to change, or shall we go this way in the App wrapper.
+Internally we can bind to CHANGED. or should i have a changed method
+which does this.
+
+* * * * * * * *
+
+Subject: uniformity and less surprises
+--------------------------------------
+Date: 2010-09-07 20:17
+
+we need more uniformity and less surprise. Let 'text' be the one method
+with 'def text' and 'def text =', in buttons rename text to label, so 
+text can be the answer. Same for all widgets. getvalue and get_value etc
+sucks.
+If a Variable passed in take its value.
+thanks to the DSL approach there's this whole get_ set_ nonsense.
+
+We need to move out the DSLish crap everywhere, even if that means a new
+major revision.
+
+* * * * * * * *
+
+Subject: testing of widgets
+---------------------------
+Date: 2010-09-19 10:59
+
+If we keep the model separate, we can test the model out. Helps if the
+model is complex like a tree, but what if the model is an inbuilt one
+such as a list ? 
+
+If the widget keeps UI separate, which includes ncurses, then we can run
+tests on it from command line. However, widgets are instantiated with
+form and window.!!! How to do change this ?
+
+
+Can i create objects without passing a form ? and then call methods on
+it, like setting data, set_value, add etc. See that events are fired,
+exceptions are raised ?
+
+actually even form is okay, but window printing is the issue. we need to
+prevent that, windowless form that handles keys sent by a program. but
+no ncurses loaded or displayed.
+
+* * * * * * * *
+
+Subject: temporarily leaving ncurses
+------------------------------------
+Date: 2010-09-20 13:23
+
+If i want to run some command, temporarily leave ncurses using
+def_prog_mode do stuff and then return. SEE:
+http://tldp.org/HOWTO/NCURSES-Programming-HOWTO/misc.html#TEMPLEAVE
+
+I think vim does this when you type :ls . One can use this to display
+bindings, events etc.
+
+* * * * * * * *
+
+Subject: repainting of containers
+---------------------------------
+Date: 2010-09-22 18:15
+
+Seem to be screwing this up. Either I am painting all in repaint which
+is not good. Yet, i do not know which are updated. Perhaps one component
+has been externally updated, and the container does not know. So its
+repaint required is still false.
+
+So ... if `repaint_required` is true, it should repaint the borders, the
+components, resize etc.
+
+If `repaint_required` is *false*, it still must call `repaint()` on all
+components, which will repaint if they have been modified. I've done
+this in rvimsplit.
+
+* * * * * * * *
+
+Subject: Listbox and CellRenderer
+---------------------------------
+Date: 2010-09-23 22:25
+
+Often what is displayed in a listbox is quite different from the data in
+the list provided. Such as filenames in the list, but a long list is
+dislpayed.
+There are several ways to handle this.
+I am not addressing obvious performance vs memory issues here. Only
+implementation issues and their diffculties wrt display and app
+programming.
+
+1. Keep file names in list. But use the cell renderer to show complete
+   info. The repaint method truncates and treats the values from list,
+   so scrolling can't happen. The main program has a false idea of line
+   length. So cell renderers should only be used for format or color the
+   data, changes in length etc should not happen. Else we will have to
+   rewrite repaint and do length and scolling in renderer.
+
+2. Keep the formatted data in the list. This makes it difficult to do
+   work on firing the list. We don't have the filenames. We would have
+   to maintain a backing store. There are additional issues such as if
+   we are updating a list, the value shown will be the entire formatted
+   line, and that will be updated into the formatted list.
+
+3. So now we use `convert_value_to_text` to format the data, so scrolling
+   can happen. Cellrenderer just does coloring based on select focus etc
+   which was the original purpose. But since the formatted data is not
+   in the list, movement methods like end of line, forward word don't
+   work correctly since they consider the original data not the
+   formatted data.
+
+Currently, Listbox does not have a separation of methods that act on
+displayed data and actual (model) data. It assumes one list.
+Listbox already is complicated enough with all the editing.
+
+I've gone back and forth with moving the formatting in and out of hte
+list, (in appdirtree and directorylist.rb) and i am doing no more. My
+suggestion is. ... perhaps you should put formatted data into the list
+itself. Have a backing store of the real data (that's what crow and
+row_index are for). However, in some case, you will have to face the
+difference between the 2 when updating only the model value.
+
+
+Some of hte performance considerations. If you have very long lists but
+only little of the data is seen by user the creating formatted date for
+all rows can be wasteful. Cellrenderer and convert_value_to_text only
+work on the rows beign displayed. However, they will keep working on the
+rows if you keep viewing them over and over. No cacheing etc.
+If you put formatted data in the list, there would be no repeated
+formatting. In the directory lister demo, there is no cacheing of file
+stat objects. Since the speed is fine, i did not bother to do any
+cacheing.
+
+One option is to maintain a cache of only those objects on screen.
+Populate the cache in the convert_value_to_text loop. Or in
+cell_renderer. Clear it every time you get a row_index of 0 and start
+over.
+This way all operations that require movement over formatted data can
+use that cache.
+
+* * * * * * * *
+
+Subject: grabbars and scrollbar focusing
+----------------------------------------
+Date: 2010-10-07 11:49
+
+
+
+* * * * * * * *
+
+Subject: grabbar and scrollbar focusing
+---------------------------------------
+Date: 2010-10-07 11:49
+
+Some objects like grabbars should not be in the way. they should be
+`focusable` on some key, or condition. I am thinking of Alt-Tab.
+Should there be some extra attrib for such since focusable will be
+false.
+
+I could register such objects with a `FocusManager` array. Upon pressing some
+key (say F2), it cycles through these and makes then focusable. Works as
+a toggle.
+Or on pressing F2, it goes to next object in its array. So it will cycle
+between these objects directly setting focus to them. So they will never
+come in the TAB order.
+
+This means i don't have to make a parallel `select_next_field` for such
+objects since they will have focusable true.
+
+* * * * * * * *
+
+Subject: grabbars and other strange things
+------------------------------------------
+Date: 2010-10-08 18:25
+
+I've added these grabbars (dividers) for forms that have many panes. These are
+borders (much like a scrollbar) that allow user to drag them left right
+or up down and re-size panes. Currently, the alternative has been to use
+keys such as C-w - and +, which may not be obvious.
+
+However, we don't want these dividers to take focus each time a user
+traverses the form. Thus, dividers are not focusable by default. But we
+add them to a module FocusManager. When F3 is pressed, the FocusManager
+toggles these dividers (or whatever it has in its list), to focusable.
+Now the user can tab into these dividers. Once the user is done, he may
+press F3 again and make them non-focusable. FocusManager can be used for
+amy objects that should only be focusable when user wants them. I may
+make scrollbars focusable in a future version.
+
+* * * * * * * *
+
+Subject: stacks and flows - thoughts
+------------------------------------
+Date: 2010-10-17 22:40
+
+It should be possible to maintain stacks and flows within the app class.
+this way, the app can be asked to reposition the widgets and it can do
+so. This is required for when we get into using KEY_RESIZE (window
+resizing). So this will only be available within App, but then that's
+where stacks and flows are, anyway.
+Can we liberate S and F from App and make them independent ?
+
+* * * * * * * *
+
+Subject: color_pair added to widget
+-----------------------------------
+Date: 2010-10-18 23:04
+
+Now we may directly pass a color_pair to a widget when creating. This
+way we can create one color_pair and pass it to multiple widgets, rather
+than passing actual colors to each. Also, this is a tad more efficient
+since the color won't be calculated each time a repaint is done.
+
+* * * * * * * *
+
+Subject: Usage of preferred_size
+--------------------------------
+Date: 2010-10-20 13:02
+
+when the user may resize a component, or columns in a components, or
+user may specify widths or heights, we should use a `preferred_width`
+field. 
+When we calculate width, use `preferred_width` if present, else calculate
+it. Program never updates `preferred_width`.
+
+However, the question is what when a user resizes a component or
+sub-component. We want to respect that and not overwrite. So currently,
+i suggest that we update preferred_width on resizing, dragging etc. This
+does mean that the original specified width is lost, so a
+`reset_to_preferred_sizes` is not possible.
+
+* * * * * * * *
+
+Subject: single and multiple selection and keys
+-----------------------------------------------
+Date: 2010-10-28 23:07
+
+If single selection (by spacebar) then pressing spacebar and pressing
+Enter should typically have same action. i.e. select current row and
+fire_event.(*)
+
+If multiple selection, then Enter typically fires an action for current
+row such as opening an item or giving more details for that item.
+Spacebar selects multiple items (or Ctrl-Spacebar), and other keys will
+execute some action on selected rows (like delete, flag, move etc).
+
+(*) Exceptions: in tree, Enter collapses or expands, and selects current
+row, whereas spacebar only selects and displays in other window.
+Spacebar does not expand or collapse tree node.
+
+Typically in multiple select, spacebar selects first row (deselecting
+others) and Ctrl-Spacebar continues selection. Have to check this out
+with Listbox. including `ListSelectable` should take care of most of this.
+
+* * * * * * * *
+
+Subject: rmessagewindow
+-----------------------
+Date: 2010-11-04 12:23
+
+Regarding bottomline and rmessagewindow
+
+I was thinking that if i try to do bottomline in a separate window that
+just pops up and goes off, then i don't have to worry about having a
+window handle (since a new window is created with each call). I tried
+out this approach with rmessagewindow.
+
+However, first of all one has to press a key to make the message go off.
+Secondly, when the window goes off, so does the message. Whatever was
+there before remains. Which is great if that's what you need. (But we
+already have alert() and rdialog for that).
+
+This is fine for accepting input at screen bottom, but after ask() we
+still want to display some message like "file written" and let it be
+there. Which means i still have to write to existing window, so my
+problem remains. I need to have handle of existing window.
+
+I've added a bottomline object in each window when we create so we can
+use it as `@window.ask`,  `@window.agree`.
+
+When you use App, you automatically get `ask()` connected to the root
+window, but what happens when one App calls another App!!
+
+However, i really like how i can do a 'M-x' (taken from memacs), and
+then tab to see available commands. This way user does not need to
+remember key combinations.
+
+* * * * * * * *
+
+Subject: gmail style email completion
+-------------------------------------
+Date: 2010-11-20 13:26
+
+I've just implemented some gmail style email completion.
+As you type in a field, values are shown in a window. You can key UP or
+DOWN, or keep typing. Pressing ENTER selects highilghted value. You can
+enter multiple emails in one field and get help on each.
+
+However, in this case, the window is not modal, so the form below is
+painting itself. There are still some old widgets like Label and Field
+(perhaps button) that keep repainting redgarldess of whether changed.
+This overrides the non-modal window. I've just fixed field but putting a
+@repaint_required == true check in repaint.
+
+Also, i think its possible, that rcommandwindow does a repaint and panel
+update more often than required. its called in different ways,
+interactive and non-interactive. Need to look into that at some time.
+
+* * * * * * * *
+
+Subject: calcurse
+-----------------
+Date: 2010-12-01 18:49
+
+Just installed calcurse (port) and was checking the UI. Neat. Some salient
+points:
+
+1. Windows or panels. Standard with title, title border, border color
+   changes when focus in panel or box (that's because it keeps updating
+   time and thereofre cursor remains on status bar)
+2. 2 bottom lines for keys like we have (keylabels)
+3. 3rd last row is a sort of status bar like emacs and vim have
+4. Data entry in last 2 rows. 2nd last has prompt, last has entry or
+   edit
+5. Similarly menu options selected in last row. A page comes with
+   options, letter indexed.
+6. Allows layout change of panels.
+7. Allows color change, immediate change. Displays colors rather than
+   name. Color chooser for BG and FG.
+
+Subject: App.rb confirm before quit
+-----------------------------------
+Date: 2011-09-17 11:49
+
+App should be able to configure whether it wants quit-confirm. Or a
+procedure to call before quitting, such as saving values. It's okay for
+demos where there's no state to just press F1 or q or C-q to quit.
+
+* * * * * * * *
+
+Subject: porting to ffi-ncurses
+-------------------------------
+Date: 2011-09-17 11:51
+
+I've been working on porting the rbcurse gem to ffi-ncurses, since
+ncurses gems is so so hard to install for a lot of people. Thanks to
+Sean's support the work and retesting was actually very little. It's
+just that there is a lot of testing to do with all the programs,
+widgets.
+
+Sean is coming out with a version 0.4.0 which I am using. rbcurse 1.3.0
+onwards uses ffi-ncurses. 
+
+* * * * * * * *
+
+Subject: color formatting
+-------------------------
+Date: 2011-11-03 15:03
+
+Alot has happened since moving to ffi. New widgets and containers, a new
+tabbedpane that hopefully doesn't suck and is more rubyesque. However,
+its amazing how simple the color formatting issue was. Took me only a
+few minutes to get working with a good regular expression.
+
+The motivation is to be able to have a document with color formatting. I
+am using the color formatting code of tmux, i.e., #[fg=green, bg=blue,
+bold] etc. However, I added an "#[end]" tag which pops the previous
+color, so now its more like html's span, than the terminal escape
+sequences which just override the previous.
+
+I'll ofcourse use this in the statusline, in help screens, and also in
+some way in textview, and somehow even in messages, alerts, messageboxes
+etc. It's still rough, does no checking for mistakes and I don't have a
+routine to wrap text ignoring the color stuff. That will be needed soon.
+
+* * * * * * * *
+
+Subject: bifurcating into core and others
+-----------------------------------------
+Date: 2011-11-08 18:30
+
+Perhaps it would be better to divide rbcurse into rbcurse-core and then
+other packages or gems.
+This way *core* can remain more or less frozen and bug fixes can be
+released quickly without waiting for other features to stabilize.
+
+Changes in other packages can be made without disturbing core. Core can
+be kept backward compatible. And it can remain light with just form,
+window, field, buttons, list and perhaps textview. 
+
+Other widgets can be put in other gems. The entire extras, UI patterns,
+experimental work. There could be a *rbcurse-experimental* which moves to
+either core or standard as and when it stabilizes.
+
+1. rbcurse-core - form, field, label, buttons, dialogs, basiclist, messagebox
+   viewer, menus? , combo - basically whatever is required to run test2 and
+   test1.rb. We must have a minimal number of programs to test for this.
+   Actually, test2 incorporates a lot!
+
+2. rbcurse-util
+   menus?, textarea?, tabbedpane, tree
+   tables, tabular, keylabel, progress, scrollbar, statusline,
+
+3. rbcurse-extras 
+   vimsplit, multi-containers, masterdetail, directorylist etc
+   statuswindow, rcommandwindow
+   link, menulink, container
+
+4. rbcurse-experimental
+   resultset, 
+   Pad, subwin,derwin from window class, scrollform, app, stack/flow
+   gmailfield
+
+5. rbcurse-demos
+   rfe, sqlc/m, dbdemo which can be installed and run from anywhere
+   appemail
+   This must be dependent on a specific version of core and util.
+
+6. rbcurse-db
+    database related work - resultsetview etc
+
+* * * * * * * *
+Subject: textpad
+----------------
+Date: 2013-03-05 20:11
+
+Moving to textpad usage
+This would simplify stuff since textview has to do a lot of work each
+time it displays, too much truncation of strings and all that, a lot of 
+memory and gc happening.
+
+Textpad is simpler, however there's one issue. ncurses does not see to
+do book-keeping of pads as it does of windows. When a popup or alert
+comes up from some part of the app, there's a black box left on the
+screen. padrefresh will take care of this, however, the box may cover
+not one but several pads, and we need to find all the pads and make them
+refresh themselves. until then have to postpone. the ffi-ncurses
+example also has a case where the underlyign frame is manuall repainted
+which sucks.
+
+Window has the internal pads, not our textpad objects. So although it can delete
+pads it cannot do a padrefresh which is our textpad method.
+
+* * * * * * * *
+
+Subject: field history
+----------------------
+Date: 2013-03-06 14:27
+
+I've added history to get_string. Wonder why it was not there.
+However, i think it should be a part of field, optional, since 
+different fields should maintain their own history. Surely, I've done
+something on this, or thought it over.
+
+Okay, Field can maintain its history if you extend FieldHistory, however if
+you use a field in a messagebox which is created over and over again, then we
+manually have to keep the history and pass it to the field when creating the messagebox.
+
+* * * * * * * *
