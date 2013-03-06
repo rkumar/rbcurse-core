@@ -86,19 +86,31 @@ def get_string label, config={} # yield Field
   defwid = config[:default].nil? ? 30 : config[:default].size + 13
   w = [label.size + 8, defwid, field_config[:width]+13 ].max
   config[:width] ||= w
+  ## added history 2013-03-06 - 14:25 : we could keep history based on prompt
+  $get_string_history ||= []
   #$log.debug "XXX:  FIELD SIZE #{w} "
   #$log.debug "XXX:  FIELD CONFIG #{field_config} "
   tp = MessageBox.new config do
     button_type :ok_cancel
     default_button 0
     item Label.new nil, label_config
-    item Field.new nil, field_config
+    fld = Field.new nil, field_config
+    item fld
+    ## added field history 2013-03-06 - 14:24 
+        require 'rbcurse/core/include/rhistory'
+        fld.extend(FieldHistory)
+        # We need to manually set history each time, since the field is recreated
+        # with the messagebox. Otherwise, field can on its own handle history
+        fld.history($get_string_history)
   end
   # added yield to override settings
   yield tp.form.by_name[:name] if block_given?
   index = tp.run
   if index == 0 # OK
-    return tp.form.by_name[:name].text
+    ## added field history 2013-03-06 - 14:24 
+    t = tp.form.by_name[:name].text
+    $get_string_history << t if t && !$get_string_history.include?(t)
+    return t
   else # CANCEL
     # Should i use nil or blank. I am currently opting for nil, as this may imply to caller
     # that user does not wish to override whatever value is being prompted for.
