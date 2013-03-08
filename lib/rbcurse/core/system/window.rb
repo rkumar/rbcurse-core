@@ -4,7 +4,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: Around for a long time
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-08 17:20
+#  Last update: 2013-03-08 17:23
 #
 #  == CHANGED
 #     removed Pad and Subwin to lib/ver/rpad.rb - hopefully I've seen the last of both
@@ -297,7 +297,7 @@ module VER
             rem = wid - oldw
             if rem > 0
               # take only as much as we are allowed
-              text = text[0..rem]
+              text = text[0,rem]
             else
               break
             end
