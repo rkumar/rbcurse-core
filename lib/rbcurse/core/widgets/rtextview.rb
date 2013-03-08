@@ -538,7 +538,9 @@ module RubyCurses
                 # or pass it to show_col
                 a = get_attrib @attrib
                 # FIXME this does not clear till the eol
-                @graphic.show_colored_chunks content, acolor, a
+                # # NOTE 2013-03-08 - 17:37 pls add width to avoid overflow
+                @graphic.show_colored_chunks content, acolor, a, @width-@internal_width
+                #@graphic.show_colored_chunks content, acolor, a
               else
                 # a single row chunk - NOTE Very experimental may change
                 text = content[1].dup
