@@ -4,7 +4,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: Around for a long time
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-08 17:27
+#  Last update: 2013-03-08 19:12
 #
 #  == CHANGED
 #     removed Pad and Subwin to lib/ver/rpad.rb - hopefully I've seen the last of both
@@ -280,7 +280,7 @@ module VER
     #  Previously this printed a chunk as a full line, I've modified it to print on 
     #  one line. This can be used for running text. 
     #  NOTE 2013-03-08 - 17:02 added width so we don't overflow
-    def show_colored_chunks(chunks, defcolor = nil, defattr = nil, wid = 999)
+    def show_colored_chunks(chunks, defcolor = nil, defattr = nil, wid = 999, pcol = 0)
       return unless visible?
       ww = 0
       chunks.each do |chunk| #|color, chunk, attrib|
@@ -289,6 +289,19 @@ module VER
           color = chunk.color
           attrib = chunk.attrib
           text = chunk.text
+
+          ## 2013-03-08 - 19:11 take care of scrolling by means of pcol
+          if pcol > 0
+            if pcol > text.length 
+              # ignore entire chunk and reduce pcol
+              pcol -= text.length
+              next
+            else
+              # print portion of chunk and zero pcol
+              text = text[pcol..-1]
+              pcol = 0
+            end
+          end
           oldw = ww
           ww += text.length
           if ww > wid
