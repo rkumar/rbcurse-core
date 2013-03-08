@@ -4,7 +4,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: Around for a long time
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-08 17:23
+#  Last update: 2013-03-08 17:27
 #
 #  == CHANGED
 #     removed Pad and Subwin to lib/ver/rpad.rb - hopefully I've seen the last of both
@@ -279,8 +279,7 @@ module VER
     #  is 0
     #  Previously this printed a chunk as a full line, I've modified it to print on 
     #  one line. This can be used for running text. 
-    #  NOTE XXX 2013-03-08 - 17:02 this doesn't take a width nor is it possible
-    #    for caller to truncate content, so this can overflow the textvew.
+    #  NOTE 2013-03-08 - 17:02 added width so we don't overflow
     def show_colored_chunks(chunks, defcolor = nil, defattr = nil, wid = 999)
       return unless visible?
       ww = 0
@@ -653,6 +652,7 @@ module VER
         #$log.debug "XXX: using chunkline" # 2011-12-10 12:40:13
         wmove r, c
         a = get_attrib att
+        # please add width to avoid overflow
         show_colored_chunks content, color, a
       elsif content.is_a? Array
         # several chunks in one row - NOTE Very experimental may change
@@ -660,6 +660,7 @@ module VER
           $log.warn "XXX: WARNING outdated should send in a chunkline"
           wmove r, c
           a = get_attrib att
+          # please add width to avoid overflow
           show_colored_chunks content, color, a
         else
           # a single row chunk - NOTE Very experimental may change
