@@ -524,7 +524,7 @@ module RubyCurses
               # or pass it to show_col
               a = get_attrib @attrib
               # FIXME this does not clear till the eol
-              @graphic.show_colored_chunks content, acolor, a, @width-@internal_width
+              @graphic.show_colored_chunks content, acolor, a, @width-@internal_width, @pcol
             elsif content.is_a? Chunks::Chunk
               raise "TODO chunk in textview"
             elsif content.is_a? Array
