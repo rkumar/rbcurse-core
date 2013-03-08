@@ -515,14 +515,16 @@ module RubyCurses
               @graphic.printstring  r+hh, c, "%-*s" % [@width-@internal_width,content], 
                 acolor, @attr
             elsif content.is_a? Chunks::ChunkLine
+              # clear the line first
               @graphic.printstring  r+hh, c, " "* (@width-@internal_width), 
                 acolor, @attr
+              # move back
               @graphic.wmove r+hh, c
               # either we have to loop through and put in default color and attr
               # or pass it to show_col
               a = get_attrib @attrib
               # FIXME this does not clear till the eol
-              @graphic.show_colored_chunks content, acolor, a
+              @graphic.show_colored_chunks content, acolor, a, @width-@internal_width
             elsif content.is_a? Chunks::Chunk
               raise "TODO chunk in textview"
             elsif content.is_a? Array
