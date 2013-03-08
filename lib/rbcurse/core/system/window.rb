@@ -4,7 +4,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: Around for a long time
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-05 20:56
+#  Last update: 2013-03-08 17:20
 #
 #  == CHANGED
 #     removed Pad and Subwin to lib/ver/rpad.rb - hopefully I've seen the last of both
@@ -279,14 +279,29 @@ module VER
     #  is 0
     #  Previously this printed a chunk as a full line, I've modified it to print on 
     #  one line. This can be used for running text. 
-    def show_colored_chunks(chunks, defcolor = nil, defattr = nil)
+    #  NOTE XXX 2013-03-08 - 17:02 this doesn't take a width nor is it possible
+    #    for caller to truncate content, so this can overflow the textvew.
+    def show_colored_chunks(chunks, defcolor = nil, defattr = nil, wid = 999)
       return unless visible?
+      ww = 0
       chunks.each do |chunk| #|color, chunk, attrib|
         case chunk
         when Chunks::Chunk
           color = chunk.color
           attrib = chunk.attrib
           text = chunk.text
+          oldw = ww
+          ww += text.length
+          if ww > wid
+            # if we are exceeding the width then by howmuch
+            rem = wid - oldw
+            if rem > 0
+              # take only as much as we are allowed
+              text = text[0..rem]
+            else
+              break
+            end
+          end
         when Array
           # for earlier demos that used an array
           color = chunk[0]
