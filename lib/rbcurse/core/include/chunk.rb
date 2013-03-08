@@ -4,7 +4,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 07.11.11 - 12:31 
 #  Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: use ,,L
+#  Last update: 2013-03-08 00:03
 # ------------------------------------------------------------ #
 #
 
@@ -60,11 +60,23 @@ module Chunks
       @chunks.each { |e| result += e.text.length }
       return result
     end
+    # returns match for str in this chunk
+    # added 2013-03-07 - 23:59 
+    def index str
+      result = 0
+      @chunks.each { |e| txt = e.text; 
+        ix =  txt.index(str) 
+        return result + ix if ix
+        result += e.text.length 
+      }
+      return nil
+    end
     alias :length :row_length
     alias :size   :row_length
 
     # return a Chunkline containing only the text for the range requested
     def substring start, size
+      raise "substring not implemented yet"
     end
     def to_s
       result = ""
