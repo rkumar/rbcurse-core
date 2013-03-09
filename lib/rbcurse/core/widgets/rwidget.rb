@@ -9,7 +9,7 @@
   * Author: rkumar (arunachalesha)
   * Date: 2008-11-19 12:49 
   * License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-  * Last update: 2013-03-08 20:54
+  * Last update: 2013-03-08 20:56
 
   == CHANGES
   * 2011-10-2 Added PropertyVetoException to rollback changes to property
@@ -1394,7 +1394,7 @@ module RubyCurses
        ### @window.wrefresh
        if @window.window_type == :WINDOW
          #$log.debug " formrepaint #{@name} calling window.wrefresh #{@window} "
-         #@window.wrefresh
+         @window.wrefresh
          Ncurses::Panel.update_panels ## added 2010-11-05 00:30 to see if clears the stdscr problems
        else
          $log.warn " XXX formrepaint #{@name} no refresh called  2011-09-19  #{@window} "
