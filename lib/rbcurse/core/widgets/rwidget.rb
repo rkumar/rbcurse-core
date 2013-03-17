@@ -9,7 +9,7 @@
   * Author: rkumar (arunachalesha)
   * Date: 2008-11-19 12:49 
   * License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-  * Last update: 2013-03-08 20:56
+  * Last update: 2013-03-16 20:06
 
   == CHANGES
   * 2011-10-2 Added PropertyVetoException to rollback changes to property
@@ -232,7 +232,7 @@ module RubyCurses
         when 393..402
           return "M-F"+ (keycode-392).to_s
         when 0
-          return "C-space" # i hope this is correct, just guessing
+          return "C-space" 
         when 160
           return "M-space" # at least on OSX Leopard now (don't remember this working on PPC)
         when C_LEFT
