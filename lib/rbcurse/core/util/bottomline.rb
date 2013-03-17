@@ -1132,6 +1132,8 @@ module RubyCurses
       Ncurses::Panel.update_panels
       ch=@window.getchar()
       hide_bottomline
+      ## return char so we can use for asking for one character
+      return ch
     end
     # since say does not leave the screen, it is not exactly recommended
     #  as it will hide what's below. It's better to call pause, or this, which
