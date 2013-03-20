@@ -10,7 +10,7 @@ App.new do
       :color => :black, :bgcolor => :white, :attr => :bold 
   message "Press F10 to exit from here, F1 for help, F2 for menu"
 
-  stack :margin_top => 1, height => FFI::NCurses.LINES-3 do
+  stack :margin_top => 1, :height => FFI::NCurses.LINES-3 do
 
   end # stack
   status_line :row => FFI::NCurses.LINES-1
