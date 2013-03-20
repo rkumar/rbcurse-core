@@ -462,7 +462,7 @@ module RubyCurses
         raise ArgumentError, "Don't know how to handle #{arg.class} in PrefixManager"
       end
       @descriptions ||= []
-      @descriptions[_keycode] = desc
+      @descriptions[_keycode.to_i] = desc
 
       if !block_given?
         blk = arg
