@@ -402,7 +402,8 @@ module Io
             else
               raise ArgumentError, "Promptmenu needs hotkey or mnemonic"
             end
-            labels << "%c. %s " % [ hk, item.label ]
+            # 187compat 2013-03-20 - 19:00 throws up
+            labels << "%c. %s " % [ hk.getbyte(0), item.label ]
             h[hk] = item
             valid << hk
           }
