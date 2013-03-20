@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 2011-11-11 - 21:42
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: use ,,L
+#  Last update: 2013-03-21 01:11
 # ----------------------------------------------------------------------------- #
 #
 require 'rbcurse'
@@ -35,7 +35,13 @@ module RubyCurses
     def initialize form, config={}, &block
       @arrow_key_policy = :ignore
       @editable         = false
-      @COMBO_SYMBOL = "v".ord  # trying this out
+      #@COMBO_SYMBOL = "v".ord  # trying this out
+      # thanks hramrach for fix
+      if RUBY_VERSION < "1.9" then
+        @COMBO_SYMBOL = "v"[0]  # trying this out
+      else
+        @COMBO_SYMBOL = "v".ord  # trying this out
+      end 
       @current_index    = 0
       super
       # added if  check since it was overriding set_buffer in creation. 2009-01-18 00:03 
