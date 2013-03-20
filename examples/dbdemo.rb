@@ -17,7 +17,7 @@ end
 def connect dbname
   $log.debug "XXX:  CONNECT got #{dbname} "
   $current_db = dbname
-  $db = SQLite3::Database.new(dbname)
+  $db = SQLite3::Database.new(dbname) if dbname
 
   return $db
 end
