@@ -95,6 +95,7 @@ module RubyCurses
         t = Time.now
         tt = t.strftime "%F %H:%M:%S"
         r = Ncurses.LINES
+        # 2013-03-20 - 19:04 next line printing as is in 187 ???? what to do
         ftext = "#[fg=green,bg=blue] %-20s" % [tt] # print a default
         @form.window.printstring_formatted_right @row, nil, ftext, $datacolor, Ncurses::A_REVERSE
       end
