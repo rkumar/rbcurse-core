@@ -17,7 +17,7 @@ end
 def connect dbname
   $log.debug "XXX:  CONNECT got #{dbname} "
   $current_db = dbname
-  $db = SQLite3::Database.new(dbname)
+  $db = SQLite3::Database.new(dbname) if dbname
 
   return $db
 end
@@ -59,7 +59,9 @@ def create_popup array, selection_mode=:single,  &blk
   end
 end
 
-def view_data fields='*', name
+# 
+# changed order of name and fields, thanks hramrach
+def view_data name, fields="*"
   stmt = "select #{fields} from #{name}"
   stmt << $where_string if $where_string
   stmt << $order_string if $order_string
@@ -192,7 +194,7 @@ App.new do
         command do |menuitem, text|
           $current_table = text
           #alert(get_column_names(text).join(", "))
-          create_popup(get_column_names(text), :multiple) { |value| view_data( value.join(","), text) }
+          create_popup(get_column_names(text), :multiple) { |value| view_data( text, value.join(",") ) }
         end
       end
       item "New", "N" 
@@ -281,7 +283,7 @@ App.new do
           unless c.empty?
             cols = c.join(",")
           end
-          view_data cols, $selected_table
+          view_data $selected_table, cols
         else
           alert "Select a table first." 
         end
@@ -407,7 +409,7 @@ App.new do
           unless c.empty?
             cols = c.join(",")
           end
-          view_data cols, $current_table
+          view_data $current_table, cols
         else
           alert "Select a table first." 
         end
