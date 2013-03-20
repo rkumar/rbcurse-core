@@ -9,7 +9,7 @@
   * Author: rkumar (arunachalesha)
   * Date: 2008-11-19 12:49 
   * License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-  * Last update: 2013-03-16 20:06
+  * Last update: 2013-03-21 00:30
 
   == CHANGES
   * 2011-10-2 Added PropertyVetoException to rollback changes to property
@@ -30,10 +30,11 @@ require 'rbcurse/core/include/rinputdataevent' # for FIELD 2010-09-11 12:31
 require 'rbcurse/core/include/io'
 require 'rbcurse/core/system/keydefs'
 
-BOLD ||= FFI::NCurses::A_BOLD
-REVERSE ||= FFI::NCurses::A_REVERSE
-UNDERLINE ||= FFI::NCurses::A_UNDERLINE
-NORMAL ||= FFI::NCurses::A_NORMAL
+# 2013-03-21 - 187compat removed ||
+BOLD = FFI::NCurses::A_BOLD
+REVERSE = FFI::NCurses::A_REVERSE
+UNDERLINE = FFI::NCurses::A_UNDERLINE
+NORMAL = FFI::NCurses::A_NORMAL
 
 class Object
 # thanks to terminal-table for this method
@@ -116,15 +117,24 @@ end
 
 # 2009-10-04 14:13 added RK after suggestion on http://www.ruby-forum.com/topic/196618#856703
 # these are for 1.8 compatibility
-class Fixnum
-   def ord
-     self
-   end
-## mostly for control and meta characters
-   def getbyte(n)
-     self
-   end
-end unless "a"[0] == "a"
+unless "a"[0] == "a"
+  class Fixnum
+    def ord
+      self
+    end
+    ## mostly for control and meta characters
+    def getbyte(n)
+      self
+    end
+  end unless "a"[0] == "a"
+  # 2013-03-21 - 187compat
+  class String
+    ## mostly for control and meta characters
+    def getbyte(n)
+      self[n]
+    end
+  end
+end
 
 module RubyCurses
   extend self
@@ -461,7 +471,9 @@ module RubyCurses
       else
         raise ArgumentError, "Don't know how to handle #{arg.class} in PrefixManager"
       end
-      @descriptions ||= []
+      # 2013-03-20 - 18:45 187compat gave error in 187 cannot convert string to int
+      #@descriptions ||= []
+      @descriptions ||= {}
       @descriptions[_keycode] = desc
 
       if !block_given?
