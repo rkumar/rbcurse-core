@@ -346,7 +346,12 @@ module ListScrollable
           row1 = @list[ix].to_s
 
           # 2011-09-29 crashing on a character F3 in log file
-          row = row1.encode("ASCII-8BIT", :invalid => :replace, :undef => :replace, :replace => "?")
+          # 2013-03-20 - 18:25 187compat
+          if row1.respond_to? :encode
+            row = row1.encode("ASCII-8BIT", :invalid => :replace, :undef => :replace, :replace => "?")
+          else
+            row = row1
+          end
 
           m=row.match(regex)
           if !m.nil?
@@ -529,7 +534,10 @@ module ListScrollable
     def sanitize content  #:nodoc:
       if content.is_a? String
         content.chomp!
-        content.replace(content.encode("ASCII-8BIT", :invalid => :replace, :undef => :replace, :replace => "?"))
+        # 2013-03-20 - 18:29 187compat
+        if content.respond_to? :encode
+          content.replace(content.encode("ASCII-8BIT", :invalid => :replace, :undef => :replace, :replace => "?"))
+        end
         content.gsub!(/[\t\r\n]/, '  ') # don't display tab, newline
         content.gsub!(/\n/, '  ') # don't display tab, newline
         content.gsub!(/[^[:print:]]/, '')  # don't display non print characters
