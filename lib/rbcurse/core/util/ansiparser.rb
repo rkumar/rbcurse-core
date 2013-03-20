@@ -7,7 +7,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 07.11.11 - 13:17
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: use ,,L
+#  Last update: 2013-03-21 00:44
 # ----------------------------------------------------------------------------- #
 # == TODO
 #    - perhaps we can compile the regexp once and reuse
@@ -37,7 +37,7 @@ class AnsiParser
     a.each { |e| 
       ## process color or attrib portion
       #[ "", "\e[1m", "", "\e[34m", "", "\e[47m", "Showing all items...", "\e[0m", "", "\e[0m", "\n"]
-      if e[0] == "\x1b" && e[-1] == "m"
+      if e[0,1] == "\x1b" && e[-1,1] == "m"
 
         #e.each { |f|  x=/^.\[(.*).$/.match(f) 
           $log.debug "XXX: ANSI e #{e} "
