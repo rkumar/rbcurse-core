@@ -93,7 +93,7 @@ module RubyCurses
      if path
       p="require \"#{path}\""
     end
-     short ||= klass.downcase
+     short ||= klass.to_s.downcase
       eval %{
         def #{short}(config={}, &block)
           if config.is_a? String
