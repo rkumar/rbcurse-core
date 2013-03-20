@@ -4,7 +4,7 @@
 #               Also, stacks and flows objects
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 05.11.11 - 15:13 
-#  Last update: 2011-11-21 - 19:28
+#  Last update: 2013-03-21 00:55
 #
 #  I hope this slowly does not become an unmaintainable maze like vimsplit
 #
@@ -93,7 +93,7 @@ module RubyCurses
      if path
       p="require \"#{path}\""
     end
-     short ||= klass.downcase
+     short ||= klass.to_s.downcase
       eval %{
         def #{short}(config={}, &block)
           if config.is_a? String
