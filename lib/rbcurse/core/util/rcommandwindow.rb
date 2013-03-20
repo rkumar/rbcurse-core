@@ -37,12 +37,14 @@ module RubyCurses
       @window = VER::Window.new(@layout)
       @start = 0 # row for display of text with paging
       @list = []
-      require 'forwardable'
+      # 2013-03-21 - 00:34 removed due to 187
+      #require 'forwardable'
       require 'rbcurse/core/util/bottomline'
       @bottomline = Bottomline.new @window, 0
       @bottomline.name = "rcommandwindow's bl"
-      extend Forwardable
-      def_delegators :@bottomline, :ask, :say, :agree, :choose #, :display_text_interactive
+      # 187compat next line throws up on 187 module_eval undefined method for commandwindow
+      #extend Forwardable
+      #def_delegators :@bottomline, :ask, :say, :agree, :choose #, :display_text_interactive
       if @box == :border
         @window.box 0,0
       elsif @box
@@ -62,6 +64,20 @@ module RubyCurses
       if @box
         @row_offset = 1
       end
+    end
+    # 2013-03-21 - 187compat
+    #def_delegators :@bottomline, :ask, :say, :agree, :choose #, :display_text_interactive
+    def ask *args
+      @bottomline.send(:ask, *args)
+    end
+    def say *args
+      @bottomline.send(:say, *args)
+    end
+    def agree *args
+      @bottomline.send(:agree, *args)
+    end
+    def choose *args
+      @bottomline.send(:choose, *args)
     end
     # modify the window title, or get it if no params passed.
     def title t=nil
