@@ -7,7 +7,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 07.11.11 - 13:17
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: use ,,L
+#  Last update: 2013-03-21 00:42
 # ----------------------------------------------------------------------------- #
 # == TODO
 #    - perhaps we can compile the regexp once and reuse
@@ -24,6 +24,7 @@ class DefaultColorParser
   # @since 1.4.1  2011-11-3 experimental, can change
   # @return [nil] knows nothign about output format. 
 
+  # 187compat 2013-03-20 - 19:33 not working in 187 so added ,1 in some cases for string
   def parse_format s  # yields attribs or text
     ## set default colors
     color   = :white
@@ -35,7 +36,7 @@ class DefaultColorParser
     a       = s.split /(#\[[^\]]*\])/
     a.each { |e| 
       ## process color or attrib portion
-      if e[0,2] == "#[" && e[-1] == "]"
+      if e[0,2] == "#[" && e[-1,1] == "]"
         # now resetting 1:20 PM November 3, 2011 , earlier we were  carrying over
         color, bgcolor, attrib = nil, nil, nil
         catch(:done) do
