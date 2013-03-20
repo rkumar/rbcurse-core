@@ -35,7 +35,11 @@ module RubyCurses
     def initialize form, config={}, &block
       @arrow_key_policy = :ignore
       @editable         = false
-      @COMBO_SYMBOL = "v".ord  # trying this out
+      if RUBY_VERSION < "1.9" then
+          @COMBO_SYMBOL = "v"[0]  # trying this out
+      else
+          @COMBO_SYMBOL = "v".ord  # trying this out
+      end
       @current_index    = 0
       super
       # added if  check since it was overriding set_buffer in creation. 2009-01-18 00:03 
