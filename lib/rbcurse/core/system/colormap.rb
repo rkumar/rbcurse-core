@@ -7,8 +7,7 @@ module ColorMap
     # added check for fixnum if we go beyond these constants 2011-11-28 
     # e.g. to use full 256 colors
     return colorstring if colorstring.is_a? Fixnum 
-    ret = FFI::NCurses.const_get "COLOR_#{colorstring.upcase}"
-    #raise  "color const nil ColorMap 8 " if !ret
+    ret = FFI::NCurses.const_get "COLOR_#{colorstring.to_s.upcase}"
   end
   ## private
   # creates a new color pair, puts in color map and returns color_pair
