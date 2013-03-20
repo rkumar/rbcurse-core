@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 2011-11-11 - 21:42
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-21 01:11
+#  Last update: 2013-03-21 01:45
 # ----------------------------------------------------------------------------- #
 #
 require 'rbcurse'
@@ -54,8 +54,11 @@ module RubyCurses
       @show_symbol = true if @show_symbol.nil? # if set to false don't touch
       #@show_symbol = false if @label # 2011-11-13 
       @COMBO_SYMBOL ||= FFI::NCurses::ACS_DARROW #GEQUAL
-      bind_key(KEY_UP) { previous_row }
-      bind_key(KEY_DOWN) { next_row }
+
+      # next 2 lines giving an error in newtabbedwindow.rb example since the methods
+      # have been deprecated.
+      #bind_key(KEY_UP) { previous_row }
+      #bind_key(KEY_DOWN) { next_row }
     end
     def selected_item
       @list[@current_index]
