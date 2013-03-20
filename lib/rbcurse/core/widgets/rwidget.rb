@@ -30,10 +30,10 @@ require 'rbcurse/core/include/rinputdataevent' # for FIELD 2010-09-11 12:31
 require 'rbcurse/core/include/io'
 require 'rbcurse/core/system/keydefs'
 
-BOLD ||= FFI::NCurses::A_BOLD
-REVERSE ||= FFI::NCurses::A_REVERSE
-UNDERLINE ||= FFI::NCurses::A_UNDERLINE
-NORMAL ||= FFI::NCurses::A_NORMAL
+BOLD = FFI::NCurses::A_BOLD
+REVERSE = FFI::NCurses::A_REVERSE
+UNDERLINE = FFI::NCurses::A_UNDERLINE
+NORMAL = FFI::NCurses::A_NORMAL
 
 class Object
 # thanks to terminal-table for this method
