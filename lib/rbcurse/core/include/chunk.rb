@@ -4,7 +4,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 07.11.11 - 12:31 
 #  Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-08 00:03
+#  Last update: 2013-03-21 19:01
 # ------------------------------------------------------------ #
 #
 
@@ -82,6 +82,13 @@ module Chunks
       result = ""
       @chunks.each { |e| result << e.text }
       result
+    end
+
+    # added to take care of many string methods that are called.
+    # Callers really don't know this is a chunkline, they assume its a string
+    # 2013-03-21 - 19:01 
+    def method_missing(sym, *args, &block)
+      self.to_s.send sym, *args, &block
     end
   end
   class ColorParser
