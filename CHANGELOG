@@ -1,3 +1,11 @@
+**2013-03-22**
+## 0.0.10 rbcurse-core
+   * Added method_missing to chunkline, required for ribhu gem
+
+**2013-03-21**
+## 0.0.9 rbcurse-core
+   * Made several fixed so it works on 1.8.7 (thanks hramrach)
+
 **2012-01-  **
 ## 0.0.4 rbcurse-core
    * added RESIZE event to form, so resizing app components is possible
