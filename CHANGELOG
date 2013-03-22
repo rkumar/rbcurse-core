@@ -1,4 +1,8 @@
 **2013-03-22**
+## 0.0.11 rbcurse-core
+   * Added textpad (tested in cygnus gem)
+
+**2013-03-22**
 ## 0.0.10 rbcurse-core
    * Added method_missing to chunkline, required for ribhu gem
 

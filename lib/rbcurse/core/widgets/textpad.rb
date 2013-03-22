@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/mancurses/
 #         Date: 2011-11-09 - 16:59
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-22 00:55
+#  Last update: 2013-03-22 20:09
 #
 #  == CHANGES
 #  == TODO 
@@ -209,9 +209,15 @@ module RubyCurses
     # Supply an array of string to be displayed
     # This will replace existing text
 
-    ## XXX in list text returns the selected row, list returns the full thing, keep consistent
-    def text(lines)
-      #raise "text() receiving null content" unless lines
+    # display text given in an array format. This is the principal way of giving content
+    # to a textpad, other than filename().
+    # @param Array of lines
+    # @param format (optional) can be :tmux :ansi or :none
+    # If a format other than :none is given, then formatted_text is called.
+    def text(lines, fmt=:none)
+      # added so callers can have one interface and avoid an if condition
+      return formatted_text(lines, fmt) unless fmt == :none
+
       return @content if lines.empty?
       @content = lines
       @_populate_needed = true
@@ -227,6 +233,7 @@ module RubyCurses
     alias :get_content :content
 
     # print footer containing line and position
+    # XXX UNTESTED TODO TESTING
     def print_foot #:nodoc:
       @footer_attrib ||= Ncurses::A_REVERSE
       footer = "R: #{@current_index+1}, C: #{@curpos+@pcol}, #{@list.length} lines  "
@@ -279,6 +286,7 @@ module RubyCurses
     # 
     # pass in formatted text along with parser (:tmux or :ansi)
     def formatted_text text, fmt
+
       require 'rbcurse/core/include/chunk'
       @formatted_text = text
       @color_parser = fmt
