@@ -490,6 +490,48 @@ module ListScrollable
       set_form_col pos
       @repaint_required = true
     end
+
+    ## 
+    # go to beginning of previous word somewhat similar to vim's 'b' movement.
+    # Introduced on 2013-03-25 - 00:49 and has some errors but mostly quite
+    # helpful - i think i've fixed the error of getting stuck on a line
+    def backward_word
+      $multiplier = 1 if !$multiplier || $multiplier == 0
+      line = @current_index
+      buff = @list[line].to_s
+      return unless buff
+      pos = @curpos || 0 # list does not have curpos
+      $multiplier.times {
+        #found = buff.index(/[[:punct:][:space:]]+/, pos)
+        # 2013-03-04 - 17:35 modified so it skips spaces and puncts
+        # ouch pos becomes -2 and remains in same line !
+
+        spos = pos -2
+        spos = 0 if spos < 0
+        found = buff.rindex(/[[:punct:][:space:]]\w/, spos)
+        if !found || found == 0
+          # if not found, we've lost a counter/multiplier
+          if pos > 0
+            pos = 0
+          elsif line > 0
+            line -= 1
+            buff = @list[line].to_s
+            pos = buff.size - 1
+          else
+            return
+          end
+        else
+          pos = found + 1
+        end
+        $log.debug "BBB backward_word: pos #{pos} line #{line} buff: #{buff}, found #{found}"
+      }
+      @current_index = line
+      @curpos = pos
+      @buffer = @list[@current_index].to_s
+      set_form_row
+      set_form_col pos
+      @repaint_required = true
+    end
     ##
     # goes to  next occurence of <char> (or nth occurence)
     # Actually, we can club this with forward_word so no duplication
