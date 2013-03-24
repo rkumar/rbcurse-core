@@ -4,7 +4,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 2011-12-11 - 12:58
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-04 17:52
+#  Last update: 2013-03-25 01:53
 # ----------------------------------------------------------------------------- #
 #
 module RubyCurses
@@ -44,6 +44,7 @@ module RubyCurses
         bind_key(?k, 'previous row'){ previous_row() }
         ## added 2013-03-04 - 17:52 
         bind_key(?w, 'forward_word'){ forward_word }
+        bind_key(?b, 'backward_word'){ backward_word }
         bind_key(?\C-d, 'scroll forward'){ scroll_forward() }
         bind_key(?\C-b, 'scroll backward'){ scroll_backward() }
         bind_key([?g,?g], 'goto start'){ goto_start } # mapping double keys like vim
