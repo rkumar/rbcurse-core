@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/mancurses/
 #         Date: 2011-11-09 - 16:59
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-22 20:09
+#  Last update: 2013-03-25 01:52
 #
 #  == CHANGES
 #  == TODO 
@@ -397,6 +397,7 @@ module RubyCurses
       bind_key(?M, :middle_of_window)
       bind_key(?H, :top_of_window)
       bind_key(?w, :forward_word)
+      bind_key(?b, :backward_word)
       bind_key(?l, :cursor_forward)
       bind_key(?h, :cursor_backward)
       bind_key(?$, :cursor_eol)
@@ -807,6 +808,35 @@ module RubyCurses
           pos = found + 1
         end
         $log.debug " forward_word: pos #{pos} line #{line} buff: #{buff}"
+      }
+      $multiplier = 0
+      @current_index = line
+      @curpos = pos
+      ensure_visible
+      @repaint_required = true
+    end
+    def backward_word
+      $multiplier = 1 if !$multiplier || $multiplier == 0
+      line = @current_index
+      buff = @content[line].to_s
+      return unless buff
+      pos = @curpos || 0 # list does not have curpos
+      $multiplier.times {
+        found = buff.rindex(/[[:punct:][:space:]]\w/, pos-2)
+        if !found || found == 0
+          # if not found, we've lost a counter
+          if pos > 0
+            pos = 0
+          elsif line > 0
+            line -= 1
+            pos = @content[line].to_s.size
+          else
+            return
+          end
+        else
+          pos = found + 1
+        end
+        $log.debug " backward_word: pos #{pos} line #{line} buff: #{buff}"
       }
       $multiplier = 0
       @current_index = line
