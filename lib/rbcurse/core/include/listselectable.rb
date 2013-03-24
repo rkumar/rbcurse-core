@@ -203,16 +203,23 @@ module RubyCurses
       return []
     end # mod
     # Applications may call this or just copy and modify
+
+    ## 
+    # bindings related to selection
+    #
     def list_bindings
       # what about users wanting 32 and ENTER to also go to next row automatically
       # should make that optional, TODO
       bind_key($row_selector || 32, 'toggle selection') { toggle_row_selection }
-      bind_key(0, 'range select') { add_to_selection }
-      bind_key(?+, :ask_select) # --> calls select_values
-      bind_key(?-, :ask_unselect) # please implement FIXME TODO
-      bind_key(?a, :select_all)
-      bind_key(?*, :invert_selection)
-      bind_key(?u, :clear_selection)
+      # 2013-03-24 - 14:46 added condition so single select does not get these
+      if @selection_mode == :multiple
+        bind_key(0, 'range select') { add_to_selection }
+        bind_key(?+, :ask_select) # --> calls select_values
+        bind_key(?-, :ask_unselect) # please implement FIXME TODO
+        bind_key(?a, :select_all)
+        bind_key(?*, :invert_selection)
+        bind_key(?u, :clear_selection)
+      end
       @_header_adjustment ||= 0 #  incase caller does not use
       @_events << :LIST_SELECTION_EVENT unless @_events.include? :LIST_SELECTION_EVENT
     end
