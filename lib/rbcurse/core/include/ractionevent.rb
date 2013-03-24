@@ -57,6 +57,12 @@ module RubyCurses
     def word_under_cursor line=text(), pos=@curpos, delim=" "
       line ||= text()
       pos ||= @curpos
+      # if pressed on a space, try to go to next word to make easier 2013-03-24
+      if line[pos,1] == delim
+        while line[pos,1] == delim
+          pos += 1
+        end
+      end
       finish = line.index(delim, pos)
       start = line.rindex(delim,pos)
       finish = -1 if finish.nil?
