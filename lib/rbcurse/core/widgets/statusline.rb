@@ -97,7 +97,9 @@ module RubyCurses
         t = Time.now
         tt = t.strftime "%F %H:%M:%S"
         r = Ncurses.LINES
-        ftext = "#[fg=green,bg=blue] %-20s" % [tt] # print a default
+        # somehow the bg defined here affects the bg in left text, if left does not define
+        # a bg. The bgcolor defined of statusline is ignored in left or overriden by this
+        ftext = "#[fg=green,bg=blue] %-20s#[/end]" % [tt] # print a default
         @form.window.printstring_formatted_right @row, nil, ftext, $datacolor, Ncurses::A_REVERSE
       end
 
