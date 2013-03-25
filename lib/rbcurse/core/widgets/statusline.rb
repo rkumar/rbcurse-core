@@ -75,27 +75,28 @@ module RubyCurses
         #ftext = " %-20s | %s" % [Time.now, status] # should we print a default value just in case user doesn't
         ftext = status # should we print a default value just in case user doesn't
       end
+      # 2013-03-25 - 11:52 replaced $datacolor with @color_pair - how could this have been ?
+      # what if user wants to change attrib ?
       if ftext =~ /#\[/
-        @form.window.printstring_formatted @row, @col, ftext, $datacolor, Ncurses::A_REVERSE
+        # hopefully color_pair does not clash with formatting
+        @form.window.printstring_formatted @row, @col, ftext, @color_pair, Ncurses::A_REVERSE
       else
-        @form.window.printstring @row, @col, ftext, $datacolor, Ncurses::A_REVERSE
+        @form.window.printstring @row, @col, ftext, @color_pair, Ncurses::A_REVERSE
       end
-      # move this to formatted FIXME
-      #@form.window.printstring_or_chunks @row, @col, ftext, $datacolor, Ncurses::A_REVERSE
 
       if @right_text
         ftext = @right_text.call(self, @right_args) 
         if ftext =~ /#\[/
-          @form.window.printstring_formatted_right @row, nil, ftext, $datacolor, Ncurses::A_REVERSE
+          # hopefully color_pair does not clash with formatting
+          @form.window.printstring_formatted_right @row, nil, ftext, @color_pair, Ncurses::A_REVERSE
         else
           c = len - ftext.length
-          @form.window.printstring @row, c, ftext, $datacolor, Ncurses::A_REVERSE
+          @form.window.printstring @row, c, ftext, @color_pair, Ncurses::A_REVERSE
         end
       else
         t = Time.now
         tt = t.strftime "%F %H:%M:%S"
         r = Ncurses.LINES
-        # 2013-03-20 - 19:04 next line printing as is in 187 ???? what to do
         ftext = "#[fg=green,bg=blue] %-20s" % [tt] # print a default
         @form.window.printstring_formatted_right @row, nil, ftext, $datacolor, Ncurses::A_REVERSE
       end
