@@ -7,7 +7,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 07.11.11 - 13:17
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-21 00:42
+#  Last update: 2013-03-25 13:32
 # ----------------------------------------------------------------------------- #
 # == TODO
 #    - perhaps we can compile the regexp once and reuse
@@ -60,6 +60,9 @@ class DefaultColorParser
               attrib = part[0]
             end
           }
+          # 2013-03-25 - 13:31 if numeric color specified
+          color = color.to_i if color =~ /^[0-9]+$/
+          bgcolor = bgcolor.to_i if bgcolor =~ /^[0-9]+$/
           yield [color,bgcolor,attrib] if block_given?
         end # catch
       else
