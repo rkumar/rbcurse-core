@@ -4,7 +4,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: Around for a long time
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-08 19:12
+#  Last update: 2013-03-25 12:38
 #
 #  == CHANGED
 #     removed Pad and Subwin to lib/ver/rpad.rb - hopefully I've seen the last of both
