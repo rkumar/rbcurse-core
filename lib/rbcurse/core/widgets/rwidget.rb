@@ -9,7 +9,7 @@
   * Author: rkumar (arunachalesha)
   * Date: 2008-11-19 12:49 
   * License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-  * Last update: 2013-03-21 00:30
+  * Last update: 2013-03-25 12:56
 
   == CHANGES
   * 2011-10-2 Added PropertyVetoException to rollback changes to property
