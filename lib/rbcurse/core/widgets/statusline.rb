@@ -96,11 +96,11 @@ module RubyCurses
       else
         t = Time.now
         tt = t.strftime "%F %H:%M:%S"
-        r = Ncurses.LINES
+        #r = Ncurses.LINES
         # somehow the bg defined here affects the bg in left text, if left does not define
         # a bg. The bgcolor defined of statusline is ignored in left or overriden by this
-        ftext = "#[fg=green,bg=blue] %-20s#[/end]" % [tt] # print a default
-        @form.window.printstring_formatted_right @row, nil, ftext, $datacolor, Ncurses::A_REVERSE
+        #ftext = "#[fg=white,bg=blue] %-20s#[/end]" % [tt] # print a default
+        @form.window.printstring_formatted_right @row, nil, tt, @color_pair, Ncurses::A_REVERSE
       end
 
       @repaint_required = false
