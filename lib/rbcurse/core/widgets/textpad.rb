@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/mancurses/
 #         Date: 2011-11-09 - 16:59
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-25 01:52
+#  Last update: 2013-03-27 00:55
 #
 #  == CHANGES
 #  == TODO 
@@ -226,6 +226,8 @@ module RubyCurses
       self
     end
     alias :list :text
+    # for compat with textview
+    alias :set_content :text
     def content
       raise "content is nil " unless @content
       return @content
@@ -728,8 +730,13 @@ module RubyCurses
     # This uses the dialog, but what if user wants the old style.
     # Isn't there a cleaner way to let user override style, or allow user
     # to use own UI for getting pattern and then passing here.
-    def ask_search
-      str = get_string("Enter pattern: ")
+    # @param str default nil. If not passed, then user is prompted using get_string dialog
+    #    This allows caller to use own method to prompt for string such as 'get_line' or 'rbgetstr' /
+    #    'ask()'
+    def ask_search str=nil
+      # the following is a change that enables callers to prompt for the string
+      # using some other style, basically the classical style and send the string in
+      str = get_string("Enter pattern: ") unless str
       return if str.nil? 
       str = @last_regex if str == ""
       return if str == ""
@@ -891,6 +898,10 @@ module RubyCurses
 
   # a test renderer to see how things go
   class DefaultFileRenderer
+    #
+    # @param pad for calling print methods on
+    # @param lineno the line number on the pad to print on
+    # @param text data to print
     def render pad, lineno, text
       bg = :black
       fg = :white
