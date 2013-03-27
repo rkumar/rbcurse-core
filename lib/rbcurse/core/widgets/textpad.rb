@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/mancurses/
 #         Date: 2011-11-09 - 16:59
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-27 00:55
+#  Last update: 2013-03-27 12:51
 #
 #  == CHANGES
 #  == TODO 
@@ -35,7 +35,7 @@ module RubyCurses
   class TextPad < Widget
     include BorderTitle
 
-    dsl_accessor :suppress_border
+    dsl_accessor :suppress_borders
     dsl_accessor :print_footer
     attr_reader :current_index
     attr_reader :rows , :cols
@@ -53,6 +53,7 @@ module RubyCurses
       @prow = @pcol = 0
       @startrow = 0
       @startcol = 0
+      # @list is unused, think it can be removed
       @list = []
       super
 
@@ -68,9 +69,8 @@ module RubyCurses
       # NOTE XXX if cols is > COLS then padrefresh can fail
       @startrow = @row
       @startcol = @col
-      #@suppress_border = config[:suppress_border]
       @row_offset = @col_offset = 1
-      unless @suppress_border
+      unless @suppress_borders
         @startrow += 1
         @startcol += 1
         @rows -=3  # 3 is since print_border_only reduces one from width, to check whether this is correct
@@ -118,19 +118,14 @@ module RubyCurses
     # create and populate pad
     def populate_pad
       @_populate_needed = false
-      # how can we make this more sensible ? FIXME
-      #@renderer ||= DefaultFileRenderer.new #if ".rb" == @filetype
       @content_rows = @content.count
       @content_cols = content_cols()
-      # this should be explicit and not "intelligent"
-      #@title += " [ #{@content_rows},#{@content_cols}] " if @cols > 50
       @content_rows = @rows if @content_rows < @rows
       @content_cols = @cols if @content_cols < @cols
-      #$log.debug "XXXX content_cols = #{@content_cols}"
 
       create_pad
 
-      # clearstring is the string required to clear the pad to backgroud color
+      # clearstring is the string required to clear the pad to background color
       @clearstring = nil
       cp = get_color($datacolor, @color, @bgcolor)
       @cp = FFI::NCurses.COLOR_PAIR(cp)
@@ -139,11 +134,18 @@ module RubyCurses
       end
 
       Ncurses::Panel.update_panels
+      render_all
+
+    end
+    #
+    # iterate through content rendering each row
+    # 2013-03-27 - 01:51 separated so that widgets with headers such as tables can
+    # override this for better control
+    def render_all
       @content.each_index { |ix|
         #FFI::NCurses.mvwaddstr(@pad,ix, 0, @content[ix])
         render @pad, ix, @content[ix]
       }
-
     end
 
     public
@@ -351,7 +353,7 @@ module RubyCurses
       @window ||= @graphic
       populate_pad if @_populate_needed
       #HERE we need to populate once so user can pass a renderer
-      unless @suppress_border
+      unless @suppress_borders
         if @repaint_all
           ## XXX im not getting the background color.
           #@window.print_border_only @top, @left, @height-1, @width, $datacolor
