@@ -8,22 +8,19 @@
 #       Author: rkumar http://github.com/rkumar/mancurses/
 #         Date: 2011-11-09 - 16:59
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-27 12:51
+#  Last update: 2013-03-29 18:59
 #
 #  == CHANGES
 #  == TODO 
-#     _ in popup case allowing scrolling when it should not so you get an extra char at end
-#     _ The list one needs a f-char like functionality.
-#     x handle putting data again and overwriting existing
-#       When reputting data, the underlying pad needs to be properly cleared
-#       esp last row and last col
+#  Take care of 3 cases:
+#     1. complete data change, then recreate pad, and call init_vars resetting row, col and curpos etc
+#        This is done by method text().
+#     2. row added or minor change - recreate pad, repaint data but don't call initvars. must maintain cursor
+#        ignore recreate of pad if width or ht is less than w and h of container.
+#     3. only rewrite a row - row data changed, no recreate pad or anything else
 #
-#     x add mappings and process key in handle_keys and other widget things
-#     - can pad movement and other ops be abstracted into module for reuse
-#     / get scrolling like in vim (C-f e y b d)
 #
-#   == TODO 2013-03-07 - 20:34 
-#   _ key bindings not showing up -- bind properly
+#
 # ----------------------------------------------------------------------------- #
 #
 require 'rbcurse'
@@ -39,6 +36,10 @@ module RubyCurses
     dsl_accessor :print_footer
     attr_reader :current_index
     attr_reader :rows , :cols
+    # adding these only for debugging table, to see where cursor is.
+    attr_reader :lastrow, :lastcol
+    # for external methods or classes to advance cursor
+    #attr_accessor :curpos
     # You may pass height, width, row and col for creating a window otherwise a fullscreen window
     # will be created. If you pass a window from caller then that window will be used.
     # Some keys are trapped, jkhl space, pgup, pgdown, end, home, t b
@@ -69,26 +70,27 @@ module RubyCurses
       # NOTE XXX if cols is > COLS then padrefresh can fail
       @startrow = @row
       @startcol = @col
-      @row_offset = @col_offset = 1
       unless @suppress_borders
+        @row_offset = @col_offset = 1
         @startrow += 1
         @startcol += 1
         @rows -=3  # 3 is since print_border_only reduces one from width, to check whether this is correct
         @cols -=3
+        @scrollatrows = @height - 3
       else
-        # seeing why nothing is printing
-        @rows -=0  # 3 is since print_border_only reduces one from width, to check whether this is correct
+        # no borders printed
+        @rows -= 1  # 3 is since print_border_only reduces one from width, to check whether this is correct
         ## if next is 0 then padrefresh doesn't print
         @cols -=1
+        @scrollatrows = @height - 1 # check this out 0 or 1
+        @row_offset = @col_offset = 0 
       end
-      @row_offset = @col_offset = 0 if @suppress_borders
       @top = @row
       @left = @col
-      @lastrow = @row + 1
-      @lastcol = @col + 1
+      @lastrow = @row + @row_offset
+      @lastcol = @col + @col_offset
       @_events << :PRESS
       @_events << :ENTER_ROW
-      @scrollatrows = @height - 3
       init_vars
     end
     def init_vars
@@ -97,10 +99,11 @@ module RubyCurses
       # column cursor
       @prow = @pcol = @curpos = 0
       if @row && @col
-        @lastrow = @row + 1
-        @lastcol = @col + 1
+        @lastrow = @row + @row_offset
+        @lastcol = @col + @col_offset
       end
       @repaint_required = true
+      map_keys unless @mapped_keys
     end
     def rowcol #:nodoc:
       return @row+@row_offset, @col+@col_offset
@@ -289,6 +292,7 @@ module RubyCurses
 
     # 
     # pass in formatted text along with parser (:tmux or :ansi)
+    # NOTE this does not call init_vars, i think it should, text() does
     def formatted_text text, fmt
 
       require 'rbcurse/core/include/chunk'
@@ -331,16 +335,34 @@ module RubyCurses
     end
 
     public
+    # to be called with program / user has added a row or changed column widths so that 
+    # the pad needs to be recreated. However, cursor positioning is maintained since this
+    # is considered to be a minor change. 
+    # We do not call init_vars since user is continuing to do some work on a row/col.
+    def fire_dimension_changed
+      # recreate pad since width or ht has changed (row count or col width changed)
+      @_populate_needed = true
+      @repaint_required = true
+      @repaint_all = true
+    end
+    # repaint only one row since content of that row has changed. 
+    # No recreate of pad is done.
+    def fire_row_changed ix
+      render @pad, ix, @content[ix]
+      # may need to call padrefresh TODO TESTING
+    end
     def repaint
       ## 2013-03-08 - 21:01 This is the fix to the issue of form callign an event like ? or F1
       # which throws up a messagebox which leaves a black rect. We have no place to put a refresh
       # However, form does call repaint for all objects, so we can do a padref here. Otherwise,
       # it would get rejected. UNfortunately this may happen more often we want, but we never know
       # when something pops up on the screen.
-      padrefresh unless @repaint_required
-      return unless @repaint_required
+      unless @repaint_required
+        padrefresh 
+        return 
+      end
       if @formatted_text
-        $log.debug "XXX:  INSIDE FORMATTED TEXT "
+        #$log.debug "XXX:  INSIDE FORMATTED TEXT "
 
         l = RubyCurses::Utils.parse_formatted_text(@color_parser,
                                                @formatted_text)
@@ -468,7 +490,11 @@ module RubyCurses
     def down num=(($multiplier.nil? or $multiplier == 0) ? 1 : $multiplier)
       #@oldindex = @current_index if num > 10
       @current_index += num
-      ensure_visible
+      # no , i don't like this here. it scrolls up too much making prow = current_index
+      unless is_visible? @current_index
+          @prow += num
+      end
+      #ensure_visible
       $multiplier = 0
     end
 
@@ -559,7 +585,6 @@ module RubyCurses
     #
     def handle_key ch
       return :UNHANDLED unless @content
-      map_keys unless @mapped_keys
 
 
       @oldrow = @prow
@@ -685,7 +710,11 @@ module RubyCurses
       @crow = @current_index + r - @prow
       @crow = r if @crow < r
       # 2 depends on whetehr suppressborders
-      @crow = @row + @height -2 if @crow >= r + @height -2
+      if @suppress_borders
+        @crow = @row + @height -1 if @crow >= r + @height -1
+      else
+        @crow = @row + @height -2 if @crow >= r + @height -2
+      end
       setrowcol @crow, @curpos+c
       lastcurpos @crow, @curpos+c
       if @oldindex != @current_index
