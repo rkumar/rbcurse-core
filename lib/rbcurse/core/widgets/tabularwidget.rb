@@ -760,6 +760,7 @@ module RubyCurses
         w = @cw[i]
         l = e.to_s.length
         fmt = "%-#{w}s "
+        # if value is longer than width, then truncate it
         if l > w
           fmt = "%.#{w}s "
         else
