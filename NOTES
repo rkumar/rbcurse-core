@@ -1,7 +1,7 @@
 NOTES
 =====
 /// vim:ts=4:sw=4:tw=80:ai:formatoptions=tcqnl:
-/// this was posted with appenddiary.sh
+/// this was posted with appenddiary.sh (notes)
 
 Subject: Update rubyforge
 -------------------------
@@ -2147,5 +2147,24 @@ something on this, or thought it over.
 Okay, Field can maintain its history if you extend FieldHistory, however if
 you use a field in a messagebox which is created over and over again, then we
 manually have to keep the history and pass it to the field when creating the messagebox.
+
+* * * * * * * *
+
+Subject: pad version of widgets
+-------------------------------
+Date: 2013-03-26 11:56
+
+We have textpad functioning as a replacement of textview. Should we
+replace the code inside textview with pad, this involves a lot of
+testing and not knowing what can break. What user apps can break?
+
+Or create parallel widgets. I have used textpad in cygnus for lists,
+popups and textviews. Now I need to use it for tree and tabularwidget.
+
+If i keep parallel widgets then there's a naming issue. Should i use
+another module name Pad so i have Pad::tree etc or a different name ?
+
+I would go with another module name but same widget name so it is clear
+that it is the same widget.
 
 * * * * * * * *
