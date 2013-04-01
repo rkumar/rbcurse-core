@@ -1,6 +1,7 @@
 # I am moving the common title and border printing stuff into 
 # a separate module.
-module BorderTitle
+module RubyCurses
+  module BorderTitle
     dsl_accessor :suppress_borders            #to_print_borders
     dsl_accessor :border_attrib, :border_color
     dsl_accessor :title                       #set this on top
@@ -42,5 +43,6 @@ module BorderTitle
       @graphic.printstring( @row, @col+(@width-_title.length)/2, _title, @color_pair, @title_attrib) unless @title.nil?
     end
 
+  end
 end
 include BorderTitle
