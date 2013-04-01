@@ -1,3 +1,7 @@
+**2013-03-29**
+## 0.0.13 rbcurse-core
+   * textpad - support cases where dimension changes, or a row is updated
+
 **2013-03-25**
 ## 0.0.12 rbcurse-core
    * Minor tweaks and fixes to statusline (tested in ribhu gem)
