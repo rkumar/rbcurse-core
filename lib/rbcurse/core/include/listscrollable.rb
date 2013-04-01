@@ -7,147 +7,148 @@
 #   @toprow : set to 0 for starters, top row to be displayed
 #   @pcol (used for horiz scrolling, starts at 0)
 #
-module ListScrollable
-  attr_reader :search_found_ix, :find_offset, :find_offset1
-  attr_accessor :show_caret # 2010-01-23 23:06 our own fake insertion point
-  def previous_row num=(($multiplier.nil? or $multiplier == 0) ? 1 : $multiplier)
-    #return :UNHANDLED if @current_index == 0 # EVIL
-    return :NO_PREVIOUS_ROW if @current_index == 0 
-    @oldrow = @current_index
-    # NOTE that putting a multiplier inside, prevents an event from being triggered for each row's
-    # on leave and on enter
-    num.times { 
-      @current_index -= 1 if @current_index > 0
-    }
-    bounds_check
-    $multiplier = 0
-  end
-  alias :up :previous_row
-  def next_row num=(($multiplier.nil? or $multiplier == 0) ? 1 : $multiplier)
-    rc = row_count
-    # returning unhandled was clever .. when user hits down arrow on last row the focus goes to
-    # next field. however, in long lists when user scrolls the sudden jumping to next is very annoying.
-    # In combos, if focus was on last row, the combo closed which is not accceptable.
-    #return :UNHANDLED if @current_index == rc-1 # EVIL !!!
-    return :NO_NEXT_ROW if @current_index == rc-1  # changed 2011-10-5 so process can do something
-    @oldrow = @current_index
-    @current_index += 1*num if @current_index < rc
-    bounds_check
-    $multiplier = 0
-  end
-  alias :down :next_row
-  def goto_bottom
-    @oldrow = @current_index
-    rc = row_count
-    @current_index = rc -1
-    bounds_check
-  end
-  alias :goto_end :goto_bottom
-  def goto_top
-    @oldrow = @current_index
-    @current_index = 0
-    bounds_check
-  end
-  alias :goto_start :goto_top
-  def scroll_backward
-    @oldrow = @current_index
-    h = scrollatrow()
-    m = $multiplier == 0? 1 : $multiplier
-    @current_index -= h * m
-    bounds_check
-    $multiplier = 0
-  end
-  def scroll_forward
-    @oldrow = @current_index
-    h = scrollatrow()
-    rc = row_count
-    m = $multiplier == 0? 1 : $multiplier
-    # more rows than box
-    if h * m < rc
-      # next 2 lines were preventing widget_scrolled from being set to true,
-      # so i've modified it slightly as per scroll_down 2011-11-1 
-      #@toprow += h+1 #if @current_index+h < rc
-      #@current_index = @toprow
-      @current_index += h+1
-    else
-      # fewer rows than box
+module RubyCurses
+  module ListScrollable
+    attr_reader :search_found_ix, :find_offset, :find_offset1
+    attr_accessor :show_caret # 2010-01-23 23:06 our own fake insertion point
+    def previous_row num=(($multiplier.nil? or $multiplier == 0) ? 1 : $multiplier)
+      #return :UNHANDLED if @current_index == 0 # EVIL
+      return :NO_PREVIOUS_ROW if @current_index == 0 
+      @oldrow = @current_index
+      # NOTE that putting a multiplier inside, prevents an event from being triggered for each row's
+      # on leave and on enter
+      num.times { 
+        @current_index -= 1 if @current_index > 0
+      }
+      bounds_check
+      $multiplier = 0
+    end
+    alias :up :previous_row
+    def next_row num=(($multiplier.nil? or $multiplier == 0) ? 1 : $multiplier)
+      rc = row_count
+      # returning unhandled was clever .. when user hits down arrow on last row the focus goes to
+      # next field. however, in long lists when user scrolls the sudden jumping to next is very annoying.
+      # In combos, if focus was on last row, the combo closed which is not accceptable.
+      #return :UNHANDLED if @current_index == rc-1 # EVIL !!!
+      return :NO_NEXT_ROW if @current_index == rc-1  # changed 2011-10-5 so process can do something
+      @oldrow = @current_index
+      @current_index += 1*num if @current_index < rc
+      bounds_check
+      $multiplier = 0
+    end
+    alias :down :next_row
+    def goto_bottom
+      @oldrow = @current_index
+      rc = row_count
       @current_index = rc -1
+      bounds_check
     end
-    #@current_index += h+1 #if @current_index+h < rc
-    bounds_check
-  end
-
-  ##
-  # please set oldrow before calling this. Store current_index as oldrow before changing. NOTE
-  def bounds_check
-    h = scrollatrow()
-    rc = row_count
-    @old_toprow = @toprow
-
-    @_header_adjustment ||= 0
-    @current_index = 0 if @current_index < 0  # not lt 0
-    @current_index = rc-1 if @current_index >= rc && rc>0 # not gt rowcount
-    @toprow = rc-h-1 if rc > h && @toprow > rc - h - 1 # toprow shows full page if possible
-    # curr has gone below table,  move toprow forward
-    if @current_index - @toprow > h
-      @toprow = @current_index - h
-    elsif @current_index < @toprow
-      # curr has gone above table,  move toprow up
-      # sometimes current row gets hidden below header line
-      @toprow = @current_index - (@_header_adjustment ||0)
-      # prev line can make top row -1, however, if we are going back, lets 
-      # put it at start of page, so first or second row is not hidden
-      @toprow = 0 if @toprow < h
+    alias :goto_end :goto_bottom
+    def goto_top
+      @oldrow = @current_index
+      @current_index = 0
+      bounds_check
     end
- 
-    @row_changed = false
-    if @oldrow != @current_index
-      on_leave_row @oldrow if respond_to? :on_leave_row     # to be defined by widget that has included this
-      on_enter_row @current_index   if respond_to? :on_enter_row  # to be defined by widget that has included this
-      set_form_row
-      @row_changed = true
+    alias :goto_start :goto_top
+    def scroll_backward
+      @oldrow = @current_index
+      h = scrollatrow()
+      m = $multiplier == 0? 1 : $multiplier
+      @current_index -= h * m
+      bounds_check
+      $multiplier = 0
     end
-    #set_form_row # 2011-10-13 
-
-    if @old_toprow != @toprow # only if scrolling has happened should we repaint
-      @repaint_required = true #if @old_toprow != @toprow # only if scrolling has happened should we repaint
-      @widget_scrolled = true
-    end
-  end
-  # the cursor should be appropriately positioned
-  def set_form_row
-    r,c = rowcol
-    @rows_panned ||= 0
-    
-    win_row = 0 # 2010-02-07 21:44 now ext offset added by widget
-
-    # when the toprow is set externally then cursor can be mispositioned since 
-    # bounds_check has not been called
-    if @current_index < @toprow
-      # cursor is outside table
-      @current_index = @toprow # ??? only if toprow 2010-10-19 12:56 
+    def scroll_forward
+      @oldrow = @current_index
+      h = scrollatrow()
+      rc = row_count
+      m = $multiplier == 0? 1 : $multiplier
+      # more rows than box
+      if h * m < rc
+        # next 2 lines were preventing widget_scrolled from being set to true,
+        # so i've modified it slightly as per scroll_down 2011-11-1 
+        #@toprow += h+1 #if @current_index+h < rc
+        #@current_index = @toprow
+        @current_index += h+1
+      else
+        # fewer rows than box
+        @current_index = rc -1
+      end
+      #@current_index += h+1 #if @current_index+h < rc
+      bounds_check
     end
 
-    row = win_row + r + (@current_index-@toprow) + @rows_panned 
-    #$log.debug " #{@name} set_form_row #{row} = ci #{@current_index} + r #{r} + winrow: #{win_row} - tr:#{@toprow} #{@toprow} + rowsp #{@rows_panned} "
-    # row should not be < r or greater than r+height TODO FIXME
+    ##
+    # please set oldrow before calling this. Store current_index as oldrow before changing. NOTE
+    def bounds_check
+      h = scrollatrow()
+      rc = row_count
+      @old_toprow = @toprow
 
-   
-    
-    setrowcol row, nil
-    #show_caret_func
-  end
-  ## In many situations like placing a textarea or textview inside a splitpane 
-  ##+ or scrollpane there have been issues getting the cursor at the right point, 
-  ##+ since there are multiple buffers. Finally in tabbedpanes, i am pretty 
-  ##+ lost getting the correct position, and i feel we should set the cursor 
-  ##+ internally once and for all. So here's an attempt
+      @_header_adjustment ||= 0
+      @current_index = 0 if @current_index < 0  # not lt 0
+      @current_index = rc-1 if @current_index >= rc && rc>0 # not gt rowcount
+      @toprow = rc-h-1 if rc > h && @toprow > rc - h - 1 # toprow shows full page if possible
+      # curr has gone below table,  move toprow forward
+      if @current_index - @toprow > h
+        @toprow = @current_index - h
+      elsif @current_index < @toprow
+        # curr has gone above table,  move toprow up
+        # sometimes current row gets hidden below header line
+        @toprow = @current_index - (@_header_adjustment ||0)
+        # prev line can make top row -1, however, if we are going back, lets 
+        # put it at start of page, so first or second row is not hidden
+        @toprow = 0 if @toprow < h
+      end
 
-  # paint the cursor ourselves on the widget, rather than rely on getting to the top window with
-  # the correct coordinates. I do need to erase cursor too. Can be dicey, but is worth the attempt.
-  # This works perfectly, except for when placed in a Tabbedpane since that prints the form with a row offset 
-  #+ of 2 and the widget does not know of the offset. cursor gets it correct since the form has an add_row.
-  def show_caret_func
+      @row_changed = false
+      if @oldrow != @current_index
+        on_leave_row @oldrow if respond_to? :on_leave_row     # to be defined by widget that has included this
+        on_enter_row @current_index   if respond_to? :on_enter_row  # to be defined by widget that has included this
+        set_form_row
+        @row_changed = true
+      end
+      #set_form_row # 2011-10-13 
+
+      if @old_toprow != @toprow # only if scrolling has happened should we repaint
+        @repaint_required = true #if @old_toprow != @toprow # only if scrolling has happened should we repaint
+        @widget_scrolled = true
+      end
+    end
+    # the cursor should be appropriately positioned
+    def set_form_row
+      r,c = rowcol
+      @rows_panned ||= 0
+
+      win_row = 0 # 2010-02-07 21:44 now ext offset added by widget
+
+      # when the toprow is set externally then cursor can be mispositioned since 
+      # bounds_check has not been called
+      if @current_index < @toprow
+        # cursor is outside table
+        @current_index = @toprow # ??? only if toprow 2010-10-19 12:56 
+      end
+
+      row = win_row + r + (@current_index-@toprow) + @rows_panned 
+      #$log.debug " #{@name} set_form_row #{row} = ci #{@current_index} + r #{r} + winrow: #{win_row} - tr:#{@toprow} #{@toprow} + rowsp #{@rows_panned} "
+      # row should not be < r or greater than r+height TODO FIXME
+
+
+
+      setrowcol row, nil
+      #show_caret_func
+    end
+    ## In many situations like placing a textarea or textview inside a splitpane 
+    ##+ or scrollpane there have been issues getting the cursor at the right point, 
+    ##+ since there are multiple buffers. Finally in tabbedpanes, i am pretty 
+    ##+ lost getting the correct position, and i feel we should set the cursor 
+    ##+ internally once and for all. So here's an attempt
+
+    # paint the cursor ourselves on the widget, rather than rely on getting to the top window with
+    # the correct coordinates. I do need to erase cursor too. Can be dicey, but is worth the attempt.
+    # This works perfectly, except for when placed in a Tabbedpane since that prints the form with a row offset 
+    #+ of 2 and the widget does not know of the offset. cursor gets it correct since the form has an add_row.
+    def show_caret_func
       return unless @show_caret
       # trying highlighting cursor 2010-01-23 19:07 TABBEDPANE TRYING
       # TODO take into account rows_panned etc ? I don't think so.
@@ -164,107 +165,107 @@ module ListScrollable
 
       $log.debug " #{@name} printing CARET at #{yy},#{xx}: fwt:- #{@win_top} r:#{@row} tr:-#{@toprow}+ci:#{@current_index},+r #{r}  "
       if !@oldcursorrow.nil?
-          @graphic.mvchgat(y=@oldcursorrow, x=@oldcursorcol, 1, Ncurses::A_NORMAL, $datacolor, NIL)
+        @graphic.mvchgat(y=@oldcursorrow, x=@oldcursorcol, 1, Ncurses::A_NORMAL, $datacolor, NIL)
       end
       @oldcursorrow = yy
       @oldcursorcol = xx
       @graphic.mvchgat(y=yy, x=xx, 1, Ncurses::A_NORMAL, $reversecolor, nil)
       @buffer_modified = true
-  end
-  def scroll_right
-    $log.debug " inside scroll_right "
-    hscrollcols = $multiplier > 0 ? $multiplier : @width/2
-    #hscrollcols = $multiplier > 0 ? $multiplier : 1 # for testing out 
-    $log.debug " scroll_right  mult:#{$multiplier} , hscrollcols  #{hscrollcols}, pcol #{@pcol} w: #{@width} ll:#{@longest_line} "
-    #blen = @buffer.rstrip.length
-    blen = @longest_line
-    if @pcol + @width < blen 
-      @pcol += hscrollcols if @pcol + @width < blen 
-    else
-      # due to some change somewhere, sometimes width = longest which is not true
-      hscrollcols = $multiplier > 0 ? $multiplier : 1
-      @pcol += hscrollcols
     end
-    @repaint_required = true
-  end
-  def scroll_left
-    hscrollcols = $multiplier > 0 ? $multiplier : @width/2
-    @pcol -= hscrollcols if @pcol > 0
-    @pcol = 0 if @pcol < 0
-    @repaint_required = true
-  end
-  ## returns cursor to last row (if moving columns in same row, won't work)
-  # Useful after a large move such as 12j, 20 C-n etc, Mapped to '' in textview
-  def goto_last_position
-    return unless @oldrow
-    @current_index = @oldrow
-    bounds_check
-  end
-  # not that saving content_rows is buggy since we add rows.
-  ##
-  # caution, this now uses winrow not prow
-  ## for user to know which row is being focussed on
-  def focussed_index
-    @current_index # 2009-01-07 14:35 
-  end
-  # only to be used in single selection cases as focussed item FIXME.
-  # best not to use, as can be implementation dep, use current_index
-  def selected_item
-    get_content()[focussed_index()]
-  end
-  #alias :current_index :focussed_index
-  alias :selected_index :focussed_index
-  
-  # finds the next match for the char pressed
-  # returning the index
-  # If we are only checking first char, then why chomp ?
-  # Please note that this is used now by tree, and list can have non-strings, so use to_s
-  def next_match char
-    data = get_content
-    row = focussed_index + 1
-    row.upto(data.length-1) do |ix|
-      #val = data[ix].chomp rescue return  # 2010-01-05 15:28 crashed on trueclass
-      val = data[ix].to_s rescue return  # 2010-01-05 15:28 crashed on trueclass
-      #if val[0,1] == char #and val != currval
-      if val[0,1].casecmp(char) == 0 #AND VAL != CURRval
-        return ix
+    def scroll_right
+      $log.debug " inside scroll_right "
+      hscrollcols = $multiplier > 0 ? $multiplier : @width/2
+      #hscrollcols = $multiplier > 0 ? $multiplier : 1 # for testing out 
+      $log.debug " scroll_right  mult:#{$multiplier} , hscrollcols  #{hscrollcols}, pcol #{@pcol} w: #{@width} ll:#{@longest_line} "
+      #blen = @buffer.rstrip.length
+      blen = @longest_line
+      if @pcol + @width < blen 
+        @pcol += hscrollcols if @pcol + @width < blen 
+      else
+        # due to some change somewhere, sometimes width = longest which is not true
+        hscrollcols = $multiplier > 0 ? $multiplier : 1
+        @pcol += hscrollcols
       end
+      @repaint_required = true
     end
-    row = focussed_index - 1
-    0.upto(row) do |ix|
-      #val = data[ix].chomp
-      val = data[ix].to_s
-      #if val[0,1] == char #and val != currval
-      if val[0,1].casecmp(char) == 0 #and val != currval
-        return ix
-      end
+    def scroll_left
+      hscrollcols = $multiplier > 0 ? $multiplier : @width/2
+      @pcol -= hscrollcols if @pcol > 0
+      @pcol = 0 if @pcol < 0
+      @repaint_required = true
     end
-    return -1
-  end
-  ## 2008-12-18 18:03 
-  # sets the selection to the next row starting with char
-  def set_selection_for_char char
-    @oldrow = @current_index
-    @last_regex = "^#{char}"
-    ix = next_match char
-    @current_index = ix if ix && ix != -1
-    @search_found_ix = @current_index
-    bounds_check
-    return ix
-  end
+    ## returns cursor to last row (if moving columns in same row, won't work)
+    # Useful after a large move such as 12j, 20 C-n etc, Mapped to '' in textview
+    def goto_last_position
+      return unless @oldrow
+      @current_index = @oldrow
+      bounds_check
+    end
+    # not that saving content_rows is buggy since we add rows.
+    ##
+    # caution, this now uses winrow not prow
+    ## for user to know which row is being focussed on
+    def focussed_index
+      @current_index # 2009-01-07 14:35 
+    end
+    # only to be used in single selection cases as focussed item FIXME.
+    # best not to use, as can be implementation dep, use current_index
+    def selected_item
+      get_content()[focussed_index()]
+    end
+    #alias :current_index :focussed_index
+    alias :selected_index :focussed_index
 
-  ##
-  # ensures that the given row is focussed
-  # new version of older one that was not perfect.
-  # 2009-01-17 13:25 
-  def set_focus_on arow
-    @oldrow = @current_index
-    # the next line fixed cursor positioning, but when wraparound then it messed up
-    # matching line would get hidden
-    @current_index = arow
-    bounds_check if @oldrow != @current_index
-  end
-  ##
+    # finds the next match for the char pressed
+    # returning the index
+    # If we are only checking first char, then why chomp ?
+    # Please note that this is used now by tree, and list can have non-strings, so use to_s
+    def next_match char
+      data = get_content
+      row = focussed_index + 1
+      row.upto(data.length-1) do |ix|
+        #val = data[ix].chomp rescue return  # 2010-01-05 15:28 crashed on trueclass
+        val = data[ix].to_s rescue return  # 2010-01-05 15:28 crashed on trueclass
+        #if val[0,1] == char #and val != currval
+        if val[0,1].casecmp(char) == 0 #AND VAL != CURRval
+          return ix
+        end
+      end
+      row = focussed_index - 1
+      0.upto(row) do |ix|
+        #val = data[ix].chomp
+        val = data[ix].to_s
+        #if val[0,1] == char #and val != currval
+        if val[0,1].casecmp(char) == 0 #and val != currval
+          return ix
+        end
+      end
+      return -1
+    end
+    ## 2008-12-18 18:03 
+    # sets the selection to the next row starting with char
+    def set_selection_for_char char
+      @oldrow = @current_index
+      @last_regex = "^#{char}"
+      ix = next_match char
+      @current_index = ix if ix && ix != -1
+      @search_found_ix = @current_index
+      bounds_check
+      return ix
+    end
+
+    ##
+    # ensures that the given row is focussed
+    # new version of older one that was not perfect.
+    # 2009-01-17 13:25 
+    def set_focus_on arow
+      @oldrow = @current_index
+      # the next line fixed cursor positioning, but when wraparound then it messed up
+      # matching line would get hidden
+      @current_index = arow
+      bounds_check if @oldrow != @current_index
+    end
+    ##
     def install_keys
 =begin
       @KEY_ASK_FIND_FORWARD ||= ?\M-f.getbyte(0)
@@ -385,30 +386,30 @@ module ListScrollable
         alert("No previous search. Search first.")
         return
       end
-        ix = _find_next
-        regex = @last_regex 
-        if ix.nil?
-          alert("No more matching data for: #{regex}")
-        else
-          set_focus_on(ix) 
-          set_form_col @find_offset1
+      ix = _find_next
+      regex = @last_regex 
+      if ix.nil?
+        alert("No more matching data for: #{regex}")
+      else
+        set_focus_on(ix) 
+        set_form_col @find_offset1
         @cell_editor.component.curpos = (@find_offset||0) if @cell_editing_allowed
-        end
+      end
     end
     def find_prev
       unless @last_regex
         alert("No previous search. Search first.")
         return
       end
-        ix = _find_prev
-        regex = @last_regex 
-        if ix.nil?
-          alert("No previous matching data for: #{regex}")
-        else
-          set_focus_on(ix)
-          set_form_col @find_offset
-          @cell_editor.component.curpos = (@find_offset||0) if @cell_editing_allowed
-        end
+      ix = _find_prev
+      regex = @last_regex 
+      if ix.nil?
+        alert("No previous matching data for: #{regex}")
+      else
+        set_focus_on(ix)
+        set_form_col @find_offset
+        @cell_editor.component.curpos = (@find_offset||0) if @cell_editing_allowed
+      end
     end
     ##
     # find backwards
@@ -419,21 +420,21 @@ module ListScrollable
       warn "No previous search" and return if regex.nil?
       #$log.debug " _find_prev #{@search_found_ix} : #{@current_index}"
       if start != 0
-      start -= 1 unless start == 0
-      @last_regex = regex
-      @search_start_ix = start
-      regex = Regexp.new(regex, Regexp::IGNORECASE) if @search_case
-      start.downto(0) do |ix| 
-        row = @list[ix].to_s
-        m=row.match(regex)
-        if !m.nil?
-          @find_offset = m.offset(0)[0]
-          @find_offset1 = m.offset(0)[1]
-          ix += (@_header_adjustment || 0)
-          @search_found_ix = ix
-          return ix 
+        start -= 1 unless start == 0
+        @last_regex = regex
+        @search_start_ix = start
+        regex = Regexp.new(regex, Regexp::IGNORECASE) if @search_case
+        start.downto(0) do |ix| 
+          row = @list[ix].to_s
+          m=row.match(regex)
+          if !m.nil?
+            @find_offset = m.offset(0)[0]
+            @find_offset1 = m.offset(0)[1]
+            ix += (@_header_adjustment || 0)
+            @search_found_ix = ix
+            return ix 
+          end
         end
-      end
       end
       fend = start-1
       start = @list.size-1
@@ -660,6 +661,7 @@ module ListScrollable
       att = get_attrib(attrib) #if @focussed_attrib
       @graphic.mvchgat(y=r, x=c, @width-@internal_width, att , acolor , nil)
     end
-     
 
+
+  end
 end
