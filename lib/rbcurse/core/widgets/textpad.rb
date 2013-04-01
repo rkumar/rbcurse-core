@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/mancurses/
 #         Date: 2011-11-09 - 16:59
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-29 18:59
+#  Last update: 2013-04-01 11:56
 #
 #  == CHANGES
 #  == TODO 
@@ -299,6 +299,7 @@ module RubyCurses
       @formatted_text = text
       @color_parser = fmt
       @repaint_required = true
+      _convert_formatted
       # don't know if start is always required. so putting in caller
       #goto_start
       #remove_all
@@ -361,20 +362,23 @@ module RubyCurses
         padrefresh 
         return 
       end
-      if @formatted_text
-        #$log.debug "XXX:  INSIDE FORMATTED TEXT "
+      # I can't recall why we are doing this late. Is the rreason relevant any longer
+      # Some methods that expect data are crashing like tablewidgets model_row
+      _convert_formatted
 
-        l = RubyCurses::Utils.parse_formatted_text(@color_parser,
-                                               @formatted_text)
-
-        text(l)
-        @formatted_text = nil
-      end
-
-      ## moved this line up or else create_p was crashing
       @window ||= @graphic
       populate_pad if @_populate_needed
       #HERE we need to populate once so user can pass a renderer
+
+      _do_borders
+
+      padrefresh
+      Ncurses::Panel.update_panels
+      @repaint_required = false
+      @repaint_all = false
+    end
+
+    def _do_borders
       unless @suppress_borders
         if @repaint_all
           ## XXX im not getting the background color.
@@ -390,11 +394,16 @@ module RubyCurses
           @window.wrefresh
         end
       end
+    end
+    def _convert_formatted
+      if @formatted_text
 
-      padrefresh
-      Ncurses::Panel.update_panels
-      @repaint_required = false
-      @repaint_all = false
+        l = RubyCurses::Utils.parse_formatted_text(@color_parser,
+                                               @formatted_text)
+
+        text(l)
+        @formatted_text = nil
+      end
     end
 
     #
