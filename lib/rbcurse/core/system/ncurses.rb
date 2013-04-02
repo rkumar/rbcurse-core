@@ -127,7 +127,7 @@ module VER
     $stderr.puts @last_error, *@last_error.backtrace
   end
 require 'rbcurse/core/system/colormap'
-include ColorMap
+include RubyCurses::ColorMap
 end
 module Ncurses
   extend self
