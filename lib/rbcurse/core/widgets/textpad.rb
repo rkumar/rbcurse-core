@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/mancurses/
 #         Date: 2011-11-09 - 16:59
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-04-02 22:45
+#  Last update: 2013-04-02 22:48
 #
 #  == CHANGES
 #  == TODO 
@@ -54,7 +54,6 @@ module RubyCurses
       @prow = @pcol = 0
       @startrow = 0
       @startcol = 0
-      @_header_adjustment = 0
       # @list is unused, think it can be removed
       #@list = []
       super
@@ -830,7 +829,7 @@ module RubyCurses
     #
     def ensure_visible row = @current_index
       unless is_visible? row
-          @prow = @current_index - @_header_adjustment
+          @prow = @current_index
       end
     end
     #
