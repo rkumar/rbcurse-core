@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/mancurses/
 #         Date: 2011-11-09 - 16:59
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-04-02 22:48
+#  Last update: 2013-04-04 00:55
 #
 #  == CHANGES
 #  == TODO 
@@ -145,9 +145,9 @@ module RubyCurses
     # 2013-03-27 - 01:51 separated so that widgets with headers such as tables can
     # override this for better control
     def render_all
-      @content.each_index { |ix|
+      @content.each_with_index { |line, ix|
         #FFI::NCurses.mvwaddstr(@pad,ix, 0, @content[ix])
-        render @pad, ix, @content[ix]
+        render @pad, ix, line
       }
     end
 
