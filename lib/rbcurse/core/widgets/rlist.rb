@@ -177,12 +177,16 @@ module RubyCurses
       alist = val[0]
       case alist
       when Array
-          @list = alist
-          @current_index = 0
+        @list = alist
+        # I possibly should call init_vars in these 3 cases but am doing the minimal 2013-04-10 - 18:27 
+        # Based no issue: https://github.com/rkumar/rbcurse/issues/15
+        @current_index = @toprow = @pcol = 0
       when NilClass
           @list = [] # or nil ?
+          @current_index = @toprow = @pcol = 0
       when Variable
         @list = alist.value
+        @current_index = @toprow = @pcol = 0
       else
         raise ArgumentError, "Listbox list(): do not know how to handle #{alist.class} " 
       end
