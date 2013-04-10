@@ -643,6 +643,7 @@ module RubyCurses
         ix = @current_index
         return if is_row_selected ix
         r = _convert_index_to_printable_row() unless r
+        return unless r # row is not longer visible 2013-04-10 - 16:37 
         attrib = @focussed_attrib || 'bold'
 
       when :UNFOCUSSED
