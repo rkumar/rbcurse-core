@@ -4,5 +4,5 @@ require 'rbcurse/core/system/window'
 require 'rbcurse/core/widgets/rwidget'
 require 'rbcurse/core/util/rdialogs'
 class Rbcurse
-  VERSION = '0.0.12'
+  VERSION = '0.0.14'
 end
