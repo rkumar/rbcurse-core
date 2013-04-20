@@ -9,7 +9,7 @@
   * Author: rkumar (arunachalesha)
   * Date: 2008-11-19 12:49 
   * License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-  * Last update: 2013-03-25 12:56
+  * Last update: 2013-04-20 19:04
 
   == CHANGES
   * 2011-10-2 Added PropertyVetoException to rollback changes to property
@@ -2561,7 +2561,10 @@ module RubyCurses
       else
         return unless val # added 2010-11-17 20:11, dup will fail on nil
         return unless val[0]
-        s = val[0].dup
+        # 2013-04-20 - 19:02 dup failing on fixnum, set_buffer does a dup
+        # so maybe i can do without it here
+        #s = val[0].dup
+        s = val[0]
         set_buffer(s)
       end
     end
