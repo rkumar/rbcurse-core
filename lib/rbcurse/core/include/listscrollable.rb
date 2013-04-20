@@ -120,8 +120,6 @@ module RubyCurses
       r,c = rowcol
       @rows_panned ||= 0
 
-      win_row = 0 # 2010-02-07 21:44 now ext offset added by widget
-
       # when the toprow is set externally then cursor can be mispositioned since 
       # bounds_check has not been called
       if @current_index < @toprow
@@ -129,14 +127,11 @@ module RubyCurses
         @current_index = @toprow # ??? only if toprow 2010-10-19 12:56 
       end
 
-      row = win_row + r + (@current_index-@toprow) + @rows_panned 
-      #$log.debug " #{@name} set_form_row #{row} = ci #{@current_index} + r #{r} + winrow: #{win_row} - tr:#{@toprow} #{@toprow} + rowsp #{@rows_panned} "
+      row = r + (@current_index-@toprow) + @rows_panned 
       # row should not be < r or greater than r+height TODO FIXME
 
-
-
       setrowcol row, nil
-      #show_caret_func
+
     end
     ## In many situations like placing a textarea or textview inside a splitpane 
     ##+ or scrollpane there have been issues getting the cursor at the right point, 
