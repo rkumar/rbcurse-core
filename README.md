@@ -77,6 +77,10 @@ the core a bit more. The code lies on github.
       `rvm docs generate-ri`
      I have improved this demo and released it as the gem 'ribhu' (ri browser).
 
+## Tutorial
+
+I have begun work on a tutorial (as of 2014-03-22). See <https://github.com/rkumar/rbcurse-tutorial/>
+
 ## See also
 
 * rbcurse-extras - <http://github.com/rkumar/rbcurse-extras/>

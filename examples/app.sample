@@ -1,17 +1,19 @@
 require 'rbcurse/core/util/app'
-
 def help_text
-    <<-eos
-    eos
+<<-eos
+Enter as much help text
+here as you want
+eos
 end
 
 App.new do 
-  header = app_header "rbcurse #{Rbcurse::VERSION}", :text_center => "My Demo", :text_right =>"New Improved!", 
-      :color => :black, :bgcolor => :white, :attr => :bold 
-  message "Press F10 to exit from here, F1 for help, F2 for menu"
+    ## application code comes here
+    @form.help_manager.help_text = help_text()
 
-  stack :margin_top => 1, :height => FFI::NCurses.LINES-3 do
+    @header = app_header "My App #{MyApp::VERSION}", :text_center => "Yet Another Email Client that sucks", :text_right =>"Some text", :color => :black, :bgcolor => :white
 
-  end # stack
-  status_line :row => FFI::NCurses.LINES-1
+    @status_line = status_line
+    @status_line.command {
+
+    }
 end # app

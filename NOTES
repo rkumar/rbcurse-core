@@ -2168,3 +2168,21 @@ I would go with another module name but same widget name so it is clear
 that it is the same widget.
 
 * * * * * * * *
+
+Subject: a new rbcurse
+----------------------
+Date: 2014-03-16 12:23
+
+Based on cygnus and the new textpad, and its derivatives, I'd like to
+branch off into a new project altogether with a much simpler and
+stripped down curses gems.
+
+Use basic widgets from rwidget.rb, and use new textpad for all the
+others
+Redo button which is a mess, and make separate classes (independent) if
+need be
+Clean up form and window and remove as much as possible.
+Remove the DSL nonsense, so a hash has to be used
+What about stacks and flows ? Form needs to know so it can redraw.
+
+* * * * * * * *
