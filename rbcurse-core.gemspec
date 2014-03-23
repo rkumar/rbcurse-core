@@ -5,13 +5,13 @@
 
 Gem::Specification.new do |s|
   s.name = "rbcurse-core"
-  s.version = "0.0.14"
+  s.version = "0.0.15"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rahul Kumar"]
-  s.date = "2013-04-14"
+  s.date = "2014-03-24"
   s.description = "Ruby curses/ncurses widgets for easy application development on text terminals (ruby 1.9)"
-  s.email = "sentinel1879@gmail.com"
+  s.email = "sentinel1879.DELETE@gmail.com"
   s.extra_rdoc_files = [
     "README.md"
   ]

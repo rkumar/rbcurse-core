@@ -1,4 +1,7 @@
 # This program tests out various buttons.
+## I have used both DSL and conventional constructors for each button to test out.
+## Had to fix checkbox code (text and mnemonic to return self).
+# Had to fix radio button code, remove raise from constructor
 #
 require 'logger'
 require 'rbcurse'
@@ -195,6 +198,7 @@ if $0 == __FILE__
         "F1 Help | F2 Menu | F3 View | F4 Shell | F5 Sh | %20s" % [$message.value]
       }
       row += 1 #2
+      ## DSL style of construction
       ok_button = Button.new @form do
         text "OK"
         name "OK"
@@ -209,18 +213,17 @@ if $0 == __FILE__
         alert("Hope you enjoyed this demo - Press the Cancel button to quit", {'title' => "Hello", :bgcolor => :blue , :color => :white})
       }
 
+      ## conventional style of construction
       # using ampersand to set mnemonic
-      cancel_button = Button.new @form do
-        #variable $results
-        text "&Cancel"
-        name "Cancel"
-        row row
-        col col + 10
+      cancel_button = Button.new(@form).
+        text("&Cancel").
+        name("Cancel").
+        row(row).
+        col(col + 10)
         #attr 'reverse'
         #highlight_background "white"
         #highlight_foreground "blue"
         #surround_chars ['{ ',' }']  ## change the surround chars
-      end
       cancel_button.command { |aeve| 
         #if @lookfeel == :dialog
         if togglebutton.value == true
