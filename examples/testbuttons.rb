@@ -72,10 +72,10 @@ if $0 == __FILE__
         onvalue("Selected bold   ").
         offvalue("UNselected bold").
         display_length(18).
-        row(row).
-        col(col).
+        text("Bold attribute ").
         mnemonic('B').
-        text("Bold attribute ")
+        row(row).
+        col(col)
       row += 1
       @cb_rev = Variable.new false # related to checkbox reverse
       cbb = @cb_rev
@@ -91,15 +91,14 @@ if $0 == __FILE__
         mnemonic 'R'
       end
       row += 1
-      togglebutton = ToggleButton.new @form do
-        value  true
-        onvalue  " Toggle Down "
-        offvalue "  Untoggle   "
-        row row
-        col col
-        mnemonic 'T'
+      togglebutton = ToggleButton.new(@form).
+        value( true).
+        onvalue( " Toggle Down ").
+        offvalue("  Untoggle   ").
+        row(row).
+        col(col).
+        mnemonic('T')
         #underline 0
-      end
       togglebutton.command do
         if togglebutton.value 
           $message.value = "Modern look and feel for dialogs"
@@ -135,15 +134,16 @@ if $0 == __FILE__
 
       row += 1
       dlen = 10
-      radio1 = RadioButton.new @form do
-        variable $radio
-        text "red"
-        value "red"
-        color "red"
-        display_length dlen  # helps when right aligning
-        row row
-        col col
-      end
+      # if we try conventional style then constructor throws exception since @variable must be set
+      radio1 = RadioButton.new(@form).
+        variable($radio).
+        text("red").
+        value("red").
+        color("red").
+        display_length(dlen).  # helps when right aligning
+        row(row).
+        col(col)
+
       radio11 = RadioButton.new @form do
         variable $radio
         text "c&yan"
