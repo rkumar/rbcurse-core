@@ -97,9 +97,30 @@ if $0 == __FILE__
         values(%w[scotty tiger secret pass qwerty]).
         null_allowed true
 
+    r += 3
+    l1 = Label.new @form, :name => "profile", :attr => 'bold', :text => "Profile", :row => r, :col => fc
+    r += 1
+    f1 = Field.new @form,  :name => "name1", :maxlen => 20, :display_length => 20, :bgcolor => :white, 
+      :color => :black, :text => "abc", :label => '    Name: ', :row => r, :col => fc
+    r += 1
+    f2 = Field.new @form, :name => "email", :display_length => 20, :bgcolor => :white, 
+      :color => :blue, :text => "me@google.com", :label => '   Email: ', :row => r, :col => fc
+    r += 3
+    f3 = Field.new @form
+    f3.name("mobile").display_length(20).bgcolor(:white).color(:black).
+      text("").label('  Mobile: ').
+      row(r).col(fc).
+      type(:integer)
+    r += 2
+
+    Field.new(@form).
+    name("landline").display_length(20).bgcolor(:white).color(:black).
+      text("").label('Landline: ').
+      row(r).col(fc).
+      type(:integer)
       # a form level event, whenever any widget is focussed, make the label red
-      @form.bind(:ENTER) { |f|   f.label && f.label.bgcolor = :red if f.respond_to? :label}
-      @form.bind(:LEAVE) { |f|  f.label && f.label.bgcolor = 'black'   if f.respond_to? :label}
+      @form.bind(:ENTER) { |f|   f.label && f.label.bgcolor = :red if (f.respond_to? :label and f.label.respond_to?(:bgcolor))}
+      @form.bind(:LEAVE) { |f|  f.label && f.label.bgcolor = 'black'   if (f.respond_to? :label and f.label.respond_to?(:bgcolor))}
 
       @form.bind_key(FFI::NCurses::KEY_F3,'view log') { 
         require 'rbcurse/core/util/viewer'
