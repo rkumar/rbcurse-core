@@ -67,17 +67,15 @@ if $0 == __FILE__
       $results.value = "A variable"
 
       row += 1
-      checkbutton = CheckBox.new @form do
-        variable $results
-        #value = true
-        onvalue "Selected bold   "
-        offvalue "UNselected bold"
-        text "Bold attribute "
-        display_length 18  # helps when right aligning
-        row row
-        col col
-        mnemonic 'B'
-      end
+      checkbutton = CheckBox.new(@form).
+        variable($results).
+        onvalue("Selected bold   ").
+        offvalue("UNselected bold").
+        display_length(18).
+        row(row).
+        col(col).
+        mnemonic('B').
+        text("Bold attribute ")
       row += 1
       @cb_rev = Variable.new false # related to checkbox reverse
       cbb = @cb_rev
@@ -208,7 +206,7 @@ if $0 == __FILE__
         mnemonic 'O'
       end
       ok_button.command() { |eve| 
-        alert("Hope you enjoyed this demo - Press Cancel to quit", {'title' => "Hello", :bgcolor => :blue, :color => :white})
+        alert("Hope you enjoyed this demo - Press the Cancel button to quit", {'title' => "Hello", :bgcolor => :blue , :color => :white})
       }
 
       # using ampersand to set mnemonic
