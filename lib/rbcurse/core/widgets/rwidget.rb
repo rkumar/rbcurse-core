@@ -9,7 +9,7 @@
   * Author: rkumar (arunachalesha)
   * Date: 2008-11-19 12:49 
   * License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-  * Last update: 2013-04-20 19:04
+  * Last update: 2014-03-23 22:59
 
   == CHANGES
   * 2011-10-2 Added PropertyVetoException to rollback changes to property
@@ -2855,6 +2855,7 @@ module RubyCurses
         end
         @text = s
       end
+      return self # added 2014-03-23 - 22:59 so that we can chain methods
     end
 
     ## 
@@ -2870,7 +2871,7 @@ module RubyCurses
       unless @form
         @when_form ||= []
         @when_form << lambda { mnemonic char }
-        return
+        return self # added 2014-03-23 - 22:59 so that we can chain methods
       end
       #return if @form.nil?
       @mnemonic = char
@@ -2880,6 +2881,7 @@ module RubyCurses
       $log.debug " #{self} setting MNEMO to #{char} #{ch}, #{@hotkey} "
       _t = self.text || self.name || "Unnamed #{self.class} "
       @form.bind_key(ch, "hotkey for button #{_t} ") { |_form, _butt| self.fire }
+      return self # added 2014-03-23 - 22:59 so that we can chain methods
     end
 
     ##
