@@ -9,7 +9,7 @@
   * Author: rkumar (arunachalesha)
   * Date: 2008-11-19 12:49 
   * License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-  * Last update: 2014-03-23 22:59
+  * Last update: 2014-03-24 00:11
 
   == CHANGES
   * 2011-10-2 Added PropertyVetoException to rollback changes to property
@@ -2881,7 +2881,7 @@ module RubyCurses
       $log.debug " #{self} setting MNEMO to #{char} #{ch}, #{@hotkey} "
       _t = self.text || self.name || "Unnamed #{self.class} "
       @form.bind_key(ch, "hotkey for button #{_t} ") { |_form, _butt| self.fire }
-      return self # added 2014-03-23 - 22:59 so that we can chain methods
+      return self # added 2015-03-23 - 22:59 so that we can chain methods
     end
 
     ##
@@ -3216,7 +3216,8 @@ module RubyCurses
       $log.warn "XXX: FIXME Please set 'value' for radiobutton. If you don't know, try setting it to 'text'" unless @value
       # I am setting value of value here if not set 2011-10-21 
       @value ||= @text
-      raise "A single Variable must be set for a group of Radio Buttons for this to work." unless @variable
+      ## trying with off since i can't do conventional style construction
+      #raise "A single Variable must be set for a group of Radio Buttons for this to work." unless @variable
     end
 
     # all radio buttons will return the value of the selected value, not the offered value
