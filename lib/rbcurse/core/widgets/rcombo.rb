@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 2011-11-11 - 21:42
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2014-03-24 16:18
+#  Last update: 2014-03-24 16:22
 # ----------------------------------------------------------------------------- #
 #
 require 'rbcurse'
@@ -44,6 +44,7 @@ module RubyCurses
       end 
       @current_index    = 0
       super
+      @editable         = false
       # added if  check since it was overriding set_buffer in creation. 2009-01-18 00:03 
       set_buffer @list[@current_index].dup if @buffer.nil? or @buffer.empty?
       init_vars
