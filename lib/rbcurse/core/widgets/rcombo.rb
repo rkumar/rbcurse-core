@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 2011-11-11 - 21:42
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-03-21 01:45
+#  Last update: 2014-03-24 16:18
 # ----------------------------------------------------------------------------- #
 #
 require 'rbcurse'
@@ -190,6 +190,7 @@ module RubyCurses
     def putch char
       @current_index ||= 0
       if @editable 
+        raise "how is it editable here in combo"
         super
         return 0
       else
