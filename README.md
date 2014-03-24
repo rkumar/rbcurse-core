@@ -1,6 +1,6 @@
 # rbcurse-core
 
-** Works on 1.9.3 **
+** Works on 1.9.3 and now 2.0 **
 
 Contains core widgets and infrastructure of rbcurse ncurses toolkit. rbcurse helps to easily build
 ncurses application for text terminals.
@@ -41,7 +41,7 @@ Core intends to be :
 
 ## Testing Status
 
-   * Works on 1.9.3-p392  (my environment is zsh 5.0.x, tmux, TERM=screen-256color, OSX ML)  
+   * Works on 1.9.3-p392  (my environment is zsh 5.0.x, tmux, TERM=screen-256color, OSX ML/Lion/Mavericks)  
    * Cannot promise if working on 1.8.7, am making some fixes (thanks hramrach), but may not be able to to
      support 1.8.7 indefinitely. Please submit bugs on 1.8.7 if you find them.
 

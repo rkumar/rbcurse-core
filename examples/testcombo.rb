@@ -6,21 +6,17 @@ def help_text
       <<-eos
                COMBO  HELP 
 
-      This is some help text for Fields
+      This is some help text for Combos
 
-      Name is non-focusable
-      Line takes numbers from 1 to 200
-      Regex takes only alpha
-      Password takes only scotty or tiger or pass or qwerty, and maybe left blank
+      You may press SPACE to invoke the popup and then use arrow keys to traverse. (j and k may also work)
+      SPACE on the popup to select.
 
-      Use Alt (meta) with the highlighted character to jump to that field.
-      Alt-m goes to line, Alt-p to password.
-
-      Notice how the field label becomes red when focused (as in Pine/Alpine). This uses
-      the event :ENTER and :LEAVE
+      You may press the first character of the desired item to see all those items starting with that char.
+      e.g. pressing "v" will cycle through vt100 and vt102
 
 
-
+      If the arrow_key_policy is set to :popup then a down arrow will also invoke popup. However, if you
+      prefer the down arrow to go to the next field, use :ignore. In that case, only SPACE can trigger POPUP.
 
       -----------------------------------------------------------------------
       eos
