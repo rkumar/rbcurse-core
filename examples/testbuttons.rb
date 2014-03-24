@@ -2,6 +2,9 @@
 ## I have used both DSL and conventional constructors for each button to test out.
 ## Had to fix checkbox code (text and mnemonic to return self).
 # Had to fix radio button code, remove raise from constructor
+## -----
+## -- THIS WILL NOT WORK WITH < 0.0.15. WILL REQUIRE DOWNLOADING FIXES FROM GITHUB
+## OR HAVING AT LEAST 0.0.15
 #
 require 'logger'
 require 'rbcurse'
