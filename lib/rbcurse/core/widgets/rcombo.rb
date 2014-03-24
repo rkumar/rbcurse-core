@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 2011-11-11 - 21:42
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2014-03-24 16:33
+#  Last update: 2014-03-24 16:37
 # ----------------------------------------------------------------------------- #
 #
 require 'rbcurse'
@@ -138,7 +138,7 @@ module RubyCurses
     def popup
       @list_config ||= {}
       @list_config[:row] ||= @row
-      @list_config[:col] ||= @col
+      #@list_config[:col] ||= @col
       @list_config[:col] ||= @col + @display_length
       @list_config[:relative_to] ||= self
       # this does not allow us to bind to events in the list
