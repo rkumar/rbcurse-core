@@ -2186,3 +2186,27 @@ Remove the DSL nonsense, so a hash has to be used
 What about stacks and flows ? Form needs to know so it can redraw.
 
 * * * * * * * *
+
+Subject: More on simplification
+-------------------------------
+Date: 2014-03-24 10:34
+
+While documenting the tutorial, I have these findings.
+
+The DSL syntax is the cleanest. and it may be required for cases
+like containers, trees, and definitely for stack and flow.
+
+I think the hash syntax requires more internal work, but however, hash
+works as a var argument, and is passed around. Again, stacks and flows
+use the hash. I may not be able to get rid of the hash.
+
+So we may be stuck with all three ways of widget creation.
+
+I was trying smoe benchmarks of all three. I can't say for sure since
+the results differ with high iterations but seems that the DSL creation
+is slowest. Hash is slightly slower than the conventional method calls.
+
+I will have to think of other ways of simplifying.
+
+* * * * * * * *
+
