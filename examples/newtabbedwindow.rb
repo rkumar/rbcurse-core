@@ -53,7 +53,7 @@ class SetupTabbedPane
         item RadioButton.new nil, :row => 3, :col => 2, :text => "ignore", :value => "ignore", :variable => $config_hash[:term]
         item RadioButton.new nil, :row => 4, :col => 2, :text => "popup", :value => "popup", :variable => $config_hash[:term]
         item RadioButton.new nil, :row => 5, :col => 2, :text => "next", :value => "next", :variable => $config_hash[:term]
-        cb = ComboBox.new nil, :row => 7, :col => 2, :display_length => 15, 
+        cb = ComboBox.new nil, :row => 7, :col => 2, :display_length => 20, 
           :list => %w[xterm xterm-color xterm-256color screen vt100 vt102],
           :label => "Declare terminal as: "
         #radio.update_command() {|rb| ENV['TERM']=rb.value }

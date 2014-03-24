@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse/
 #         Date: 2011-11-11 - 21:42
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2014-03-24 16:37
+#  Last update: 2014-03-24 16:42
 # ----------------------------------------------------------------------------- #
 #
 require 'rbcurse'
@@ -20,7 +20,9 @@ module RubyCurses
   # the quick approach would be to use field, and just add a popup.
   # Or since we are not editing, we could use a Label and a popup
   # Or just display a label and a popup without using anything else.
-  #
+  # Thre is an undocumented variable +display_length+ which is the size of the label
+  #  This is used to position the combo symbol and the popup. This can be calculated
+  #  based on the label. 2014-03-24 - 16:42 
 
   class ComboBox < Field
     include RubyCurses::EventHandler
