@@ -2210,3 +2210,34 @@ I will have to think of other ways of simplifying.
 
 * * * * * * * *
 
+
+Subject: constructors
+---------------------
+Date: 2014-03-25 22:33
+
+For the purpose of simplifying, I was looking at the libtcltk ruby code.
+They essentially use the same approach as I have done.
+They also use a hash for options, but i doesn't look like they set it
+into vars. they keep it in a hash. 
+the first param is checked for if its a hash then it is taken to be the
+options. this way one doesn't have to pass form as nil.
+
+all symbols are converted to strings. we sort of do the opposite and
+prefer symbols.
+
+however, if we only keep in a hash, then any processing that needs to be
+done cannot be done. i am concerned about property_changed etc.
+
+to update the hash, there is a configure method.
+
+i suppose the configure method could check for an array of
+property_change elements and call the handler. but still no special
+processing can be done if we keep a hash only.
+
+Keeping in a hash means that no documentation will be generated.
+
+Interestingly, the menubar uses a spec which is an array with elements
+and a proc, so the entire menu can be defined. each menu also can take a
+spec as an optional param.
+
+* * * * * * * *

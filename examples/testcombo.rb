@@ -43,7 +43,7 @@ if $0 == __FILE__
       colors = Ncurses.COLORS
       $log.debug "START #{colors} colors testcombo.rb --------- #{@window} "
       @form = Form.new @window
-      title = (" "*30) + "Demo of Combo (F10 quits, F1 help) " + Rbcurse::VERSION
+      title = (" "*30) + "Demo of Combo (F10 quits, F1 help, SPACE to popup combo) " + Rbcurse::VERSION
       Label.new @form, {:text => title, :row => 1, :col => 0, :color => :green, :bgcolor => :black}
       r = 3; fc = 12;
 

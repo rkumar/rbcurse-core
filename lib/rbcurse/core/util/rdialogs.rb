@@ -59,9 +59,8 @@ end
 # 
 # This uses the new messagebox 2011-11-19 v 1.5.0
 # NOTE: The earlier get_string had only an OK button, this seems to have a CANCEL
-# Are we doing anyhting to let caller know, cancel was pressed. FIXME
 # @param [String] a label such as "Enter name:"
-# @return [String] value entered by user
+# @return [String] value entered by user, nil if cancel pressed
 # @yield [Field] field created by messagebox
 def get_string label, config={} # yield Field
   config[:title] ||= "Entry"
@@ -166,8 +165,6 @@ alias :rb_puts print_status_message
 
 # new version with a window created on 2011-10-1 12:30 AM 
 # Now can be separate from window class, needing nothing, just a util class
-# Why are we dealing with $error_message, that was due to old idea which failed
-# scrap it and send the message.
 # @param [String] text to print
 # @param [Hash] config: :color :bgcolor :color_pair
 #              :wait (numbr of seconds to wait for a key press and then close) if not givn
@@ -374,6 +371,9 @@ end
 # Display a popup and return the seliected index from list
 #  Config includes row and col and title of window
 #  You may also pass bgcolor and color
+#  Returns index of selected row on pressing ENTER or space
+#  In case of multiple selection, returns array of selected indices only on ENTER
+#  Returns nil if C-q pressed
 #  @since 1.4.1  2011-11-1 
 def popuplist list, config={}, &block
   raise ArgumentError, "Nil list received by popuplist" unless list
