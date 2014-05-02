@@ -6,7 +6,7 @@
   * Author: rkumar (http://github.com/rkumar/rbcurse/)
   * Date: 2011-10-20 
   * License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-  * Last update:  Sat Oct 22 18:40:49 IST 2011
+  * Last update:  2014-03-28 20:39
 
   == CHANGES
      As of 1.5.0, this replaces the earlier TabbedPane which
@@ -43,6 +43,7 @@ module RubyCurses
     end
 
     # Add a tab
+    # @param String name of tab, may have ampersand for hotkey/accelerator
     def tab title, config={}, &block
       #@tab_components[title]=[]
       #@tabs << Tab.new(title, self, config, &block)
@@ -62,17 +63,21 @@ module RubyCurses
 
     # -------------- tab maintenance commands ------------------ #
 
+    # insert a tab at index, with title
     def insert_tab index, title, config={}, &block
       @tabs.insert(index, Tab.new(title, self, config, &block) )
     end
+    # remove given tab
     def remove_tab tab
       @tabs.delete tab
       self
     end
+    # remove all tabs
     def remove_all
       @tabs = []
       self
     end
+    # remove tab at given index, defaulting to current
     def remove_tab_at index = @current_tab
       @tabs.delete_at index
     end
@@ -208,6 +213,8 @@ module RubyCurses
         end
       }
     end
+
+    # takes focus to last item 
     def goto_last_item
       bc = @buttons.count
       f = nil
@@ -222,6 +229,8 @@ module RubyCurses
         set_form_row
       end
     end
+    # take focus to the next component or item
+    # Called from DOWN, RIGHT or Tab
     def goto_next_component
       if @current_component != nil 
         leave_current_component
@@ -243,6 +252,8 @@ module RubyCurses
       @_entered = false
       return :UNHANDLED
     end
+    # take focus to prev component or item
+    # Called from LEFT, UP or Back Tab
     def goto_prev_component
       if @current_component != nil 
         leave_current_component
@@ -301,6 +312,8 @@ module RubyCurses
     def on_last_component?
       @current_component == @components.last
     end
+    # returns true if user on an action button
+    # @return true or false
     def on_a_button?
       @components.index(@current_component) < @buttons.count
     end
@@ -312,6 +325,8 @@ module RubyCurses
       @current_component = comp
       set_form_row
     end
+    # set current tab to given tab
+    # @return self
     def set_current_tab t
       return if @current_tab == t
       @current_tab = t
@@ -348,6 +363,7 @@ module RubyCurses
       #bind_key(32, :myproc)
     end
 
+    # creates the tab buttons (which are radio buttons)
     def _create_buttons
       $log.debug "XXX: INSIDE create_buttons col_offset #{@col_offset} "
       v = Variable.new
@@ -450,6 +466,7 @@ module RubyCurses
     end
 
     #
+    # Decides which buttons are to be created
     # create the buttons at the bottom OK/ APPLY/ CANCEL
 
     def create_action_buttons
@@ -473,6 +490,8 @@ module RubyCurses
         #make_buttons ["&OK"]
       end
     end
+    
+    # actually creates the action buttons
     def make_buttons names
       @action_buttons = []
       $log.debug "XXX: came to NTP make buttons FORM= #{@form.name} names #{names}  "
