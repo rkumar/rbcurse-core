@@ -8,7 +8,7 @@
 #       Author: rkumar http://github.com/rkumar/mancurses/
 #         Date: 2011-11-09 - 16:59
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2013-04-04 00:55
+#  Last update: 2014-04-07 00:24
 #
 #  == CHANGES
 #  == TODO 
@@ -58,6 +58,15 @@ module RubyCurses
       #@list = []
       super
 
+      ## code of calc_dimensions used to be here but moved late for listbox to work in flows
+
+      @_events << :PRESS
+      @_events << :ENTER_ROW
+      init_vars
+    end
+    # calculate height width row col etc as late as possible so they need not be set on creation
+    # seeing if we can move this later, so flows etc can call textpad based objects
+    def __calc_dimensions
       ## NOTE 
       #  ---------------------------------------------------
       #  Since we are using pads, you need to get your height, width and rows correct
@@ -89,9 +98,6 @@ module RubyCurses
       @left = @col
       @lastrow = @row + @row_offset
       @lastcol = @col + @col_offset
-      @_events << :PRESS
-      @_events << :ENTER_ROW
-      init_vars
     end
     def init_vars
       $multiplier = 0
@@ -353,6 +359,10 @@ module RubyCurses
       # may need to call padrefresh TODO TESTING
     end
     def repaint
+      if @__first_time
+        __calc_dimensions 
+        @__first_time = true
+      end
       ## 2013-03-08 - 21:01 This is the fix to the issue of form callign an event like ? or F1
       # which throws up a messagebox which leaves a black rect. We have no place to put a refresh
       # However, form does call repaint for all objects, so we can do a padref here. Otherwise,
