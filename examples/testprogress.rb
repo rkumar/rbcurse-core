@@ -6,7 +6,7 @@
 #       Author: rkumar http://github.com/rkumar/rbcurse-core/
 #         Date: 2014-03-27 - 23:31
 #      License: Same as Ruby's License (http://www.ruby-lang.org/LICENSE.txt)
-#  Last update: 2014-03-27 23:33
+#  Last update: 2014-03-27 23:44
 # ----------------------------------------------------------------------------- #
 #  testprogress.rb  Copyright (C) 2012-2014 rahul kumar
 require 'logger'
@@ -36,9 +36,9 @@ if $0 == __FILE__
 
       pbar1 = Progress.new @form, {:width => 20, :row => r, :col => fc, 
         :name => "pbar1", :style => :old}
-        #:bgcolor => 'white', :color => 'red', :name => "pbar1", :style => :old}
+        #:bgcolor => :white, :color => 'red', :name => "pbar1", :style => :old}
       pbar = Progress.new @form, {:width => 20, :row => r+2, :col => fc, 
-        :bgcolor => 'white', :color => 'red', :name => "pbar"}
+        :bgcolor => :white, :color => :red, :name => "pbar"}
       
       pbar.visible false
       pb =  @form.by_name["pbar"]
