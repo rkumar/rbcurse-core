@@ -2241,3 +2241,23 @@ and a proc, so the entire menu can be defined. each menu also can take a
 spec as an optional param.
 
 * * * * * * * *
+
+Subject: tabbedpane and buttons
+-------------------------------
+Date: 2014-03-28 15:35
+
+tabbed panes have buttons
+This is fine if mostly used in a window as TabbedWindow. I suppose
+having the buttons as part of the widget was necessary rather than
+putting them on another form which was really complicating the earlier
+code. Earlier, iirc we had 3 forms on for tabs, on for buttons and one
+for the main form. Now its one.
+
+However, if we embed a TP in a regular form with other widgets, then the
+button is irrelevant. I can ofcourse not give a button_type but still
+the lower area is demarcated. I am not sure why the button is used in
+the demo, and why the area is printed and taken up if not button.
+
+Is this to be fixed ?
+
+* * * * * * * *
