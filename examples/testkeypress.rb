@@ -28,7 +28,7 @@ if $0 == __FILE__
       r = 1; c = 30;
 
       # please use a hash to pass these values, avoid this old style
-      # i want to move away from it as it comlpicates code
+      # i want to move away from it as it complicates code
         texta = TextView.new @form do
           name   "mytext" 
           row  r
